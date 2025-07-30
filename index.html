@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý Bệnh Án</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2c3e50;
+      --accent-color: #e74c3c;
+      --light-color: #ecf0f1;
+      --dark-color: #2c3e50;
+      --success-color: #2ecc71;
+      --warning-color: #f39c12;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: var(--secondary-color);
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--primary-color);
+    }
+    
+    .section {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .section:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    h2 {
+      color: var(--primary-color);
+      margin: 0;
+      font-size: 1.4rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--dark-color);
+    }
+    
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 14px;
+      transition: border 0.3s ease;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+    
+    .row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .row .col {
+      flex: 1;
+    }
+    
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button.secondary {
+      background-color: var(--secondary-color);
+    }
+    
+    button.secondary:hover {
+      background-color: #1a252f;
+    }
+    
+    button.danger {
+      background-color: var(--accent-color);
+    }
+    
+    button.danger:hover {
+      background-color: #c0392b;
+    }
+    
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+    
+    th {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .action-buttons button {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    
+    .status-message {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      display: none;
+    }
+    
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      display: block;
+    }
+    
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      display: block;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .toggle-upload {
+      cursor: pointer;
+      color: var(--primary-color);
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .toggle-upload:hover {
+      text-decoration: underline;
+    }
+    
+    .search-container {
+      margin-bottom: 20px;
+    }
+    
+    .search-container input {
+      width: 300px;
+      max-width: 100%;
+    }
+    
+    @media (max-width: 768px) {
+      .row {
+        flex-direction: column;
+        gap: 0;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-file-medical"></i> Quản lý Bệnh Án</h1>
+
+    <!-- Khu vực tìm kiếm -->
+    <div class="section">
+      <div class="search-container">
+        <label for="searchInput">Tìm kiếm bệnh án:</label>
+        <input type="text" id="searchInput" placeholder="Nhập tên, mã BN hoặc chẩn đoán...">
+      </div>
+    </div>
+
+    <!-- Khu vực 2: Nhập bệnh án -->
+    <div class="section">
+      <div class="section-header">
+        <h2><i class="fas fa-edit"></i> Nhập Bệnh Án Mới</h2>
+        <span class="toggle-upload" id="toggleUpload">
+          <i class="fas fa-file-word"></i> Tải lên từ file Word
+        </span>
+      </div>
+      
+      <div id="statusMessage" class="status-message"></div>
+      
+      <form id="formBenhAn">
+        <div class="row">
+          <div class="col">
+            <label>Họ tên:</label>
+            <input type="text" name="ten" required />
+          </div>
+          <div class="col">
+            <label>Tuổi:</label>
+            <input type="number" name="tuoi" required />
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col">
+            <label>Mã BN:</label>
+            <input type="text" name="maBN" required />
+          </div>
+          <div class="col">
+            <label>Địa chỉ:</label>
+            <input type="text" name="diachi" />
+          </div>
+        </div>
+        
+        <label>Ngày vào viện:</label>
+        <input type="date" name="ngayvao" required />
+        
+        <label>Chẩn đoán Tây y:</label>
+        <textarea name="cdtayy" rows="3"></textarea>
+        
+        <label>Chẩn đoán Đông y:</label>
+        <textarea name="cddongy" rows="3"></textarea>
+        
+        <label>Nội dung bệnh án:</label>
+        <textarea name="ndba" rows="5" style="white-space: pre-wrap;"></textarea>
+        
+        <button type="submit"><i class="fas fa-save"></i> Lưu bệnh án</button>
+      </form>
+    </div>
+
+    <!-- Khu vực 1: Tải file Word (ẩn ban đầu) -->
+    <div class="section hidden" id="uploadSection">
+      <div class="section-header">
+        <h2><i class="fas fa-file-upload"></i> Tải lên Bệnh Án (Word)</h2>
+      </div>
+      
+      <form id="uploadForm">
+        <label for="wordFile">Chọn file Word (.doc hoặc .docx):</label>
+        <input type="file" id="wordFile" accept=".doc,.docx" />
+        
+        <div class="row">
+          <div class="col">
+            <button type="button" onclick="handleUpload()" class="secondary">
+              <i class="fas fa-upload"></i> Tải lên
+            </button>
+          </div>
+          <div class="col">
+            <button type="button" onclick="hideUploadSection()" class="danger">
+              <i class="fas fa-times"></i> Hủy
+            </button>
+          </div>
+        </div>
+      </form>
+      
+      <div id="uploadStatus" class="status-message"></div>
+    </div>
+
+    <!-- Danh sách bệnh án -->
+    <div class="section">
+      <div class="section-header">
+        <h2><i class="fas fa-list"></i> Danh sách Bệnh Án</h2>
+        <button type="button" onclick="clearAllRecords()" class="danger">
+          <i class="fas fa-trash"></i> Xóa tất cả
+        </button>
+      </div>
+      
+      <table id="danhSachBenhAn">
+        <thead>
+          <tr>
+            <th>Họ tên</th>
+            <th>Tuổi</th>
+            <th>Mã BN</th>
+            <th>Ngày vào</th>
+            <th>Chẩn đoán Tây y</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Bệnh án sẽ được thêm ở đây -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Khởi tạo dữ liệu từ localStorage nếu có
+    const STORAGE_KEY = 'benhAnData';
+    let benhAnData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+// ===== Hàm tạo nội dung file Word =====
+function createWordContent(benhAn) {
+  return `
+Họ tên: ${benhAn.ten}
+Tuổi: ${benhAn.tuoi}
+Mã BN: ${benhAn.maBN}
+Địa chỉ: ${benhAn.diachi || ""}
+Ngày vào viện: ${benhAn.ngayvao}
+Chẩn đoán Tây y:
+${benhAn.cdtayy || ""}
+Chẩn đoán Đông y:
+${benhAn.cddongy || ""}
+Nội dung bệnh án:
+${benhAn.ndba || ""}
+  `;
+}
+
+// ===== Gửi lên Google Drive thông qua Google Apps Script =====
+async function uploadToDrive(benhAn, fileId = null) {
+  const wordContent = createWordContent(benhAn);
+  const response = await fetch('https://script.google.com/macros/s/AKfycbxrtuRgUOXhDrECBSA-JRy1ukA-T8MFTUy-KwX2YYQMOiDO__2vAvC789LoB8BB6gIAyw/exec', {
+    method: "POST",
+    body: JSON.stringify({ ...benhAn, wordContent, fileId }),
+    headers: { "Content-Type": "application/json" }
+  });
+  const result = await response.json();
+  return result.fileId;
+}
+
+// ===== Sửa bệnh án =====
+function editRecord(id) {
+  const benhAn = benhAnData.find(item => item.id === id);
+  if (!benhAn) return;
+  form.querySelector('input[name="ten"]').value = benhAn.ten;
+  form.querySelector('input[name="tuoi"]').value = benhAn.tuoi;
+  form.querySelector('input[name="maBN"]').value = benhAn.maBN;
+  form.querySelector('input[name="diachi"]').value = benhAn.diachi;
+  form.querySelector('input[name="ngayvao"]').value = benhAn.ngayvao;
+  form.querySelector('textarea[name="cdtayy"]').value = benhAn.cdtayy;
+  form.querySelector('textarea[name="cddongy"]').value = benhAn.cddongy;
+  form.querySelector('textarea[name="ndba"]').value = benhAn.ndba;
+  form.dataset.editingId = id;
+}
+
+    
+    const form = document.getElementById("formBenhAn");
+    const tableBody = document.querySelector("#danhSachBenhAn tbody");
+    const uploadSection = document.getElementById("uploadSection");
+    const toggleUpload = document.getElementById("toggleUpload");
+    const statusMessage = document.getElementById("statusMessage");
+    const uploadStatus = document.getElementById("uploadStatus");
+    const searchInput = document.getElementById("searchInput");
+    
+    // Hiển thị danh sách bệnh án khi tải trang
+    document.addEventListener('DOMContentLoaded', function() {
+      renderBenhAnList();
+    });
+    
+    // Toggle hiển thị form upload
+    toggleUpload.addEventListener('click', function() {
+      uploadSection.classList.toggle('hidden');
+      if (!uploadSection.classList.contains('hidden')) {
+        uploadSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+    
+    function hideUploadSection() {
+      uploadSection.classList.add('hidden');
+    }
+    
+    // Xử lý submit form
+    
+form.addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const isEditing = form.dataset.editingId;
+  const data = new FormData(form);
+  const benhAn = {
+    id: isEditing || Date.now().toString(),
+    ten: data.get("ten"),
+    tuoi: data.get("tuoi"),
+    maBN: data.get("maBN"),
+    diachi: data.get("diachi"),
+    ngayvao: data.get("ngayvao"),
+    cdtayy: data.get("cdtayy"),
+    cddongy: data.get("cddongy"),
+    ndba: data.get("ndba"),
+    createdAt: new Date().toISOString()
+  };
+  if (isEditing) {
+    const old = benhAnData.find(b => b.id === isEditing);
+    benhAn.fileId = old?.fileId || null;
+  }
+
+  try {
+    const fileId = await uploadToDrive(benhAn, benhAn.fileId || null);
+    benhAn.fileId = fileId;
+
+    if (isEditing) {
+      benhAnData = benhAnData.map(b => b.id === isEditing ? benhAn : b);
+      delete form.dataset.editingId;
+    } else {
+      benhAnData.unshift(benhAn);
+    }
+
+    saveToLocalStorage();
+    renderBenhAnList();
+    showStatusMessage('Đã lưu và đồng bộ với Google Drive!', 'success');
+    form.reset();
+  } catch (err) {
+    showStatusMessage('Lỗi khi gửi lên Google Drive!', 'error');
+    console.error(err);
+  }
+});
+
+    
+    // Xử lý upload file Word
+    function handleUpload() {
+      const file = document.getElementById("wordFile").files[0];
+      if (!file) {
+        showUploadStatus('Vui lòng chọn file Word.', 'error');
+        return;
+      }
+      
+      // Giả lập quá trình upload (trong thực tế sẽ gọi API)
+      showUploadStatus(`Đang tải lên: ${file.name}...`, 'info');
+      
+      setTimeout(() => {
+        // Giả lập thành công
+        showUploadStatus(`Đã tải lên thành công: ${file.name}`, 'success');
+        
+        // Giả lập đọc nội dung file và điền vào form
+        // Trong thực tế cần có API để đọc nội dung file Word
+        document.querySelector('input[name="ten"]').value = "Nguyễn Văn A (từ file Word)";
+        document.querySelector('input[name="tuoi"]').value = "35";
+        document.querySelector('input[name="maBN"]').value = "BN-" + Math.floor(Math.random() * 1000);
+        document.querySelector('textarea[name="cdtayy"]').value = "Viêm phế quản cấp";
+        
+        // Ẩn form upload sau khi hoàn thành
+        setTimeout(hideUploadSection, 1500);
+      }, 2000);
+    }
+    
+    // Hiển thị danh sách bệnh án
+    function renderBenhAnList(filteredData = null) {
+      const dataToRender = filteredData || benhAnData;
+      tableBody.innerHTML = '';
+      
+      if (dataToRender.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="6" style="text-align: center;">Không có bệnh án nào</td>`;
+        tableBody.appendChild(row);
+        return;
+      }
+      
+      dataToRender.forEach(benhAn => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${benhAn.ten}</td>
+          <td>${benhAn.tuoi}</td>
+          <td>${benhAn.maBN}</td>
+          <td>${formatDate(benhAn.ngayvao)}</td>
+          <td>${benhAn.cdtayy.substring(0, 30)}${benhAn.cdtayy.length > 30 ? "..." : ""}</td>
+          <td class="action-buttons">
+            <button onclick="viewDetail(\'${benhAn.id}\')" class="secondary"><i class="fas fa-eye"></i></button>
+            <button onclick="editRecord(\'${benhAn.id}\')" class="secondary"><i class="fas fa-pen"></i></button>
+            <button onclick="deleteRecord(\'${benhAn.id}\')" class="danger"><i class="fas fa-trash"></i></button>
+          </td>
+          <td>${benhAn.tuoi}</td>
+          <td>${benhAn.maBN}</td>
+          <td>${formatDate(benhAn.ngayvao)}</td>
+          <td>${benhAn.cdtayy.substring(0, 30)}${benhAn.cdtayy.length > 30 ? '...' : ''}</td>
+          <td class="action-buttons">
+            <button onclick="viewDetail('${benhAn.id}')" class="secondary"><i class="fas fa-eye"></i></button>
+            <button onclick="deleteRecord('${benhAn.id}')" class="danger"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+    
+    // Xem chi tiết bệnh án
+    function viewDetail(id) {
+      const benhAn = benhAnData.find(item => item.id === id);
+      if (!benhAn) return;
+      
+      const detailHtml = `
+        <h3>Chi tiết Bệnh Án</h3>
+        <p><strong>Họ tên:</strong> ${benhAn.ten}</p>
+        <p><strong>Tuổi:</strong> ${benhAn.tuoi}</p>
+        <p><strong>Mã BN:</strong> ${benhAn.maBN}</p>
+        <p><strong>Địa chỉ:</strong> ${benhAn.diachi || 'Không có'}</p>
+        <p><strong>Ngày vào viện:</strong> ${formatDate(benhAn.ngayvao)}</p>
+        <p><strong>Chẩn đoán Tây y:</strong></p>
+        <p>${benhAn.cdtayy || 'Không có'}</p>
+        <p><strong>Chẩn đoán Đông y:</strong></p>
+        <p>${benhAn.cddongy || 'Không có'}</p>
+        <p><strong>Nội dung bệnh án:</strong></p>
+        <p style="white-space: pre-wrap;">${benhAn.ndba || 'Không có'}</p>
+        <button onclick="closeModal()" style="margin-top: 20px;">Đóng</button>
+      `;
+      
+      showModal(detailHtml);
+    }
+    
+    // Xóa bệnh án
+    function deleteRecord(id) {
+      if (confirm('Bạn có chắc chắn muốn xóa bệnh án này?')) {
+        benhAnData = benhAnData.filter(item => item.id !== id);
+        saveToLocalStorage();
+        renderBenhAnList();
+        showStatusMessage('Đã xóa bệnh án thành công!', 'success');
+      }
+    }
+    
+    // Xóa tất cả bệnh án
+    function clearAllRecords() {
+      if (confirm('Bạn có chắc chắn muốn xóa TẤT CẢ bệnh án? Đây là thao tác không thể hoàn tác!')) {
+        benhAnData = [];
+        saveToLocalStorage();
+        renderBenhAnList();
+        showStatusMessage('Đã xóa tất cả bệnh án!', 'success');
+      }
+    }
+    
+    // Tìm kiếm bệnh án
+    searchInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      if (!searchTerm) {
+        renderBenhAnList();
+        return;
+      }
+      
+      const filteredData = benhAnData.filter(benhAn => 
+        benhAn.ten.toLowerCase().includes(searchTerm) ||
+        benhAn.maBN.toLowerCase().includes(searchTerm) ||
+        (benhAn.cdtayy && benhAn.cdtayy.toLowerCase().includes(searchTerm)) ||
+        (benhAn.cddongy && benhAn.cddongy.toLowerCase().includes(searchTerm))
+      );
+      
+      renderBenhAnList(filteredData);
+    });
+    
+    // Lưu dữ liệu vào localStorage
+    function saveToLocalStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(benhAnData));
+    }
+    
+    // Hiển thị thông báo
+    function showStatusMessage(message, type) {
+      statusMessage.textContent = message;
+      statusMessage.className = 'status-message ' + type;
+      
+      setTimeout(() => {
+        statusMessage.className = 'status-message';
+      }, 3000);
+    }
+    
+    function showUploadStatus(message, type) {
+      uploadStatus.textContent = message;
+      uploadStatus.className = 'status-message ' + type;
+    }
+    
+    // Định dạng ngày tháng
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('vi-VN');
+    }
+    
+    // Hiển thị modal
+    function showModal(content) {
+      const modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100%';
+      modal.style.height = '100%';
+      modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+      modal.style.display = 'flex';
+      modal.style.justifyContent = 'center';
+      modal.style.alignItems = 'center';
+      modal.style.zIndex = '1000';
+      
+      const modalContent = document.createElement('div');
+      modalContent.style.backgroundColor = 'white';
+      modalContent.style.padding = '30px';
+      modalContent.style.borderRadius = '8px';
+      modalContent.style.maxWidth = '800px';
+      modalContent.style.width = '90%';
+      modalContent.style.maxHeight = '80vh';
+      modalContent.style.overflowY = 'auto';
+      modalContent.innerHTML = content;
+      
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      modal.onclick = function(e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      };
+      
+      window.currentModal = modal;
+    }
+    
+    function closeModal() {
+      if (window.currentModal) {
+        document.body.removeChild(window.currentModal);
+        window.currentModal = null;
+      }
+    }
+  </script>
+</body>
+</html>
