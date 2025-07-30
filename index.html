@@ -143,7 +143,50 @@ window.addEventListener('DOMContentLoaded', () => {
   <script>
     // ====== Cấu hình lưu trữ ======
     const STORAGE_KEY = 'benhAnData_v2';
-    const TOKEN_KEY = 'sl.u.AF72HGsV8kMU2B7PFUsZkUqg3o3w22EZT5mte1YwOJj9yo30W4aEjejZ_AfwwhhZ5XUPQWVULzJwGAjSScGl6e2no7RoHNzmbaLXt02WczCjx4kPCrzlkFFedr590bbtkg6WYAhfCtz6ab9ZayGML0lIEjZfpVFEO4OFfCXukKElGj6NADiDg6pWbtXl6WsWelQpn6owlU8h3n-FouVZkPIBAo4f19K1LLPSZB9ad_QbC7EEVgWlzPsQGe8e1Yf8FlFXmmWHclBnJfg67PncUT739qqES8p9bg209xUXja5o1_rlwTz-cAEkdEPc8tWF5j4EVY6XVtBNv_fwg4IzBzzWM633duNuWVftA3VDWU8MydIoHjVS_KXcFv7BPVZmALcx1lnZAnRldK4n1Jbt0ZtzYW1HlR0bHRbjJj5f176ORNJvVU62AnLa-NjQS4-FbUzqtq0Vlr5Ta0y2PPUTRhgw7lwmW5C6ErV4b0aYqR4cv1x3WXNAuqooHvdZs6rR4HNFkD3ijQiNWwNuTjAEs1ibbVjJFyofjitU1JafVthGvygfaq2oUGmN3I4oTBMHtGy294-ddgPMmZkJ0Pt9F-fuuvuA1Z6dR7e2xCnlXH39oD3g9aOg_fWkbK43RjkRN6CZvXcJM-omDkmGK3rWxe1NOQG7PP4oweKAwc7MKgK8u8qLmdpsEw1odKyjIzTt6SVDY75nJMfJGSn-LkKW5g40V9klL5AcjR4sYV8ke7vMnHr39yTL_Oh9MdwJZcj_tIUOuQc_DiE4U_s4OrCsrzy0qQuahEeNvWOVmIIPaLmq_-5jU76oJErMfUt_R6-Ko-T1UpiaJ3AtpycdOv17GwpJafLWisu7SFCV9rWzwKJcBEp-wsWXQEiDyffFBdubVv4Wcu71ue_Klsw6dDazgIF4_Oi6IoXypbXySfUyrCiJY5I9kZQeFarzYIF-vxhd-rtFhKEF-0Hs952QhVapZR49FGn1bako-lOGyPQ0ocJtqzRHGklKaaNvkLx6-lMr33fO_D8AoOl2JGRkV_XxO08keJU7h-FZGoQwgrYF6sZH9UQIJ_BGsQ6U8v7aV0MoFlTR7g-hZxHvKWLYcvS5zhp_sv8whTaQLWj1iqXkU0QgJObYWF9t_95_D3kwhJdgiU60QWrP2tysNiFCSj5bw42zqnrjqmiuDQNBrtG4Jy8YVGWT7rFgNxB_uAMlUy1q0PNmktjvpL-g-BkiB2l6SIPNTC4WEATON4KM-FpQELJ8UQUi9GCZPCSVjcvImbGgIpFVw_CTKXDKEIp0AEIyQPGnG8gW98QQWJPNUCnp7XQpjv9Y4ukJu0hVFKnHA4Nne8zdxxrimcZ8-2Fzigu1NZvBiCNhR9zaqiW6UQUWZDfu5XvPawQgigiA8EIJWdnOc2uUgPYuRn3Jj7cyUt0acsjx';
+    const TOKEN_KEY = 'sl.u.AF7_xf_oBbyMkDcMxIvXoxbJQwzymfuubzIvVON-ivHM_aR87XkEJGUEDlbqo330vlYFw4nc64c_Ok8svAz6EXb6-Pw16qRQ-EwPUzvOrB3cu51ZIVipCMZtbDEAUWoLl3lG2kWN9ArjcR-sSgJ2-z4cjatEGL_LYLPgy3GJBMZUE3aoCJVbzDdTcW9jWUlf_Q1K9oQn5WzQ_s585Ixy6QJ1QOO0i2NfNWe62KxtL35oaiQMEXlRimZ-BKiaYODsv-XyGIe8ucFd6eAsDP6u00ILVZ8aLL7P-U2zGb70uFGEPveT-3Mn7HzQGGih0tR6frGmouw-XFSpvvZeKNPX8nxKDVyynXu5QTp2LvmtTA9DcWxtoT6TF4IoxrHExxisAwRNMRoNrM6HF4ayX83IqFLj3z9IcqLEPGBVbWNHvcY8wHPqXxty1qP_SHaU42eTfzRl9NUvm8LBoF1-48wGMUNOnTSy2QK-ZIMKSftINNLDg3XLqYMftu7-tgP5mQkM5ezBQetkCjW_Zdvp_Ndt41RSxw5dc7t1gELbRqf7IiXxTpIk6lMpeowG3K5ISFKy2PuLougECNi4JvUt2iaxT525mB2C49LCgPn0cUDagqb4ZK2OnY0mMU_Tv5vZHiGzG-MkwkgBkCgNfygAwAh8p6And7Y3Xt_D1-8LxWlYebVzLf2OlpBPYthqJqD5XH_A6J-YpC60oeiYhVSOvEvkXuPpLEVK7E7eXvsbC7D7hDmcI1OrAP2F2Em3thG1LWdRqJGCYPslOudcz-j7dKX1239Cq2__F0zyxOZzCfUjUe8cGDHO-K3AwEtOXLV2VSRXNULiouR6H_51_ibl3zXmioGu0Uy5PA9svLrTvLGPxI_3G8OnMN855q15HGzSIDq25kGDvR4rApq69svoMRmsD66Ih3gn28clz4iDj7vF1Rl0G74Jyw5CkMm618H6w1qMdo0S-dE92l3fVlhn77Rpvvdvl37LI9nBWHdxtidGZI-7Y-L_avtVemisHePj_yiz6FX0IdVGKFFbqU5NfihsJWILAd0FIqUkoC1ANaSIfFhkOaGxoJogMnvIVcayCZFWqWz8UtNDrVfZVzT6DeRnsaRr5XOzCITZzfyRQSqdguBz33F-swxccVM0yLnVkgbGUVgY9IsFvqK5mOD4cGxABVpFemI3qJOadZErnqgFNe6kkkxKPhK1AffIDRKOQAtzkNWL-52o1VhMBHb73XOxRiIJym0vD67MGOadUlPJK1UCWijWRrA3YWHpcMCAvmqsWSIpklbztXK66w1vNvSw_PY5YlXKy6ScOQItp7jiabU6u9DlRCdoj2bcYBgniNgkSeRy6JyMEyMPIMXRJTV9--Zn29RuG-toPjs5ydCva2pGTO6i2mPNlvhAo66Si1RRYpIDsIXiaSlWFGGQ0e_-3SFG '; // localStorage key cho access token
+const REFRESH_KEY = 'refresh_token'; // lưu refresh token
+const APP_KEY = 'qzy5kclrf827aey ';
+const APP_SECRET = '6jlsunzjqr3s3nh ';
+
+// Hàm lấy access token mới từ refresh token
+async function getNewAccessToken(refresh_token) {
+  const response = await fetch('https://api.dropbox.com/oauth2/token', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Basic ' + btoa(`${APP_KEY}:${APP_SECRET}`),
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: refresh_token
+    })
+  });
+
+  const data = await response.json();
+  if (data.access_token) {
+    localStorage.setItem(TOKEN_KEY, data.access_token);
+    return data.access_token;
+  } else {
+    throw new Error("Lấy token thất bại: " + JSON.stringify(data));
+  }
+}
+
+// Hàm lấy token: nếu hết hạn thì tự làm mới
+async function getAccessToken() {
+  let token = localStorage.getItem(TOKEN_KEY);
+  // Giả sử bạn tự kiểm tra token có hợp lệ hay không, hoặc luôn làm mới
+  const refreshToken = localStorage.getItem(REFRESH_KEY);
+
+  if (!token && refreshToken) {
+    token = await getNewAccessToken(refreshToken);
+  }
+
+  return token;
+}
+
+
+
+
     let benhAnData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let editingId = null;
 
