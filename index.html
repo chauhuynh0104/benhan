@@ -1,14 +1,15 @@
 <!DOCTYPE html>
+
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quản lý Bệnh Án</title>
-  <!-- Docx UMD (primary) -->
-  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js" defer onload="window.__DOCX_LOADED__=true"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <!-- Fallback loader if primary CDN fails -->
-  <script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quản lý Bệnh Án</title>
+<!-- Docx UMD (primary) -->
+<script defer="" onload="window.__DOCX_LOADED__=true" src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<!-- Fallback loader if primary CDN fails -->
+<script>
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         if (!window.docx) {
@@ -31,7 +32,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 	
   </script>
-  <style>
+<style>
     :root {
       --primary-color: #3498db;
       --secondary-color: #2c3e50;
@@ -61,86 +62,123 @@ window.addEventListener('DOMContentLoaded', () => {
     .status.err { background: #ffebee; color: #b71c1c; }
     .muted { color: #666; font-size: 12px; }
     .token { font-family: monospace; background: #f3f4f6; padding: 6px 8px; border-radius: 6px; display: inline-block; }
-  </style>
+  
+
+/* Animation cho form */
+#formBenhAn {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Nút hover */
+button:hover {
+  opacity: 0.9;
+  transform: scale(1.03);
+}
+
+/* Bảng loading popup đẹp hơn */
+#loadingPopup div {
+  animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+#loginScreen input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 5px #3498db44;
+}
+#loginScreen button:hover {
+  background: #2980b9;
+}
+</style>
 </head>
 <body>
-
-
-
-  <div class="container">
-    <h1>Quản lý Bệnh Án</h1>
-
-    
-
-    <div class="section">
-      <h2>Nhập/Sửa Bệnh Án</h2>
-      <div id="statusBox" class="status"></div>
-      <form id="formBenhAn">
-        <div class="row">
-          <div class="col">
-            <label>Họ tên</label>
-            <input type="text" name="ten" required />
-          </div>
-          <div class="col">
-            <label>Tuổi</label>
-            <input type="number" name="tuoi" required />
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <label>Mã BN</label>
-            <input type="text" name="maBN" required />
-          </div>
-          <div class="col">
-            <label>Địa chỉ</label>
-            <input type="text" name="diachi" />
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <label>Ngày vào viện</label>
-            <input type="date" name="ngayvao" required />
-          </div>
-          <div class="col"></div>
-        </div>
-        <label>Chẩn đoán Tây y</label>
-        <textarea name="cdtayy" rows="2"></textarea>
-        <label>Chẩn đoán Đông y</label>
-        <textarea name="cddongy" rows="2"></textarea>
-        <label>Nội dung bệnh án</label>
-        <textarea name="ndba" rows="4" style="white-space: pre-wrap;"></textarea>
-		  <label>Thủ Thuật - Thuốc</label>
-        <textarea name="ttt" rows="4" style="white-space: pre-wrap;"></textarea>
-		
-        <div style="margin-top:10px;">
-          <button type="submit" id="submitBtn">Lưu bệnh án</button>
-          <button type="button" id="cancelEditBtn" class="secondary" style="display:none;">Hủy sửa</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="section">
-      <div class="row" style="align-items:center; justify-content:space-between;">
-        <h2 style="margin:0;">Danh sách Bệnh Án</h2>
-        <button id="clearAllBtn" class="danger">Xóa tất cả</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Họ tên</th>
-            <th>Tuổi</th>
-            <th>Mã BN</th>
-            <th>Ngày vào</th>
-            <th>Chẩn đoán Tây y</th>
-            <th>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody id="listBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <script>
+<div id="loginScreen" style="
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:linear-gradient(to right, #4facfe, #00f2fe);
+  display:flex;align-items:center;justify-content:center;
+  z-index:10000;font-family:'Segoe UI',sans-serif;
+">
+<div style="background:white;padding:40px 30px;border-radius:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);width:100%;max-width:400px;">
+<h2 style="margin-top:0;text-align:center;color:#333;">🔐 Đăng nhập</h2>
+<input id="loginUser" placeholder="Tài khoản" style="width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;margin-bottom:12px;" type="text"/>
+<input id="loginPass" placeholder="Mật khẩu" style="width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;margin-bottom:16px;" type="password"/>
+<button id="loginBtn" style="width:100%;padding:12px;border:none;border-radius:8px;background:#3498db;color:#fff;font-size:16px;cursor:pointer;">Đăng nhập</button>
+<p id="loginMsg" style="text-align:center;color:#e74c3c;margin-top:10px;"></p>
+</div>
+</div>
+<div id="loadingPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#00000088;z-index:9999;align-items:center;justify-content:center;"><div style="background:white;padding:20px 40px;border-radius:10px;font-size:18px;font-weight:bold;box-shadow:0 0 20px rgba(0,0,0,0.4);">Đang tải dữ liệu từ máy chủ...</div></div>
+<div class="container">
+<h1>Quản lý Bệnh Án</h1>
+<div class="section">
+<h2>Nhập/Sửa Bệnh Án</h2>
+<div class="status" id="statusBox"></div>
+<button id="toggleFormBtn" style="margin-bottom:10px;background:#2ecc71;color:white;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;">📝 Nhập bệnh án</button><form id="formBenhAn" style="display:none;">
+<div class="row">
+<div class="col">
+<label>Họ tên</label>
+<input name="ten" required="" type="text"/>
+</div>
+<div class="col">
+<label>Tuổi</label>
+<input name="tuoi" required="" type="number"/>
+</div>
+</div>
+<div class="row">
+<div class="col">
+<label>Mã BN</label>
+<input name="maBN" required="" type="text"/>
+</div>
+<div class="col">
+<label>Địa chỉ</label>
+<input name="diachi" type="text"/>
+</div>
+</div>
+<div class="row">
+<div class="col">
+<label>Ngày vào viện</label>
+<input name="ngayvao" required="" type="date"/>
+</div>
+<div class="col"></div>
+</div>
+<label>Chẩn đoán Tây y</label>
+<textarea name="cdtayy" rows="2"></textarea>
+<label>Chẩn đoán Đông y</label>
+<textarea name="cddongy" rows="2"></textarea>
+<label>Nội dung bệnh án</label>
+<textarea name="ndba" rows="4" style="white-space: pre-wrap;"></textarea>
+<label>Thủ Thuật - Thuốc</label>
+<textarea name="ttt" rows="4" style="white-space: pre-wrap;"></textarea>
+<div style="margin-top:10px;">
+<button id="submitBtn" type="submit">Lưu bệnh án</button>
+<button class="secondary" id="cancelEditBtn" style="display:none;" type="button">Hủy sửa</button>
+</div>
+</form>
+</div>
+<div class="section">
+<div class="row" style="align-items:center; justify-content:space-between;">
+<h2 style="margin:0;">Danh sách Bệnh Án</h2>
+<button class="danger" id="clearAllBtn">Xóa tất cả</button>
+</div>
+<table>
+<thead>
+<tr>
+<th>Họ tên</th>
+<th>Tuổi</th>
+<th>Mã BN</th>
+<th>Ngày vào</th>
+<th>Chẩn đoán Tây y</th>
+<th>Thao tác</th>
+</tr>
+</thead>
+<tbody id="listBody"></tbody>
+</table>
+</div>
+</div>
+<script>
     // ====== Cấu hình lưu trữ ======
     const STORAGE_KEY = 'benhAnData_v2';
     const TOKEN_KEY = 'sl.u.AF7_xf_oBbyMkDcMxIvXoxbJQwzymfuubzIvVON-ivHM_aR87XkEJGUEDlbqo330vlYFw4nc64c_Ok8svAz6EXb6-Pw16qRQ-EwPUzvOrB3cu51ZIVipCMZtbDEAUWoLl3lG2kWN9ArjcR-sSgJ2-z4cjatEGL_LYLPgy3GJBMZUE3aoCJVbzDdTcW9jWUlf_Q1K9oQn5WzQ_s585Ixy6QJ1QOO0i2NfNWe62KxtL35oaiQMEXlRimZ-BKiaYODsv-XyGIe8ucFd6eAsDP6u00ILVZ8aLL7P-U2zGb70uFGEPveT-3Mn7HzQGGih0tR6frGmouw-XFSpvvZeKNPX8nxKDVyynXu5QTp2LvmtTA9DcWxtoT6TF4IoxrHExxisAwRNMRoNrM6HF4ayX83IqFLj3z9IcqLEPGBVbWNHvcY8wHPqXxty1qP_SHaU42eTfzRl9NUvm8LBoF1-48wGMUNOnTSy2QK-ZIMKSftINNLDg3XLqYMftu7-tgP5mQkM5ezBQetkCjW_Zdvp_Ndt41RSxw5dc7t1gELbRqf7IiXxTpIk6lMpeowG3K5ISFKy2PuLougECNi4JvUt2iaxT525mB2C49LCgPn0cUDagqb4ZK2OnY0mMU_Tv5vZHiGzG-MkwkgBkCgNfygAwAh8p6And7Y3Xt_D1-8LxWlYebVzLf2OlpBPYthqJqD5XH_A6J-YpC60oeiYhVSOvEvkXuPpLEVK7E7eXvsbC7D7hDmcI1OrAP2F2Em3thG1LWdRqJGCYPslOudcz-j7dKX1239Cq2__F0zyxOZzCfUjUe8cGDHO-K3AwEtOXLV2VSRXNULiouR6H_51_ibl3zXmioGu0Uy5PA9svLrTvLGPxI_3G8OnMN855q15HGzSIDq25kGDvR4rApq69svoMRmsD66Ih3gn28clz4iDj7vF1Rl0G74Jyw5CkMm618H6w1qMdo0S-dE92l3fVlhn77Rpvvdvl37LI9nBWHdxtidGZI-7Y-L_avtVemisHePj_yiz6FX0IdVGKFFbqU5NfihsJWILAd0FIqUkoC1ANaSIfFhkOaGxoJogMnvIVcayCZFWqWz8UtNDrVfZVzT6DeRnsaRr5XOzCITZzfyRQSqdguBz33F-swxccVM0yLnVkgbGUVgY9IsFvqK5mOD4cGxABVpFemI3qJOadZErnqgFNe6kkkxKPhK1AffIDRKOQAtzkNWL-52o1VhMBHb73XOxRiIJym0vD67MGOadUlPJK1UCWijWRrA3YWHpcMCAvmqsWSIpklbztXK66w1vNvSw_PY5YlXKy6ScOQItp7jiabU6u9DlRCdoj2bcYBgniNgkSeRy6JyMEyMPIMXRJTV9--Zn29RuG-toPjs5ydCva2pGTO6i2mPNlvhAo66Si1RRYpIDsIXiaSlWFGGQ0e_-3SFG'; // localStorage key cho access token
@@ -488,19 +526,14 @@ function updateLibStatus() {
       }
     });
   </script>
-
 <!-- Popup xác nhận -->
 <div id="popupConfirm" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#00000088;display:none;align-items:center;justify-content:center;z-index:9999;">
-  <div style="background:white;padding:20px;border-radius:8px;max-width:90%;box-shadow:0 4px 10px rgba(0,0,0,0.3);text-align:center;">
-    <p id="popupConfirmMsg" style="margin-bottom:20px;font-size:16px;"></p>
-    <button id="popupOk" style="margin-right:10px;background:#3498db;color:white;border:none;padding:8px 16px;border-radius:5px;cursor:pointer;">OK</button>
-    <button id="popupCancel" style="background:#ccc;border:none;padding:8px 16px;border-radius:5px;cursor:pointer;">Hủy</button>
-  </div>
+<div style="background:white;padding:20px;border-radius:8px;max-width:90%;box-shadow:0 4px 10px rgba(0,0,0,0.3);text-align:center;">
+<p id="popupConfirmMsg" style="margin-bottom:20px;font-size:16px;"></p>
+<button id="popupOk" style="margin-right:10px;background:#3498db;color:white;border:none;padding:8px 16px;border-radius:5px;cursor:pointer;">OK</button>
+<button id="popupCancel" style="background:#ccc;border:none;padding:8px 16px;border-radius:5px;cursor:pointer;">Hủy</button>
 </div>
-
-
-
-
+</div>
 <script>
 async function fetchDropboxFiles() {
   const token = TOKEN_KEY;
@@ -674,7 +707,79 @@ function showPopupView(content) {
 
 
 </script>
+<script>
+document.getElementById('toggleFormBtn').onclick = function() {
+  const form = document.getElementById('formBenhAn');
+  if (form.style.display === 'none') {
+    form.style.display = 'block';
+    this.textContent = '🔽 Ẩn form nhập';
+  } else {
+    form.style.display = 'none';
+    this.textContent = '📝 Nhập bệnh án';
+  }
+};
+
+function showLoading(show) {
+  const popup = document.getElementById('loadingPopup');
+  if (popup) popup.style.display = show ? 'flex' : 'none';
+}
+
+// Hook loading popup into fetchDropboxFiles()
+const originalFetchDropbox = window.fetchDropboxFiles;
+window.fetchDropboxFiles = async function() {
+  showLoading(true);
+  try {
+    return await originalFetchDropbox.apply(this, arguments);
+  } finally {
+    showLoading(false);
+  }
+};
 
 
-</body>
+// Hiện form nếu đang ẩn khi bấm nút Sửa
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('button[data-act="edit"]');
+  if (btn) {
+    const form = document.getElementById('formBenhAn');
+    const toggleBtn = document.getElementById('toggleFormBtn');
+    if (form && form.style.display === 'none') {
+      form.style.display = 'block';
+      if (toggleBtn) toggleBtn.textContent = '🔽 Ẩn form nhập';
+    }
+  }
+});
+</script><script>
+const USERS = [
+  { user: "admin", pass: "123456" },
+  { user: "demo", pass: "demo123" }
+];
+const loginScreen = document.getElementById('loginScreen');
+const loginBtn = document.getElementById('loginBtn');
+const loginMsg = document.getElementById('loginMsg');
+const userField = document.getElementById('loginUser');
+const passField = document.getElementById('loginPass');
+
+function showLoginError(msg) {
+  loginMsg.textContent = msg;
+}
+
+loginBtn.onclick = function() {
+  const u = userField.value.trim();
+  const p = passField.value.trim();
+  const matched = USERS.find(x => x.user === u && x.pass === p);
+  if (matched) {
+    localStorage.setItem("loggedIn", "yes");
+    loginScreen.style.display = "none";
+  } else {
+    showLoginError("Sai tài khoản hoặc mật khẩu.");
+  }
+};
+
+// Check login on load
+window.addEventListener("DOMContentLoaded", () => {
+  const ok = localStorage.getItem("loggedIn") === "yes";
+  if (!ok) loginScreen.style.display = "flex";
+  else loginScreen.style.display = "none";
+});
+</script></body>
 </html>
