@@ -17,7 +17,24 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Quản lý Bệnh Án</title>
 <!-- Docx UMD (primary) -->
-<script defer="" onload="window.__DOCX_LOADED__=true" src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script defer="" onload="window.__DOCX_LOADED__=true" src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js">
+async function fetchWithAutoRetry(url, options, maxRetries = 1) {
+  try {
+    let res = await fetch(url, options);
+    if (res.status === 401 && maxRetries > 0) {
+      console.warn('Token hết hạn, đang làm mới...');
+      await getNewAccessToken(localStorage.getItem(REFRESH_KEY));
+      options.headers['Authorization'] = 'Bearer ' + localStorage.getItem(TOKEN_KEY);
+      return await fetchWithAutoRetry(url, options, maxRetries - 1);
+    }
+    return res;
+  } catch (err) {
+    console.error('Lỗi fetch:', err);
+    throw err;
+  }
+}
+
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <!-- Fallback loader if primary CDN fails -->
 <script>
@@ -42,7 +59,23 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 	
-  </script>
+  
+async function fetchWithAutoRetry(url, options, maxRetries = 1) {
+  try {
+    let res = await fetch(url, options);
+    if (res.status === 401 && maxRetries > 0) {
+      console.warn('Access token expired. Refreshing...');
+      await getNewAccessToken(localStorage.getItem(REFRESH_KEY));
+      options.headers['Authorization'] = 'Bearer ' + localStorage.getItem(TOKEN_KEY);
+      return await fetchWithAutoRetry(url, options, maxRetries - 1);
+    }
+    return res;
+  } catch (err) {
+    console.error('fetchWithAutoRetry failed:', err);
+    throw err;
+  }
+}
+</script>
 <style>
     :root {
       --primary-color: #3498db;
@@ -206,7 +239,7 @@ const APP_SECRET = '6jlsunzjqr3s3nh';
 
 // Hàm lấy access token mới từ refresh token
 async function getNewAccessToken(refresh_token) {
-  const response = await fetch('https://api.dropbox.com/oauth2/token', {
+  const response = await fetchWithAutoRetry('https://api.dropbox.com/oauth2/token', {
     method: 'POST',
     headers: {
       'Authorization': 'Basic ' + btoa(`${APP_KEY}:${APP_SECRET}`),
@@ -360,7 +393,7 @@ function updateLibStatus() {
     // ====== Dropbox upload ======
    async function uploadToDropbox(filename, blob) {
   const path = `/BenhAn/${filename}`;
-  const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+  const res = await fetchWithAutoRetry('https://content.dropboxapi.com/2/files/upload', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer ' + (await getAccessToken()),
@@ -381,7 +414,7 @@ function updateLibStatus() {
     async function deleteFromDropbox(path) {
       const token = TOKEN_KEY;
       if (!path || !token) return;
-      await fetch('https://api.dropboxapi.com/2/files/delete_v2', {
+      await fetchWithAutoRetry('https://api.dropboxapi.com/2/files/delete_v2', {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + (await getAccessToken()),
@@ -583,7 +616,7 @@ async function fetchDropboxFiles() {
   let benhAnData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
   try {
-    const listRes = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
+    const listRes = await fetchWithAutoRetry('https://api.dropboxapi.com/2/files/list_folder', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + (await getAccessToken()),
@@ -597,7 +630,7 @@ async function fetchDropboxFiles() {
     for (const file of entries) {
       if (!file.name.endsWith('.docx')) continue;
 
-      const downloadRes = await fetch('https://content.dropboxapi.com/2/files/download', {
+      const downloadRes = await fetchWithAutoRetry('https://content.dropboxapi.com/2/files/download', {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + (await getAccessToken()),
@@ -654,7 +687,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 async function viewBenhAn(item) {
   try {
-    const res = await fetch('https://content.dropboxapi.com/2/files/download', {
+    const res = await fetchWithAutoRetry('https://content.dropboxapi.com/2/files/download', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + (await getAccessToken()),
