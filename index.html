@@ -1,3 +1,14 @@
+<!-- 
+
+///////////////////////////////////////////////
+/////Code được viết bởi Chauhuynh0104/////////
+////http://fb.com/chauhuynh0104//////////////
+/////////////079.567.9350///////////////////
+///Vui lòng tôn trọng bản quyền tác giả////
+/////////Không xoá dòng này //////////////
+/////////////////////////////////////////
+
+!-->
 <!DOCTYPE html>
 
 <html lang="vi">
@@ -47,7 +58,9 @@ window.addEventListener('DOMContentLoaded', () => {
     h1 { text-align: center; color: var(--secondary-color); }
     .section { background: #fff; padding: 20px; border-radius: 8px; margin: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
     label { font-weight: 600; display: block; margin: 8px 0 4px; }
-    input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+    input { width: 90%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+	  textarea { width: 95%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+  
     .row { display: flex; gap: 12px; }
     .row .col { flex: 1; }
     button { background: var(--primary-color); color: #fff; border: 0; padding: 10px 14px; border-radius: 6px; cursor: pointer; }
@@ -94,7 +107,9 @@ button:hover {
 }
 </style>
 </head>
-<body>
+
+
+<body><div id="darkModeToggle"><button id="darkToggle" style="padding: 8px 14px; border-radius: 6px; background: #222; color: white; cursor: pointer; border: none;">🌙 Dark Mode</button></div>
 <div id="loginScreen" style="
   position:fixed;top:0;left:0;width:100%;height:100%;
   background:linear-gradient(to right, #4facfe, #00f2fe);
@@ -104,16 +119,16 @@ button:hover {
 <div style="background:white;padding:40px 30px;border-radius:12px;
     box-shadow:0 10px 30px rgba(0,0,0,0.3);width:100%;max-width:400px;">
 <h2 style="margin-top:0;text-align:center;color:#333;">🔐 Đăng nhập</h2>
-<input id="loginUser" placeholder="Tài khoản" style="width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;margin-bottom:12px;" type="text"/>
-<input id="loginPass" placeholder="Mật khẩu" style="width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;margin-bottom:16px;" type="password"/>
+<input id="loginUser" placeholder="Tài khoản" style="width:95%;padding:12px;border-radius:8px;border:1px solid #ccc;margin-bottom:12px;" type="text"/>
+<input id="loginPass" placeholder="Mật khẩu" style="width:95%;padding:12px;border-radius:8px;border:1px solid #ccc;margin-bottom:16px;" type="password"/>
 <button id="loginBtn" style="width:100%;padding:12px;border:none;border-radius:8px;background:#3498db;color:#fff;font-size:16px;cursor:pointer;">Đăng nhập</button>
 <p id="loginMsg" style="text-align:center;color:#e74c3c;margin-top:10px;"></p>
 </div>
 </div>
 <div id="loadingPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#00000088;z-index:9999;align-items:center;justify-content:center;"><div style="background:white;padding:20px 40px;border-radius:10px;font-size:18px;font-weight:bold;box-shadow:0 0 20px rgba(0,0,0,0.4);">Đang tải dữ liệu từ máy chủ...</div></div>
 <div class="container">
-<h1>Quản lý Bệnh Án</h1>
-<div class="section">
+<div style="text-align:right;"><button id="logoutBtn" style="display:none;background:#e74c3c;color:white;padding:8px 14px;border:none;border-radius:6px;cursor:pointer;">Đăng xuất</button></div><h1>Quản lý Bệnh Án</h1>
+<div class="section"style="border: 2px solid #3498db;">
 <h2>Nhập/Sửa Bệnh Án</h2>
 <div class="status" id="statusBox"></div>
 <button id="toggleFormBtn" style="margin-bottom:10px;background:#2ecc71;color:white;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;">📝 Nhập bệnh án</button><form id="formBenhAn" style="display:none;">
@@ -132,17 +147,12 @@ button:hover {
 <label>Mã BN</label>
 <input name="maBN" required="" type="text"/>
 </div>
-<div class="col">
-<label>Địa chỉ</label>
-<input name="diachi" type="text"/>
-</div>
-</div>
-<div class="row">
+
 <div class="col">
 <label>Ngày vào viện</label>
 <input name="ngayvao" required="" type="date"/>
 </div>
-<div class="col"></div>
+
 </div>
 <label>Chẩn đoán Tây y</label>
 <textarea name="cdtayy" rows="2"></textarea>
@@ -158,10 +168,12 @@ button:hover {
 </div>
 </form>
 </div>
-<div class="section">
-<div class="row" style="align-items:center; justify-content:space-between;">
-<h2 style="margin:0;">Danh sách Bệnh Án</h2>
-<button class="danger" id="clearAllBtn">Xóa tất cả</button>
+<div class="section"style="border: 2px solid #3498db;">
+<div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
+<h2 style="margin:0; line-height: 1;">Danh sách Bệnh Án</h2>
+<div style="display: flex; gap: 8px; align-items: center;">
+<button class="danger" id="clearAllBtn" style="height: 36px;">Xóa cache</button>
+<button id="toggleCardBtn" style="height: 36px; background:#8e44ad;color:white;border:none;border-radius:6px;cursor:pointer;">Hiển thị thẻ</button></div>
 </div>
 <table>
 <thead>
@@ -176,7 +188,7 @@ button:hover {
 </thead>
 <tbody id="listBody"></tbody>
 </table>
-</div>
+<div id="cardContainer" style="display:none;gap:16px;flex-wrap:wrap;"></div></div>
 </div>
 <script>
     // ====== Cấu hình lưu trữ ======
@@ -455,7 +467,7 @@ function updateLibStatus() {
     };
 
  document.getElementById('clearAllBtn').onclick = async () => {
-      if (await showConfirm('Xóa TẤT CẢ bệnh án?')) {
+      if (await showConfirm('Xóa cache?')) {
         benhAnData = [];
         localStorage.setItem(STORAGE_KEY, JSON.stringify(benhAnData));
         renderList();
@@ -513,10 +525,10 @@ function updateLibStatus() {
           editingId = null;
           document.getElementById('cancelEditBtn').style.display = 'none';
           document.getElementById('submitBtn').textContent = 'Lưu bệnh án';
-          toast('Đã cập nhật bệnh án & file Word trên Dropbox.', true);
+          toast('Đã cập nhật bệnh án', true);
         } else {
           benhAnData.unshift(ba);
-          toast('Đã lưu bệnh án & tạo file Word trên Dropbox.', true);
+          toast('Đã lưu bệnh án', true);
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(benhAnData));
         renderList();
@@ -647,43 +659,31 @@ function showPopupView(content) {
     display: flex;
     align-items: center;
     justify-content: center;
+
   `;
   popup.id = 'viewPopupOverlay';
 
   popup.innerHTML = `
     <div style="
       background: #fff;
-      padding: 150px 60px;
-      max-width: 1000px;
-      max-height: 90%;
+      padding: 90px 30px;
+      max-width: 90%;
+      max-height: 60%;
       overflow: auto;
       border-radius: 10px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.4);
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
       position: relative;
-      font-size: 16px;
+      font-size: 18px;
+	    border: 2px solid #3498db; 
       line-height: 1.6;
       font-family: 'Segoe UI', sans-serif;
     " id="viewPopupContent">
-      <button onclick="this.parentNode.parentNode.remove()" style="
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: #e74c3c;
-        color: #fff;
-        border: none;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        font-size: 18px;
-        font-weight: bold;
-        cursor: pointer;
-      ">×</button>
+     
 
       <pre style="
         white-space: pre-wrap;
         word-break: break-word;
-        font-size: 16px;
-        line-height: 1.6;
+      
       ">${content}</pre>
     </div>
   `;
@@ -750,37 +750,254 @@ document.addEventListener('click', function(e) {
   }
 });
 </script><script>
-const USERS = [
-  { user: "bschau", pass: "1!" },
-  { user: "Bschau", pass: "1!" }
-];
-const loginScreen = document.getElementById('loginScreen');
-const loginBtn = document.getElementById('loginBtn');
-const loginMsg = document.getElementById('loginMsg');
-const userField = document.getElementById('loginUser');
-const passField = document.getElementById('loginPass');
+window.addEventListener("DOMContentLoaded", () => {
+  const loginScreen = document.getElementById('loginScreen');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginMsg = document.getElementById('loginMsg');
+  const userField = document.getElementById('loginUser');
+  const passField = document.getElementById('loginPass');
+  const logoutBtn = document.getElementById('logoutBtn');
 
-function showLoginError(msg) {
-  loginMsg.textContent = msg;
+  const USERS = [
+    { user: "bschau", pass: "1!" },
+    { user: "Bschau", pass: "1!" }
+  ];
+
+  function showLoginError(msg) {
+    loginMsg.textContent = msg;
+  }
+
+  loginBtn.onclick = function() {
+    const u = userField.value.trim();
+    const p = passField.value.trim();
+    const matched = USERS.find(x => x.user === u && x.pass === p);
+    if (matched) {
+      localStorage.setItem("loggedIn", "yes");
+      loginScreen.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+    } else {
+      showLoginError("Sai tài khoản hoặc mật khẩu.");
+    }
+  };
+
+  [userField, passField].forEach(input => {
+    input.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        loginBtn.click();
+      }
+    });
+  });
+
+  const ok = localStorage.getItem("loggedIn") === "yes";
+  if (!ok) {
+    loginScreen.style.display = "flex";
+    logoutBtn.style.display = "none";
+  } else {
+    loginScreen.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+  }
+
+  logoutBtn.onclick = function() {
+    localStorage.removeItem("loggedIn");
+    location.reload();
+  };
+});
+</script>
+<style>
+
+.dark-mode, 
+.dark-mode * {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+  border-color: #444 !important;
 }
 
-loginBtn.onclick = function() {
-  const u = userField.value.trim();
-  const p = passField.value.trim();
-  const matched = USERS.find(x => x.user === u && x.pass === p);
-  if (matched) {
-    localStorage.setItem("loggedIn", "yes");
-    loginScreen.style.display = "none";
-  } else {
-    showLoginError("Sai tài khoản hoặc mật khẩu.");
-  }
-};
+.dark-mode {
+  background: #121212 !important;
+  color: #eee !important;
+}
+.dark-mode .section {
+  background: #1e1e1e !important;
+  color: #eee;
+}
+.dark-mode input, .dark-mode textarea {
+  background: #2c2c2c;
+  color: #fff;
+  border: 1px solid #555;
+}
+.dark-mode table th, .dark-mode table td {
+  border-color: #444;
+}
 
-// Check login on load
-window.addEventListener("DOMContentLoaded", () => {
-  const ok = localStorage.getItem("loggedIn") === "yes";
-  if (!ok) loginScreen.style.display = "flex";
-  else loginScreen.style.display = "none";
+.dark-mode thead {
+  background-color: #333 !important;
+  color: #fff !important;
+}
+.dark-mode pre {
+  background: #222;
+  color: #eee;
+  border: 1px solid #444;
+}
+
+.dark-mode thead th {
+  background-color: #222 !important;
+  color: #eee !important;
+  border-color: #444 !important;
+}
+
+#darkModeToggle {
+  position: absolute;
+  top: 20px;
+  left: 130px;
+  z-index: 9999;
+}
+</style>
+<script>
+(function() {
+  let isCardView = false;
+
+  function toggleView(view) {
+    const table = document.querySelector("table");
+    const cardContainer = document.getElementById("cardContainer");
+    if (view === "card") {
+      table.style.display = "none";
+      cardContainer.style.display = "flex";
+      renderCardView();
+    } else {
+      table.style.display = "";
+      cardContainer.style.display = "none";
+    }
+  }
+
+  function renderCardView() {
+    const data = JSON.parse(localStorage.getItem('benhAnData_v2') || '[]');
+    const container = document.getElementById("cardContainer");
+    container.innerHTML = '';
+    if (!data.length) {
+      container.innerHTML = '<p style="color:#888;">Chưa có bệnh án.</p>';
+      return;
+    }
+    data.forEach(item => {
+      const div = document.createElement("div");
+      div.style = "background:#fff;padding:16px;margin:10px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.1);width:100%;max-width:350px;";
+      div.innerHTML = `
+        <h3>${item.ten} (${item.tuoi} tuổi)</h3>
+        <p><b>Mã BN:</b> ${item.maBN}</p>
+        <p><b>Ngày vào:</b> ${item.ngayvao}</p>
+        <p><b>Chẩn đoán:</b> ${item.cdtayy}</p>
+        <div style="margin-top:10px;">
+          <button onclick="editCard('${item.id}')" style="background:#2c3e50;color:#fff;padding:6px 10px;border:none;border-radius:4px;">✏️ Sửa</button>
+          <button onclick="deleteCard('${item.id}')" style="background:#e74c3c;color:#fff;padding:6px 10px;border:none;border-radius:4px;">🗑️ Xóa</button>
+          <button onclick="viewCard('${item.id}')" style="background:#3498db;color:#fff;padding:6px 10px;border:none;border-radius:4px;">👁️ Xem</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function editCard(id) {
+    const btn = document.querySelector(`button[data-id="${id}"][data-act="edit"]`);
+    if (btn) btn.click();
+  }
+  function deleteCard(id) {
+    const btn = document.querySelector(`button[data-id="${id}"][data-act="del"]`);
+    if (btn) btn.click();
+  }
+  function viewCard(id) {
+    const btn = document.querySelector(`button[data-id="${id}"][data-act="view"]`);
+    if (btn) btn.click();
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const toggleBtn = document.getElementById("toggleCardBtn");
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", () => {
+        isCardView = !isCardView;
+        toggleView(isCardView ? 'card' : 'table');
+        toggleBtn.textContent = isCardView ? "Hiển thị bảng" : "Hiển thị thẻ";
+      });
+    }
+  });
+})();
+</script><script>
+window.addEventListener('DOMContentLoaded', () => {
+  const darkToggle = document.getElementById('darkToggle');
+  const isDark = localStorage.getItem('darkMode') === 'true';
+  if (isDark) document.body.classList.add('dark-mode');
+
+  if (darkToggle) {
+    darkToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const isNowDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', isNowDark);
+      darkToggle.textContent = isNowDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+    });
+    darkToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+  }
 });
-</script></body>
+</script>
+
+
+
+<div id="textareaPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0008;z-index:9999;align-items:center;justify-content:center;">
+  <div id="popupContent" style="background:white;padding:10px;border-radius:10px;height:90%; max-width:90%;width:1000px;box-shadow:0 0 20px rgba(0,0,0,0.3);position:relative;">
+    <h3 style="margin-top:0;">📝 Chỉnh sửa chi tiết</h3>
+    <textarea id="popupTextarea" style="width:98%;height:80%;padding:10px;border:1px solid #ccc;border-radius:6px;"></textarea>
+    <div style="margin-top:10px;text-align:right;">
+
+      <button type="button" id="popupSave" style="background:#3498db;color:white;padding:8px 14px;">Lưu</button>
+    </div>
+  </div>
+</div>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const popup = document.getElementById('textareaPopup');
+  const popupTextarea = document.getElementById('popupTextarea');
+  const popupSave = document.getElementById('popupSave');
+  const popupCancel = document.getElementById('popupCancel');
+  const popupContent = document.getElementById('popupContent');
+
+  let targetTextarea = null;
+
+  // Gán dblclick cho tất cả textarea hiện có
+  document.querySelectorAll('textarea').forEach(area => {
+    area.addEventListener('dblclick', () => {
+      targetTextarea = area;
+      popupTextarea.value = area.value;
+      popup.style.display = 'flex';
+      popupTextarea.focus();
+    });
+  });
+
+  // Lưu nội dung đã sửa
+  popupSave.addEventListener('click', () => {
+    if (targetTextarea) {
+      targetTextarea.value = popupTextarea.value;
+    }
+    popup.style.display = 'none';
+  });
+
+
+  // Click ra ngoài thì đóng popup
+  popup.addEventListener('click', (e) => {
+    if (e.target === popup) {
+      popup.style.display = 'none';
+    }
+  });
+
+  // Nhấn ESC cũng đóng
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      popup.style.display = 'none';
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+</body>
 </html>
