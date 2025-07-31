@@ -107,8 +107,6 @@ button:hover {
 }
 </style>
 </head>
-
-
 <body><div id="darkModeToggle"><button id="darkToggle" style="padding: 8px 14px; border-radius: 6px; background: #222; color: white; cursor: pointer; border: none;">🌙 Dark Mode</button></div>
 <div id="loginScreen" style="
   position:fixed;top:0;left:0;width:100%;height:100%;
@@ -128,7 +126,7 @@ button:hover {
 <div id="loadingPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#00000088;z-index:9999;align-items:center;justify-content:center;"><div style="background:white;padding:20px 40px;border-radius:10px;font-size:18px;font-weight:bold;box-shadow:0 0 20px rgba(0,0,0,0.4);">Đang tải dữ liệu từ máy chủ...</div></div>
 <div class="container">
 <div style="text-align:right;"><button id="logoutBtn" style="display:none;background:#e74c3c;color:white;padding:8px 14px;border:none;border-radius:6px;cursor:pointer;">Đăng xuất</button></div><h1>Quản lý Bệnh Án</h1>
-<div class="section"style="border: 2px solid #3498db;">
+<div class="section" style="border: 2px solid #3498db;">
 <h2>Nhập/Sửa Bệnh Án</h2>
 <div class="status" id="statusBox"></div>
 <button id="toggleFormBtn" style="margin-bottom:10px;background:#2ecc71;color:white;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;">📝 Nhập bệnh án</button><form id="formBenhAn" style="display:none;">
@@ -147,12 +145,10 @@ button:hover {
 <label>Mã BN</label>
 <input name="maBN" required="" type="text"/>
 </div>
-
 <div class="col">
 <label>Ngày vào viện</label>
 <input name="ngayvao" required="" type="date"/>
 </div>
-
 </div>
 <label>Chẩn đoán Tây y</label>
 <textarea name="cdtayy" rows="2"></textarea>
@@ -168,7 +164,16 @@ button:hover {
 </div>
 </form>
 </div>
-<div class="section"style="border: 2px solid #3498db;">
+<div class="section" style="border: 2px solid #3498db;">
+<div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
+<div class="row" style="margin-bottom: 16px; gap: 10px; flex-wrap: wrap;">
+<input id="searchName" placeholder="Tìm theo họ tên" style="flex: 1; padding: 8px;"/>
+<input id="searchMaBN" placeholder="Tìm theo mã BN" style="flex: 1; padding: 8px;"/>
+<input id="searchChanDoan" placeholder="Tìm theo chẩn đoán" style="flex: 1; padding: 8px;"/>
+<input id="fromDate" placeholder="Từ ngày" style="padding: 8px;width: 20%;" type="date"/>
+<input id="toDate" placeholder="Đến ngày" style="padding: 8px;width: 20%;" type="date"/>
+<button onclick="applyFilters()" style="padding: 8px 16px;">🔍 Lọc</button>
+</div></div>
 <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
 <h2 style="margin:0; line-height: 1;">Danh sách Bệnh Án</h2>
 <div style="display: flex; gap: 8px; align-items: center;">
@@ -538,7 +543,31 @@ function updateLibStatus() {
         toast(err.message || 'Có lỗi khi tạo/ tải lên file.', false);
       }
     });
-  </script>
+  
+
+function applyFilters() {
+  const nameVal = document.getElementById('searchName').value.toLowerCase();
+  const maBNVal = document.getElementById('searchMaBN').value.toLowerCase();
+  const cdVal = document.getElementById('searchChanDoan').value.toLowerCase();
+  const from = document.getElementById('fromDate').value;
+  const to = document.getElementById('toDate').value;
+
+  const filtered = benhAnData.filter(item => {
+    const matchName = !nameVal || (item.ten || '').toLowerCase().includes(nameVal);
+    const matchMaBN = !maBNVal || (item.maBN || '').toLowerCase().includes(maBNVal);
+    const matchCD = !cdVal || (item.cdtayy || '').toLowerCase().includes(cdVal);
+
+    const date = item.ngayvao || '';
+    const matchDate =
+      (!from || date >= from) &&
+      (!to || date <= to);
+
+    return matchName && matchMaBN && matchCD && matchDate;
+  });
+
+  renderList(filtered);
+}
+</script>
 <!-- Popup xác nhận -->
 <div id="popupConfirm" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#00000088;display:none;align-items:center;justify-content:center;z-index:9999;">
 <div style="background:white;padding:20px;border-radius:8px;max-width:90%;box-shadow:0 4px 10px rgba(0,0,0,0.3);text-align:center;">
@@ -936,18 +965,14 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-
-
-
 <div id="textareaPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0008;z-index:9999;align-items:center;justify-content:center;">
-  <div id="popupContent" style="background:white;padding:10px;border-radius:10px;height:90%; max-width:90%;width:1000px;box-shadow:0 0 20px rgba(0,0,0,0.3);position:relative;">
-    <h3 style="margin-top:0;">📝 Chỉnh sửa chi tiết</h3>
-    <textarea id="popupTextarea" style="width:98%;height:80%;padding:10px;border:1px solid #ccc;border-radius:6px;"></textarea>
-    <div style="margin-top:10px;text-align:right;">
-
-      <button type="button" id="popupSave" style="background:#3498db;color:white;padding:8px 14px;">Lưu</button>
-    </div>
-  </div>
+<div id="popupContent" style="background:white;padding:10px;border-radius:10px;height:90%; max-width:90%;width:1000px;box-shadow:0 0 20px rgba(0,0,0,0.3);position:relative;">
+<h3 style="margin-top:0;">📝 Chỉnh sửa chi tiết</h3>
+<textarea id="popupTextarea" style="width:98%;height:80%;padding:10px;border:1px solid #ccc;border-radius:6px;"></textarea>
+<div style="margin-top:10px;text-align:right;">
+<button id="popupSave" style="background:#3498db;color:white;padding:8px 14px;" type="button">Lưu</button>
+</div>
+</div>
 </div>
 <script>
 window.addEventListener('DOMContentLoaded', () => {
@@ -994,10 +1019,20 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-
-
-
-
-
+<center> 
+<div class="procedure-info">
+Design By <a href="http://fb.com/chauhuynh0104" target="_blank"> Dr.Châu</a>
+               </center>
+</div></center>
+<style>.procedure-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border: 2px solid #ccc;
+    width: 81%;
+  
+    box-shadow: none;
+}</style>
 </body>
 </html>
