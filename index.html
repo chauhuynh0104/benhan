@@ -1,3 +1,4 @@
+
 <!-- 
 
 ///////////////////////////////////////////////
@@ -138,6 +139,21 @@ button:hover {
 #loginScreen button:hover {
   background: #2980b9;
 }
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
 </style>
 </head>
 <body><div id="darkModeToggle"><button id="darkToggle" style="padding: 8px 14px; border-radius: 6px; background: #222; color: white; cursor: pointer; border: none;">🌙 Dark Mode</button></div>
@@ -156,7 +172,15 @@ button:hover {
 <p id="loginMsg" style="text-align:center;color:#e74c3c;margin-top:10px;"></p>
 </div>
 </div>
-<div id="loadingPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#00000088;z-index:9999;align-items:center;justify-content:center;"><div style="background:white;padding:20px 40px;border-radius:10px;font-size:18px;font-weight:bold;box-shadow:0 0 20px rgba(0,0,0,0.4);">Đang tải dữ liệu từ máy chủ...</div></div>
+
+<div id="loadingPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#00000088;z-index:9999;align-items:center;justify-content:center;">
+  <div style="text-align:center;">
+    <div class="spinner"></div>
+    <div style="margin-top:12px;color:white;font-weight:bold;">Đang tải dữ liệu...</div>
+  </div>
+</div>
+
+
 <div class="container">
 <div style="text-align:right;"><button id="logoutBtn" style="display:none;background:#e74c3c;color:white;padding:8px 14px;border:none;border-radius:6px;cursor:pointer;">Đăng xuất</button></div><h1>Quản lý Bệnh Án</h1>
 <div class="section" style="border: 2px solid #3498db;">
@@ -444,9 +468,11 @@ function updateLibStatus() {
           <td>${formatDate(item.ngayvao)}</td>
           <td>${(item.cdtayy||'').slice(0,30)}${(item.cdtayy||'').length>30?'...':''}</td>
           <td>
-            <button class="secondary" data-id="${item.id}" data-act="edit">✏️ Sửa</button>
-            <button class="danger" data-id="${item.id}" data-act="del">🗑️ Xóa</button>
-			  <button data-id="${item.id}" data-act="view">👁️ Xem</button>
+            <button class="secondary" data-id="${item.id}" data-act="edit"> Sửa</button>
+            <button class="danger" data-id="${item.id}" data-act="del">Xóa</button>
+			  <button data-id="${item.id}" data-act="view">Xem</button>
+			  <button data-id="${item.id}" data-act="print">In</button>
+
           </td>
         `;
         listBody.appendChild(tr);
@@ -460,6 +486,11 @@ function updateLibStatus() {
       const id = btn.getAttribute('data-id');
       const act = btn.getAttribute('data-act');
 	    const item = benhAnData.find(x => x.id === id);
+		if (act === 'print') {
+    printBenhAn(item);
+  }
+		
+		
       if (act === 'del') {
         if (await showConfirm('Xóa bệnh án này?')) {
         
@@ -649,19 +680,26 @@ async function fetchDropboxFiles() {
         return found ? found[1] : '';
       };
 
-      const ba = {
-        id: Date.now().toString() + Math.random(),
-        ten: match('Họ tên'),
-        tuoi: match('Tuổi'),
-        maBN: match('Mã BN'),
-        diachi: match('Địa chỉ'),
-        ngayvao: match('Ngày vào viện'),
-        cdtayy: match('Chẩn đoán Tây y'),
-        cddongy: match('Chẩn đoán Đông y'),
-        ndba: match('Nội dung bệnh án'),
-		  ttt: match('Thủ Thuật - Thuốc'),
-        dropboxPath: file.path_lower
-      };
+      const plain = documentXml
+  .replace(/<w:p[^>]*>/g, '\n')
+  .replace(/<[^>]+>/g, '')
+  .replace(/\n\s+\n/g, '\n')
+  .replace(/&nbsp;/g, ' ')
+  .trim();
+
+const ba = {
+  id: Date.now().toString() + Math.random(),
+  ten: match('Họ tên'),
+  tuoi: match('Tuổi'),
+  maBN: match('Mã BN'),
+  diachi: match('Địa chỉ'),
+  ngayvao: match('Ngày vào viện'),
+  cdtayy: match('Chẩn đoán Tây y'),
+  cddongy: match('Chẩn đoán Đông y'),
+  ndba: extractContent(plain, 'Nội dung bệnh án'),
+  ttt: extractContent(plain, 'Thủ Thuật - Thuốc'),
+  dropboxPath: file.path_lower
+};
 
       if (ba.maBN && !benhAnData.some(x => x.maBN === ba.maBN)) {
         benhAnData.push(ba);
@@ -704,6 +742,10 @@ async function viewBenhAn(item) {
   .replace(/\n\s+\n/g, '\n')               // bỏ dòng trắng dư
   .replace(/&nbsp;/g, ' ')
   .trim();
+  item.ndba = extractContent(plain, 'Nội dung bệnh án');
+item.ttt = extractContent(plain, 'Thủ Thuật - Thuốc');
+
+  
     showPopupView(plain);
   } catch (err) {
     toast('Không thể xem bệnh án: ' + err.message);
@@ -948,9 +990,11 @@ window.addEventListener("DOMContentLoaded", () => {
         <p><b>Ngày vào:</b> ${item.ngayvao}</p>
         <p><b>Chẩn đoán:</b> ${item.cdtayy}</p>
         <div style="margin-top:10px;">
-          <button data-id="${item.id}" data-act="edit" style="background:#2c3e50;color:#fff;padding:6px 10px;border:none;border-radius:4px;">✏️ Sửa</button>
-          <button data-id="${item.id}"data-act="del" style="background:#e74c3c;color:#fff;padding:6px 10px;border:none;border-radius:4px;">🗑️ Xóa</button>
-          <button data-id="${item.id}"data-act="view" style="background:#3498db;color:#fff;padding:6px 10px;border:none;border-radius:4px;">👁️ Xem</button>
+          <button data-id="${item.id}" data-act="edit" style="background:#2c3e50;color:#fff;padding:6px 10px;border:none;border-radius:4px;">Sửa</button>
+          <button data-id="${item.id}"data-act="del" style="background:#e74c3c;color:#fff;padding:6px 10px;border:none;border-radius:4px;">Xóa</button>
+          <button data-id="${item.id}"data-act="view" style="background:#3498db;color:#fff;padding:6px 10px;border:none;border-radius:4px;">Xem</button>
+		  <button data-id="${item.id}" data-act="print" style="background:#27ae60;color:#fff;padding:6px 10px;border:none;border-radius:4px;">In</button>
+
         </div>
       `;
       container.appendChild(div);
@@ -1088,6 +1132,97 @@ document.getElementById('cardContainer').addEventListener('click', async (e) => 
     viewBenhAn(item);
   }
 });
+
+
+
+function printBenhAn(item) {
+  const newWin = window.open('', '_blank');
+  newWin.document.write(`
+  <html>
+  <head>
+    <title>In bệnh án</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        padding: 40px;
+        line-height: 1.6;
+        background: #fdfdfd;
+      }
+      .print-container {
+        max-width: 800px;
+        margin: auto;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 30px;
+        background: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      }
+      h2 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 24px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      p {
+        margin: 8px 0;
+        font-size: 16px;
+      }
+      b {
+        display: inline-block;
+        width: 180px;
+        color: #2c3e50;
+      }
+      .btn-print {
+        display: block;
+        margin: 30px auto 0;
+        background: #27ae60;
+        color: #fff;
+        padding: 10px 18px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      @media print {
+        .btn-print { display: none; }
+        body { background: white; box-shadow: none; }
+        .print-container { border: none; box-shadow: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="print-container">
+      <h2>Bệnh Án</h2>
+      <p><b>Họ tên:</b> ${item.ten}</p>
+      <p><b>Tuổi:</b> ${item.tuoi}</p>
+      <p><b>Mã BN:</b> ${item.maBN}</p>
+      <p><b>Địa chỉ:</b> ${item.diachi || ''}</p>
+      <p><b>Ngày vào viện:</b> ${item.ngayvao}</p>
+      <p><b>Chẩn đoán Tây y:</b> ${item.cdtayy}</p>
+      <p><b>Chẩn đoán Đông y:</b> ${item.cddongy}</p>
+      <p><b>Nội dung bệnh án:</b><br>${(item.ndba || '').replace(/\n/g, '<br>')}</p>
+      <p><b>Thủ Thuật - Thuốc:</b><br>${(item.ttt || '').replace(/\n/g, '<br>')}</p>
+      <button class="btn-print" onclick="window.print()">🖨 In bệnh án</button>
+    </div>
+  </body>
+  </html>
+  `);
+  newWin.document.close();
+}
+
+
+
+function extractContent(text, label) {
+  const regex = new RegExp(label + '[:：]?\\s*([\\s\\S]*?)(\\n[A-ZÀ-Ỵa-zà-ỵ]+\\s*[:：]|$)', 'i');
+  const match = text.match(regex);
+  return match ? match[1].trim() : '';
+}
+
+
+
+
+
 </script>
 <center> 
 <div class="procedure-info">
