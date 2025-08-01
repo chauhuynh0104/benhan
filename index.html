@@ -948,9 +948,9 @@ window.addEventListener("DOMContentLoaded", () => {
         <p><b>Ngày vào:</b> ${item.ngayvao}</p>
         <p><b>Chẩn đoán:</b> ${item.cdtayy}</p>
         <div style="margin-top:10px;">
-          <button onclick="editCard('${item.id}')" style="background:#2c3e50;color:#fff;padding:6px 10px;border:none;border-radius:4px;">✏️ Sửa</button>
-          <button onclick="deleteCard('${item.id}')" style="background:#e74c3c;color:#fff;padding:6px 10px;border:none;border-radius:4px;">🗑️ Xóa</button>
-          <button onclick="viewCard('${item.id}')" style="background:#3498db;color:#fff;padding:6px 10px;border:none;border-radius:4px;">👁️ Xem</button>
+          <button data-id="${item.id}" data-act="edit" style="background:#2c3e50;color:#fff;padding:6px 10px;border:none;border-radius:4px;">✏️ Sửa</button>
+          <button data-id="${item.id}"data-act="del" style="background:#e74c3c;color:#fff;padding:6px 10px;border:none;border-radius:4px;">🗑️ Xóa</button>
+          <button data-id="${item.id}"data-act="view" style="background:#3498db;color:#fff;padding:6px 10px;border:none;border-radius:4px;">👁️ Xem</button>
         </div>
       `;
       container.appendChild(div);
@@ -1050,8 +1050,45 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-</script>
 
+
+
+document.getElementById('cardContainer').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const id = btn.getAttribute('data-id');
+  const act = btn.getAttribute('data-act');
+  const item = benhAnData.find(x => x.id === id);
+  if (!item) return;
+
+  if (act === 'edit') {
+    editingId = id;
+    fillForm(item);
+    document.getElementById('cancelEditBtn').style.display = 'inline-block';
+    document.getElementById('submitBtn').textContent = 'Cập nhật bệnh án';
+    document.getElementById('formBenhAn').style.display = 'block';
+    document.getElementById('toggleFormBtn').textContent = '🔽 Ẩn form nhập';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (act === 'del') {
+    if (await showConfirm('Xóa bệnh án này?')) {
+      if (item.dropboxPath) {
+        try {
+          await deleteFromDropbox(item.dropboxPath);
+        } catch (err) {
+          console.error('Lỗi khi xóa Dropbox:', err);
+        }
+      }
+      benhAnData = benhAnData.filter(x => x.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(benhAnData));
+      renderList();
+      document.getElementById('toggleCardBtn').click(); // cập nhật card
+      toast('Đã xóa.', true);
+    }
+  } else if (act === 'view') {
+    viewBenhAn(item);
+  }
+});
+</script>
 <center> 
 <div class="procedure-info">
 Design By <a href="http://fb.com/chauhuynh0104" target="_blank"> Dr.Châu</a>
@@ -1059,6 +1096,7 @@ Design By <a href="http://fb.com/chauhuynh0104" target="_blank"> Dr.Châu</a>
 </div></center>
 <style>
     .procedure-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+
 </style>
 </body>
 </html>
