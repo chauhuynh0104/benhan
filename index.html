@@ -1141,80 +1141,73 @@ document.getElementById('cardContainer').addEventListener('click', async (e) => 
 
 
 function printBenhAn(item) {
-  const newWin = window.open('', '_blank');
-  newWin.document.write(`
-  <html>
-  <head>
-    <title>In bệnh án</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', sans-serif;
-        padding: 40px;
-        line-height: 1.6;
-        background: #fdfdfd;
-      }
-      .print-container {
-        max-width: 800px;
-        margin: auto;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        padding: 30px;
-        background: white;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      }
-      h2 {
-        text-align: center;
-        color: #2c3e50;
-        margin-bottom: 24px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-      p {
-        margin: 8px 0;
-        font-size: 16px;
-      }
-      b {
-        display: inline-block;
-        width: 180px;
-        color: #2c3e50;
-      }
-      .btn-print {
-        display: block;
-        margin: 30px auto 0;
-        background: #27ae60;
-        color: #fff;
-        padding: 10px 18px;
-        font-size: 16px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-      @media print {
-        .btn-print { display: none; }
-        body { background: white; box-shadow: none; }
-        .print-container { border: none; box-shadow: none; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="print-container">
-      <h2>Bệnh Án</h2>
-      <p><b>Họ tên:</b> ${item.ten}</p>
-      <p><b>Tuổi:</b> ${item.tuoi}</p>
-      <p><b>Mã BN:</b> ${item.maBN}</p>
-      <p><b>Địa chỉ:</b> ${item.diachi || ''}</p>
-      <p><b>Ngày vào viện:</b> ${item.ngayvao}</p>
-      <p><b>Chẩn đoán Tây y:</b> ${item.cdtayy}</p>
-      <p><b>Chẩn đoán Đông y:</b> ${item.cddongy}</p>
-      <p><b>Nội dung bệnh án:</b><br>${(item.ndba || '').replace(/\n/g, '<br>')}</p>
-  
-      <button class="btn-print" onclick="window.print()">🖨 In bệnh án</button>
-    </div>
-  </body>
-  </html>
-  `);
-  newWin.document.close();
+    let newWin = window.open('', '', 'width=800,height=600');
+    newWin.document.write(`
+    <html>
+    <head>
+      <title>In bệnh án</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', sans-serif;
+          padding: 40px;
+          line-height: 1.6;
+          background: #fdfdfd;
+        }
+        .print-container {
+          max-width: 800px;
+          margin: auto;
+          border: 1px solid #ccc;
+          border-radius: 10px;
+          padding: 30px;
+          background: white;
+          box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+          text-align: center;
+          color: #2c3e50;
+          margin-bottom: 24px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        p {
+          margin: 8px 0;
+          font-size: 16px;
+        }
+        b {
+          display: inline-block;
+          width: 180px;
+          color: #2c3e50;
+        }
+        @media print {
+          .btn-print { display: none; }
+          body { background: white; box-shadow: none; }
+          .print-container { border: none; box-shadow: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="print-container">
+        <h2>Bệnh Án</h2>
+        <p><b>Họ tên:</b> ${item.ten}</p>
+        <p><b>Tuổi:</b> ${item.tuoi}</p>
+        <p><b>Mã BN:</b> ${item.maBN}</p>
+        <p><b>Địa chỉ:</b> ${item.diachi || ''}</p>
+        <p><b>Ngày vào viện:</b> ${item.ngayvao}</p>
+        <p><b>Chẩn đoán Tây y:</b> ${item.cdtayy}</p>
+        <p><b>Chẩn đoán Đông y:</b> ${item.cddongy}</p>
+        <p><b>Nội dung bệnh án:</b><br>${(item.ndba || '').replace(/\n/g, '<br>')}</p>
+      </div>
+    </body>
+    </html>
+    `);
+    newWin.document.close();
+    newWin.focus();
+    setTimeout(() => {
+      newWin.print();
+      newWin.close();
+    }, 1000);
 }
+
 
 
 
