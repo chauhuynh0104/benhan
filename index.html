@@ -964,13 +964,19 @@ window.addEventListener("DOMContentLoaded", () => {
   function toggleView(view) {
     const table = document.querySelector("table");
     const cardContainer = document.getElementById("cardContainer");
+    const toggleBtn = document.getElementById("toggleCardBtn");
+
     if (view === "card") {
       table.style.display = "none";
       cardContainer.style.display = "flex";
       renderCardView();
+      localStorage.setItem("viewMode", "card");
+      if (toggleBtn) toggleBtn.textContent = "Hiển thị bảng";
     } else {
       table.style.display = "";
       cardContainer.style.display = "none";
+      localStorage.setItem("viewMode", "table");
+      if (toggleBtn) toggleBtn.textContent = "Hiển thị thẻ";
     }
   }
 
@@ -994,34 +1000,30 @@ window.addEventListener("DOMContentLoaded", () => {
           <button data-id="${item.id}" data-act="edit" style="background:#2c3e50;color:#fff;padding:6px 10px;border:none;border-radius:4px;">Sửa</button>
           <button data-id="${item.id}"data-act="del" style="background:#e74c3c;color:#fff;padding:6px 10px;border:none;border-radius:4px;">Xóa</button>
           <button data-id="${item.id}"data-act="view" style="background:#3498db;color:#fff;padding:6px 10px;border:none;border-radius:4px;">Xem</button>
-		  <button data-id="${item.id}" data-act="print" style="background:#27ae60;color:#fff;padding:6px 10px;border:none;border-radius:4px;">In</button>
-
+          <button data-id="${item.id}" data-act="print" style="background:#27ae60;color:#fff;padding:6px 10px;border:none;border-radius:4px;">In</button>
         </div>
       `;
       container.appendChild(div);
     });
   }
 
-  function editCard(id) {
-    const btn = document.querySelector(`button[data-id="${id}"][data-act="edit"]`);
-    if (btn) btn.click();
-  }
-  function deleteCard(id) {
-    const btn = document.querySelector(`button[data-id="${id}"][data-act="del"]`);
-    if (btn) btn.click();
-  }
-  function viewCard(id) {
-    const btn = document.querySelector(`button[data-id="${id}"][data-act="view"]`);
-    if (btn) btn.click();
-  }
-
   window.addEventListener("DOMContentLoaded", () => {
     const toggleBtn = document.getElementById("toggleCardBtn");
+    const savedView = localStorage.getItem("viewMode");
+    const isMobile = window.innerWidth <= 768;
+
+    // Thiết bị mobile: mặc định là card nếu chưa có viewMode
+    if ((savedView === "card") || (!savedView && isMobile)) {
+      isCardView = true;
+      toggleView("card");
+    } else {
+      toggleView("table");
+    }
+
     if (toggleBtn) {
       toggleBtn.addEventListener("click", () => {
         isCardView = !isCardView;
-        toggleView(isCardView ? 'card' : 'table');
-        toggleBtn.textContent = isCardView ? "Hiển thị bảng" : "Hiển thị thẻ";
+        toggleView(isCardView ? "card" : "table");
       });
     }
   });
