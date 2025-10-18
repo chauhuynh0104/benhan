@@ -330,7 +330,7 @@ let patients = [];
 window.addEventListener('load', async () => {
   patients = await loadPatientsFromDropbox();
   renderPatientList();
-  <!-- capNhatThongBao(); // ✅ gọi sau khi load xong -->
+ capNhatThongBao();
 });
 
 let currentPatientId = null;
