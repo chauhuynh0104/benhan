@@ -182,7 +182,10 @@ async function savePatientsToDropbox(patients) {
 }
 #divider:hover {
   background: linear-gradient(to right, #ffb56b, #ff9a3c);
-}
+#popupContent ul { list-style-type: none; padding-left: 15px; }
+#popupContent li strong { color: #2c3e50; }
+#popupContent h4 { margin-top: 15px; margin-bottom: 5px; }
+
   </style>
 </head>
 <body>
@@ -190,9 +193,12 @@ async function savePatientsToDropbox(patients) {
   <aside class="sidebar">
   
     <div class="header">
-    
-      <button class="btn" id="addPatientBtn">Thêm bệnh nhân</button>
-    </div>
+  <button class="btn" id="addPatientBtn">👩‍⚕️ Thêm</button>
+  <button class="btn secondary" id="btnTiem">💉 Tiêm</button>
+  <button class="btn secondary" id="btnVien">💊 Viên</button>
+  <button class="btn secondary" id="btnSac">🍵 Sắc</button>
+  <button class="btn secondary" id="btnGio">🕒 Giờ</button>
+</div>
     <input id="search" placeholder="Tìm kiếm tên / tuổi / giới" style="width:90%;padding:8px;border-radius:10px;border:1px solid #fde9d8;margin-bottom:10px" />
     <div class="patient-list" id="patientList"></div>
   </aside>
@@ -231,6 +237,14 @@ async function savePatientsToDropbox(patients) {
             </div>
           </div>
         </div>
+<div style="flex:1;min-width:600px" class="section">
+  <div class="grid">
+    <div>
+      <label>Giờ khám</label>
+      <input id="exam_time" type="time" />
+    </div>
+  </div>
+</div>
 
       <div style="flex:1;min-width:320px" class="section">
           <h3>Thuốc tân dược và chế phẩm <button class="btn secondary" id="addMedicineBtn" style="float:right">Thêm Thuốc</button></h3>
@@ -249,20 +263,28 @@ async function savePatientsToDropbox(patients) {
 
         <div style="flex:1;min-width:320px" class="section">
           <h3>Ngày vào / ra viện</h3>
-          <div class="grid">
-            <div>
-              <label>Ngày vào viện</label>
-              <input id="admit_date" type="date" />
-            </div>
-            <div>
-              <label>Ngày ra viện</label>
-              <input id="discharge_date" type="date" />
-            </div>
-            <div style="grid-column:1/-1">
-              <label>Tổng số ngày nằm viện</label>
-              <input id="total_days" readonly />
-            </div>
-          </div>
+         <div class="grid">
+  <div>
+    <label>Ngày vào viện</label>
+    <input id="admit_date" type="date" />
+  </div>
+  <div>
+    <label>Giờ vào viện</label>
+    <input id="admit_time" type="time" />
+  </div>
+  <div>
+    <label>Ngày ra viện</label>
+    <input id="discharge_date" type="date" />
+  </div>
+  <div>
+    <label>Giờ ra viện</label>
+    <input id="discharge_time" type="time" />
+  </div>
+  <div style="grid-column:1/-1">
+    <label>Tổng số ngày nằm viện</label>
+    <input id="total_days" readonly />
+  </div>
+</div>
         </div>
    <div class="actions">
         <button class="btn" id="saveWordBtn">Lưu Word</button>
@@ -316,7 +338,7 @@ async function savePatientsToDropbox(patients) {
 
 <script>
 // Helper
-const medsSuggest = ['Dubemin','piracetam','kamelox','mimosa','amlodipin','reumokam'];
+const medsSuggest = ['Dubemin','Kamelox','Mimosa','Amlodipin','Piracetam','Reumokam'];
 function todayStr(){const d=new Date();return d.toISOString().slice(0,10)}
 function addDays(dateStr, n){const d=new Date(dateStr);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
 function daysBetween(a,b){if(!a||!b) return '';
@@ -415,6 +437,9 @@ if(intro) intro.style.display = 'none'; // ✅ xóa nội dung giới thiệu c�
   procList.innerHTML=''; (p.procs||[]).forEach(pr=>procList.appendChild(createProcRow(pr)));
   // dates
   inputs.admit.value = p.admit||''; inputs.discharge.value = p.discharge||''; inputs.total.value = p.total||'';
+  document.getElementById('admit_time').value = p.admit_time || '';
+document.getElementById('discharge_time').value = p.discharge_time || '';
+document.getElementById('exam_time').value = p.exam_time || '';
 }
 
 function createMedRow(model){
@@ -562,7 +587,10 @@ modalSave.addEventListener('click', async ()=>{
 
 document.getElementById('search').addEventListener('input',e=>renderPatientList(e.target.value));
 
-addMedBtn.addEventListener('click',()=> medList.appendChild(createMedRow({})));
+addMedBtn.addEventListener('click',()=>{
+  const newRow = createMedRow({});
+  medList.prepend(newRow); // ✅ thêm thuốc mới lên trên cùng
+});
 addThangBtn.addEventListener('click',()=> thangList.appendChild(createThangRow({})));
 
 // add default one med/thang/proc when new open
@@ -599,6 +627,9 @@ savePatientBtn.addEventListener('click',()=>{
   })).filter(x=>x.type);
   // dates
   p.admit = inputs.admit.value; p.discharge = inputs.discharge.value;
+  p.admit_time = document.getElementById('admit_time').value;
+p.discharge_time = document.getElementById('discharge_time').value;
+p.exam_time = document.getElementById('exam_time').value;
   if(p.admit && p.discharge){ const tot = parseInt(daysBetween(p.admit,p.discharge)); p.total = isNaN(tot)?'': tot+1; } else p.total=''; inputs.total.value = p.total;
 // persist list
 (async ()=>{
@@ -645,6 +676,9 @@ savePatientBtn.addEventListener('click',()=>{
   // dates
   p.admit = inputs.admit.value; 
   p.discharge = inputs.discharge.value;
+  p.admit_time = document.getElementById('admit_time').value;
+p.discharge_time = document.getElementById('discharge_time').value;
+p.exam_time = document.getElementById('exam_time').value;
   if(p.admit && p.discharge){
     const tot = parseInt(daysBetween(p.admit,p.discharge));
     p.total = isNaN(tot)?'': tot+1;
@@ -673,7 +707,10 @@ saveWordBtn.addEventListener('click',()=>{
   (p.meds||[]).forEach(m=>{ html += `<li>${m.name} — SL:${m.qty} • lần/ngày:${m.times} • ${m.timeinfo} • đường: ${m.route} • ${m.start||''} → ${m.end||''}</li>`}); html += `</ul>`;
   html += `<h3>Thuốc sắc</h3><ul>`; (p.thangs||[]).forEach(t=>{ html += `<li>${t.name} — ${t.start||''} → ${t.end||''} • ${t.count||''} thang</li>`}); html += `</ul>`;
   html += `<h3>Thủ thuật</h3><ul>`; (p.procs||[]).forEach(pr=>{ html += `<li>${pr.type} — ${pr.start||''} → ${pr.end||''} • ${pr.days||''} ngày</li>`}); html += `</ul>`;
-  html += `<p>Ngày vào: ${p.admit||''} • Ngày ra: ${p.discharge||''} • Tổng: ${p.total||''}</p>`;
+html += `<p>Ngày vào: ${p.admit||''} ${p.admit_time ? '('+p.admit_time+')' : ''} • 
+Ngày ra: ${p.discharge||''} ${p.discharge_time ? '('+p.discharge_time+')' : ''} • 
+Tổng: ${p.total||''}</p>`;
+html += `<p>Giờ khám: ${p.exam_time||''}</p>`;
   html += `</body></html>`;
 
   // save into localStorage per patient
@@ -990,7 +1027,13 @@ document.addEventListener('keydown', function(e) {
     if (cancelBtn) cancelBtn.click();
   }
 });
-
+/* ===== BẮT PHÍM F5 ĐỂ RELOAD TRANG ===== */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'F5') {
+    
+    location.reload();  // ✅ reload lại toàn bộ trang theo ý mình
+  }
+});
 </script>
 
 
@@ -1026,7 +1069,16 @@ document.addEventListener('keydown', function(e) {
     <p id="loginError" style="color:#c0392b;font-size:13px;margin-top:10px;display:none;">Sai mật khẩu!</p>
   </div>
 </div>
-
+<!-- ===== POPUP THỐNG KÊ ===== -->
+<div id="popupThongKe" class="modal" style="display:none;">
+  <div class="card" style="width:800px;max-height:90vh;overflow:auto;">
+    <h3 id="popupTitle" style="color:#ff7a18;margin-bottom:10px;">Thống kê</h3>
+    <div id="popupContent" style="font-size:14px;line-height:1.6;color:#444;"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+      <button class="btn secondary" id="closePopup">Đóng</button>
+    </div>
+  </div>
+</div>
 <script>/* ===== ĐĂNG NHẬP XEM HỒ SƠ ===== */
 const loginModal = document.getElementById('loginModal');
 const loginPassword = document.getElementById('loginPassword');
@@ -1110,6 +1162,169 @@ window.addEventListener('load', () => {
 });
 
 
+
+
+
+
+/* ===== THỐNG KÊ NHANH: TIÊM / VIÊN / SẮC / GIỜ ===== */
+const popup = document.getElementById('popupThongKe');
+const popupTitle = document.getElementById('popupTitle');
+const popupContent = document.getElementById('popupContent');
+const closePopup = document.getElementById('closePopup');
+closePopup.addEventListener('click',()=>popup.style.display='none');
+
+function showPopup(title, html){
+  popupTitle.textContent = title;
+  popupContent.innerHTML = html;
+  popup.style.display = 'flex';
+}
+
+/* === TIÊM === */
+document.getElementById('btnTiem').addEventListener('click',()=>{
+  let html = '';
+  patients.forEach(p=>{
+    const tiemList = (p.meds||[]).filter(m=>m.route==='Tiêm' || m.route==='Thuỷ châm');
+    if(tiemList.length){
+      // Gom nhóm theo tên thuốc
+      const grouped = {};
+      tiemList.forEach(m=>{
+        const name = m.name?.trim() || '(Không tên)';
+        if(!grouped[name]) grouped[name] = [];
+        grouped[name].push(m.start || '');
+      });
+
+      // Xuất HTML
+      html += `<h4 style="margin-top:10px;color:#e67e22;">Bệnh nhân: ${p.name}</h4>`;
+      html += `<ul style="margin-left:15px;">`;
+      Object.keys(grouped).forEach(name=>{
+        const dates = grouped[name].filter(d=>d!=='').join(', ');
+        html += `<li><strong>${name}</strong> (${grouped[name].length} lần):</li>`;
+        html += `<ul style="margin-left:20px;">`;
+        grouped[name].forEach(date=>{
+          html += `<li>${date||'Không rõ ngày'}</li>`;
+        });
+        html += `</ul>`;
+      });
+      html += `</ul>`;
+    }
+  });
+
+  if (!html) html = '<p>Không có dữ liệu tiêm hoặc thuỷ châm.</p>';
+  showPopup('💉 Thống kê Tiêm / Thuỷ châm', html);
+});
+
+
+/* === VIÊN === */
+document.getElementById('btnVien').addEventListener('click',()=>{
+  let html = '';
+  patients.forEach(p=>{
+    const vienList = (p.meds||[]).filter(m=>m.route==='Uống');
+    if(vienList.length){
+      const grouped = {};
+      vienList.forEach(m=>{
+        const name = m.name?.trim() || '(Không tên)';
+        if(!grouped[name]) grouped[name] = [];
+        grouped[name].push(m.start || '');
+      });
+
+      html += `<h4 style="color:#27ae60;">Bệnh nhân: ${p.name}</h4><ul>`;
+      Object.keys(grouped).forEach(name=>{
+        html += `<li><strong>${name}</strong> (${grouped[name].length} lần):</li><ul>`;
+        grouped[name].forEach(date=>{
+          html += `<li>${date||'Không rõ ngày'}</li>`;
+        });
+        html += `</ul>`;
+      });
+      html += `</ul>`;
+    }
+  });
+
+  if (!html) html = '<p>Không có dữ liệu thuốc Uống.</p>';
+  showPopup('💊 Thống kê thuốc Viên (Uống)', html);
+});
+
+
+/* === SẮC === */
+document.getElementById('btnSac').addEventListener('click',()=>{
+  let html = '';
+  patients.forEach(p=>{
+    const thangList = (p.thangs||[]);
+    if(thangList.length){
+      const grouped = {};
+      thangList.forEach(t=>{
+        const name = t.name?.trim() || '(Không tên)';
+        if(!grouped[name]) grouped[name] = [];
+        grouped[name].push(`${t.start||''} → ${t.end||''} (${t.count||0} thang)`);
+      });
+
+      html += `<h4 style="color:#8e44ad;">Bệnh nhân: ${p.name}</h4><ul>`;
+      Object.keys(grouped).forEach(name=>{
+        html += `<li><strong>${name}</strong> (${grouped[name].length} lần kê):</li><ul>`;
+        grouped[name].forEach(info=>{
+          html += `<li>${info}</li>`;
+        });
+        html += `</ul>`;
+      });
+      html += `</ul>`;
+    }
+  });
+
+  if (!html) html = '<p>Không có dữ liệu thuốc Sắc.</p>';
+  showPopup('🍵 Thống kê thuốc Sắc (Thang)', html);
+});
+
+/* === GIỜ === */
+document.getElementById('btnGio').addEventListener('click',()=>{
+  // Lọc bệnh nhân có giờ khám và chưa ra viện
+  const ds = patients
+    .filter(p => p.exam_time && !p.discharge) // chỉ bệnh nhân chưa ra viện
+    .sort((a,b)=>{
+      // sắp xếp tăng dần theo giờ khám
+      if (!a.exam_time) return 1;
+      if (!b.exam_time) return -1;
+      return a.exam_time.localeCompare(b.exam_time);
+    });
+
+  let html = '';
+
+  if (ds.length){
+    html += `
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr style="background:#f8f8f8;text-align:left;">
+            <th style="border-bottom:1px solid #ccc;padding:6px;">STT</th>
+            <th style="border-bottom:1px solid #ccc;padding:6px;">Tên bệnh nhân</th>
+            <th style="border-bottom:1px solid #ccc;padding:6px;">Giờ khám</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    ds.forEach((p, i)=>{
+      html += `
+        <tr>
+          <td style="border-bottom:1px solid #eee;padding:6px;">${i+1}</td>
+          <td style="border-bottom:1px solid #eee;padding:6px;">${p.name}</td>
+          <td style="border-bottom:1px solid #eee;padding:6px;">${p.exam_time}</td>
+        </tr>
+      `;
+    });
+
+    html += `
+        </tbody>
+      </table>
+    `;
+  } else {
+    html = '<p>Không có bệnh nhân nào có giờ khám hợp lệ hoặc đã ra viện.</p>';
+  }
+
+  showPopup('🕒 Thống kê Giờ khám & Giờ vào viện', html);
+});
+
+
+
 </script>
+
+
 </body>
 </html>
