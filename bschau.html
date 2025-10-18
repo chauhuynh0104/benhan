@@ -536,7 +536,21 @@ function createProcRow(model){
 }
 
 // events
-addPatientBtn.addEventListener('click',()=>{ modal.classList.add('open'); });
+addPatientBtn.addEventListener('click', () => {
+  // ✅ kiểm tra đăng nhập
+  if (!localStorage.getItem('isLoggedIn')) {
+    // nếu chưa login, bật popup login
+    pendingOpenId = null; // không mở bệnh nhân nào, chỉ login
+    loginModal.style.display = 'flex';
+    loginPassword.value = '';
+    loginError.style.display = 'none';
+    setTimeout(() => loginPassword.focus(), 100);
+    return; // dừng lại, không mở form thêm bệnh nhân
+  }
+
+  // ✅ nếu đã login, cho phép thêm bệnh nhân
+  modal.classList.add('open');
+});
 modalClose.addEventListener('click',()=>modal.classList.remove('open'));
 modalSave.addEventListener('click', async ()=>{
   const name=document.getElementById('new_name').value.trim();
