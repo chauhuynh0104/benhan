@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Doctor Châu</title><script src="https://unpkg.com/dropbox/dist/Dropbox-sdk.min.js"></script>
+<script>
+const REFRESH_KEY = "yvVdSnOoxgsAAAAAAAAAAYwqRQmU9NPgvKrMmzAL2JY9QqutemeEsykD9LmlQcRr";
+const APP_KEY = "qzy5kclrf827aey";
+const APP_SECRET = "6jlsunzjqr3s3nh";
+
+let dropboxToken = null;
+
+// ⚙️ Lấy access_token từ refresh_token
+async function getAccessToken() {
+  const resp = await fetch("https://api.dropboxapi.com/oauth2/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: REFRESH_KEY,
+      client_id: APP_KEY,
+      client_secret: APP_SECRET
+    })
+  });
+  const data = await resp.json();
+  dropboxToken = data.access_token;
+
+}
+</script>
+<script>
+// 📥 Tải /patients_v1.json từ Dropbox
+async function loadPatientsFromDropbox() {
+  if (!dropboxToken) await getAccessToken();
+  const resp = await fetch("https://content.dropboxapi.com/2/files/download", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + dropboxToken,
+      "Dropbox-API-Arg": JSON.stringify({ path: "/patients_v1.json" })
+    }
+  });
+
+  if (!resp.ok) {
+    console.warn("⚠️ Không tìm thấy file trên Dropbox, tạo danh sách trống.");
+    return [];
+  }
+
+  const text = await resp.text();
+  try {
+    const data = JSON.parse(text);
+   
+    return data;
+  } catch (e) {
+    console.error("❌ JSON bị lỗi:", e);
+    return [];
+  }
+}
+</script>
+<script>
+// 💾 Ghi đè /patients_v1.json lên Dropbox
+async function savePatientsToDropbox(patients) {
+  if (!dropboxToken) await getAccessToken();
+  const resp = await fetch("https://content.dropboxapi.com/2/files/upload", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + dropboxToken,
+      "Dropbox-API-Arg": JSON.stringify({
+        path: "/patients_v1.json",
+        mode: "overwrite",
+        autorename: false
+      }),
+      "Content-Type": "application/octet-stream"
+    },
+    body: JSON.stringify(patients, null, 2)
+  });
+  if (resp.ok) {
+
+  } else {
+    console.error("❌ Lưu thất bại:", await resp.text());
+  }
+}
+</script>
+  <style>
+    :root{
+      --bg:#fff7f0; --accent:#ff7a18; --muted:#6b6b6b; --card:#ffffff; --glass: rgba(255,255,255,0.6);
+      --shadow: 0 6px 18px rgba(0,0,0,0.08);
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#fffaf5 0%, #fff1e6 100%);color:#222}
+    .app{display:flex;gap:20px;height:100vh;padding:18px}
+   .sidebar{
+  width:220px;
+  background:var(--card);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:var(--shadow);
+  overflow:auto;
+  resize: horizontal;        /* ✅ Cho phép kéo ngang */
+  min-width:150px;           /* Giới hạn nhỏ nhất */
+  max-width:400px;           /* Giới hạn lớn nhất */
+}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    h2{margin:0;color:var(--accent)}
+    .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:10px;border:none;cursor:pointer}
+    .btn.secondary{background:transparent;color:var(--accent);border:1px solid rgba(255,122,24,0.15)}
+    .patient-list{display:flex;flex-direction:column;gap:8px}
+    .patient-item{padding:10px;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+    .patient-item:hover{background:linear-gradient(90deg,rgba(255,122,24,0.06),transparent)}
+    .patient-meta{font-size:13px;color:var(--muted)}
+.app{
+  display:flex;
+  gap:20px;
+  height:100vh;
+  padding:18px;
+  align-items: stretch;  /* ✅ để hai khối cùng cao */
+}
+
+  .main{
+  flex:1;
+  background:var(--card);
+  border-radius:14px;
+  padding:18px;
+  box-shadow:var(--shadow);
+  overflow:auto;
+  resize: both;              /* ✅ Cho phép kéo cả ngang + dọc */
+  min-width:400px;
+  min-height:300px;
+  max-height:100vh;
+}    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{display:block;font-size:13px;margin-bottom:6px}
+    input,select,textarea{width:90%;padding:8px;border-radius:8px;border:1px solid #eee;background:#fff}
+    .section{background:var(--glass);padding:12px;border-radius:10px}
+    .med-list,.thang-list,.procedure-list{display:flex;flex-direction:column;gap:8px}
+.med-row{
+  background: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #f0e6de;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+/* Thuốc sắc: 5 cột giãn đều hơn */
+.thang-row,.proc-row {
+  background: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #f0e6de;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 40px;
+  align-items: center;
+}
+
+
+   .med-row .full{grid-column:1/-1}
+    .med-row input, .thang-row input, .proc-row input{padding:6px}
+    .small{font-size:12px}
+    .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+    /* modal form */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.35)}
+    .modal.open{display:flex}
+    .card{background:#fff;padding:18px;border-radius:12px;width:720px;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+
+    .right-top{display:flex;gap:12px;align-items:center}
+    .meta-block{background:#fff;padding:10px;border-radius:8px;border:1px solid #f2e7df}
+
+    footer{margin-top:16px;font-size:12px;color:var(--muted)}
+
+    @media (max-width:900px){.app{flex-direction:column}.sidebar{width:100%;height:260px}.main{height:auto}}
+	.med-row,thang-row{
+  gap: 20px; /* tăng khoảng cách chung giữa các ô */
+}#divider {
+  width: 6px;
+  cursor: col-resize;               /* ✅ hiện con trỏ kéo ngang */
+  background: linear-gradient(to right, #f8d5b2, #ffd7a0);
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+#divider:hover {
+  background: linear-gradient(to right, #ffb56b, #ff9a3c);
+}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+  
+    <div class="header">
+    
+      <button class="btn" id="addPatientBtn">Thêm bệnh nhân</button>
+    </div>
+    <input id="search" placeholder="Tìm kiếm tên / tuổi / giới" style="width:90%;padding:8px;border-radius:10px;border:1px solid #fde9d8;margin-bottom:10px" />
+    <div class="patient-list" id="patientList"></div>
+  </aside>
+<div id="divider"></div>
+  <main class="main">
+    <div class="right-top"style="display:none">
+      <div class="meta-block" id="patientHeader">Chọn một bệnh nhân để xem chi tiết</div>
+      <div style="flex:1"></div>
+     
+    </div>
+
+    <div id="patientDetailArea" style="margin-top:12px;display:none">
+<div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:320px;display:none" class="section">
+          <h3>Thông tin cơ bản</h3>
+          <div class="grid">
+            <div>
+              <label>Tên bệnh nhân</label>
+              <input id="p_name" />
+            </div>
+            <div>
+              <label>Tuổi</label>
+              <input id="p_age" type="number"/>
+            </div>
+            <div>
+              <label>Giới</label>
+              <select id="p_gender"style="width:60px;"><option>Nam</option><option>Nữ</option><option>Khác</option></select>
+            </div>
+            <div>
+              <label>Địa chỉ</label>
+              <input id="p_address" />
+            </div>
+            <div style="grid-column:1/-1">
+              <label>Chẩn đoán</label>
+              <textarea id="p_dx" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+
+      <div style="flex:1;min-width:320px" class="section">
+          <h3>Thuốc tân dược và chế phẩm <button class="btn secondary" id="addMedicineBtn" style="float:right">Thêm Thuốc</button></h3>
+          <div class="med-list" id="medList"></div>
+        </div>
+
+</div>
+        <div style="flex:1;min-width:320px" class="section">
+          <h3>Thuốc sắc <button class="btn secondary" id="addThangBtn" style="float:right">Thêm Thuốc</button></h3>
+          <div class="thang-list" id="thangList"></div>
+        </div>
+<div style="flex:1;min-width:320px" class="section">
+  <h3>Thủ thuật <button class="btn secondary" id="addProcBtn" style="float:right">Thêm Thủ thuật</button></h3>
+  <div class="procedure-list" id="procList"></div>
+</div>
+
+        <div style="flex:1;min-width:320px" class="section">
+          <h3>Ngày vào / ra viện</h3>
+          <div class="grid">
+            <div>
+              <label>Ngày vào viện</label>
+              <input id="admit_date" type="date" />
+            </div>
+            <div>
+              <label>Ngày ra viện</label>
+              <input id="discharge_date" type="date" />
+            </div>
+            <div style="grid-column:1/-1">
+              <label>Tổng số ngày nằm viện</label>
+              <input id="total_days" readonly />
+            </div>
+          </div>
+        </div>
+   <div class="actions">
+        <button class="btn" id="saveWordBtn">Lưu Word</button>
+		<button class="btn secondary" id="deletePatientBtn" style="background:#ffeded;color:#c0392b;border:1px solid #ffcfcf;">🗑 Xóa</button>
+        <button class="btn secondary" id="cancelBtn">Hủy</button>
+        <button class="btn" id="savePatientBtn">Lưu bệnh nhân</button>
+      
+
+      </div>
+      </div>
+
+   
+  
+    </div>
+  </main>
+</div>
+
+<!-- modal thêm bệnh nhân -->
+<div class="modal" id="modal">
+  <div class="card">
+    <h3>Thêm bệnh nhân mới</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+      <div>
+        <label>Tên</label>
+        <input id="new_name" />
+      </div>
+      <div>
+        <label>Tuổi</label>
+        <input id="new_age" type="number" />
+      </div>
+      <div>
+        <label>Giới</label>
+        <select id="new_gender"><option>Nam</option><option>Nữ</option><option>Khác</option></select>
+      </div>
+	  <div>
+        <label>Chẩn đoán</label>
+       <textarea id="p_dx"></textarea>
+      </div>
+	  
+      <div>
+        <label>Địa chỉ</label>
+        <input id="new_address" />
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button class="btn secondary" id="modalClose">Đóng</button>
+      <button class="btn" id="modalSave">Thêm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Helper
+const medsSuggest = ['Dubemin','piracetam','kamelox','mimosa','amlodipin','reumokam'];
+function todayStr(){const d=new Date();return d.toISOString().slice(0,10)}
+function addDays(dateStr, n){const d=new Date(dateStr);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function daysBetween(a,b){if(!a||!b) return '';
+  const A=new Date(a), B=new Date(b);
+  const diff=Math.round((B-A)/(1000*60*60*24));
+  return diff>=0? diff : '';
+}
+
+// App state
+let patients = [];
+window.addEventListener('load', async () => {
+  patients = await loadPatientsFromDropbox();
+  renderPatientList();
+  <!-- capNhatThongBao(); // ✅ gọi sau khi load xong -->
+});
+
+let currentPatientId = null;
+
+// DOM
+const patientListEl = document.getElementById('patientList');
+const addPatientBtn = document.getElementById('addPatientBtn');
+const modal = document.getElementById('modal');
+const modalSave = document.getElementById('modalSave');
+const modalClose = document.getElementById('modalClose');
+const savePatientBtn = document.getElementById('savePatientBtn');
+const deletePatientBtn = document.getElementById('deletePatientBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+cancelBtn.addEventListener('click', () => {
+  // Ẩn khu chi tiết bệnh nhân, hiện lại màn hình giới thiệu
+  document.getElementById('patientDetailArea').style.display = 'none';
+  const intro = document.getElementById('introScreen');
+  if (intro) intro.style.display = 'block';
+  currentPatientId = null;
+});
+const patientDetailArea = document.getElementById('patientDetailArea');
+const patientHeader = document.getElementById('patientHeader');
+const saveWordBtn = document.getElementById('saveWordBtn');
+
+const inputs = {
+  name: document.getElementById('p_name'),
+  age: document.getElementById('p_age'),
+  gender: document.getElementById('p_gender'),
+  address: document.getElementById('p_address'),
+  dx: document.getElementById('p_dx'),
+  admit: document.getElementById('admit_date'),
+  discharge: document.getElementById('discharge_date'),
+  total: document.getElementById('total_days')
+};
+
+const medList = document.getElementById('medList');
+const addMedBtn = document.getElementById('addMedicineBtn');
+const thangList = document.getElementById('thangList');
+const addThangBtn = document.getElementById('addThangBtn');
+const procList = document.getElementById('procList');
+const addProcBtn = document.getElementById('addProcBtn');
+addProcBtn.addEventListener('click', () => procList.appendChild(createProcRow({})));
+// init
+function renderPatientList(filter=''){
+  patientListEl.innerHTML='';
+  const arr = patients.filter(p=> (p.name||'').toLowerCase().includes(filter.toLowerCase()) || (''+p.age).includes(filter) || (p.gender||'').toLowerCase().includes(filter.toLowerCase()));
+  arr.forEach(p=>{
+    const el = document.createElement('div'); el.className='patient-item';
+    el.innerHTML = `<div>
+      <div style="font-weight:600">${p.name||'(chưa có tên)'}</div>
+      <div class="patient-meta">Tuổi: ${p.age||''} • ${p.gender||''}</div>
+    </div>
+    <div style="text-align:right;min-width:80px"><button class="btn secondary" data-id="${p.id}" style="padding:6px;border-radius:8px">Mở</button></div>`;
+   // Khi click toàn bộ hàng bệnh nhân -> mở luôn
+el.addEventListener('click',()=>openPatient(p.id));
+
+// Ngăn việc click nút “Mở” bị lặp 2 lần
+el.querySelector('button').addEventListener('click',e=>{
+  e.stopPropagation(); // chặn nổi bọt
+  openPatient(p.id);
+});
+
+patientListEl.appendChild(el);
+  })
+}
+
+function openPatient(id){
+  const p = patients.find(x=>x.id===id); 
+  if(!p) return;
+  
+  const intro = document.getElementById('introScreen');
+if(intro) intro.style.display = 'none'; // ✅ xóa nội dung giới thiệu cũ trước khi hiển thị bệnh nhân
+  currentPatientId=id;
+  patientDetailArea.style.display='block';
+  patientHeader.innerHTML = `<strong>${p.name||''}</strong><div class="patient-meta">Tuổi ${p.age||''} • ${p.gender||''}<br/> ${p.address||''}</div>`;
+  inputs.name.value = p.name||''; inputs.age.value=p.age||''; inputs.gender.value=p.gender||'Nam'; inputs.address.value=p.address||''; inputs.dx.value=p.dx||'';
+  // meds
+  medList.innerHTML=''; (p.meds||[]).forEach(m=>medList.appendChild(createMedRow(m)));
+  // thangs
+  thangList.innerHTML=''; (p.thangs||[]).forEach(t=>thangList.appendChild(createThangRow(t)));
+  // procs
+  procList.innerHTML=''; (p.procs||[]).forEach(pr=>procList.appendChild(createProcRow(pr)));
+  // dates
+  inputs.admit.value = p.admit||''; inputs.discharge.value = p.discharge||''; inputs.total.value = p.total||'';
+}
+
+function createMedRow(model){
+  const row = document.createElement('div'); row.className='med-row';
+  row.innerHTML = `
+    <input list="mednames" class="med-name" placeholder="Tên thuốc..." />
+    <input class="med-qty" placeholder="Số lượng" />
+    <input class="med-times" placeholder="Số lần/ngày" />
+    <input class="med-timeinfo" placeholder="Thời gian dùng" />
+    <select class="med-route">
+      <option>Uống</option>
+      <option>Tiêm</option>
+      <option>Thuỷ châm</option>
+    </select>
+    <div style="display:flex;gap:6px">
+      <input type="date" class="med-start" />
+      <input type="date" class="med-end" style="display:none" />
+      <button class="btn secondary small stopBtn">Ngưng thuốc</button>
+      <button class="btn small removeMed">Xóa</button>
+    </div>`;
+
+  // attach datalist
+  if(!document.getElementById('mednames')){
+    const dl = document.createElement('datalist'); dl.id='mednames';
+    medsSuggest.forEach(m=>{
+      const o=document.createElement('option'); o.value=m; dl.appendChild(o);
+    });
+    document.body.appendChild(dl);
+  }
+
+  const nameIn = row.querySelector('.med-name');
+  const qtyIn = row.querySelector('.med-qty');
+  const timesIn = row.querySelector('.med-times');
+  const timeinfo = row.querySelector('.med-timeinfo');
+  const route = row.querySelector('.med-route');
+  const start = row.querySelector('.med-start');
+  const end = row.querySelector('.med-end');
+  const stopBtn = row.querySelector('.stopBtn');
+
+  start.value = model?.start || todayStr();
+  end.value = model?.end || '';
+  nameIn.value = model?.name || '';
+  qtyIn.value = model?.qty || '';
+  timesIn.value = model?.times || '';
+  timeinfo.value = model?.timeinfo || '';
+  route.value = model?.route || 'Uống';
+  if(end.value) end.style.display='block';
+
+  // preset logic on select name
+  nameIn.addEventListener('input',()=>{
+    const v = nameIn.value.trim().toLowerCase();
+    if(v==='dubemin'){
+      qtyIn.value=1;
+      timesIn.value=1;
+      timeinfo.value='Buổi sáng';
+      route.value='Thuỷ châm';
+      themLuaChonThuyCham(row); // ✅ tự hiện chọn Liên tiếp/Cách ngày
+    } else if(v==='mimosa'){
+      qtyIn.value=2; timesIn.value=1; timeinfo.value='20:00'; route.value='Uống';
+    } else if(v==='piracetam'){
+      qtyIn.value=3; timesIn.value=3; timeinfo.value='08:00-14:00-20:00'; route.value='Uống';
+    } else if(v==='kamelox'){
+      qtyIn.value=1; timesIn.value=1; timeinfo.value='18:00 sau ăn'; route.value='Uống';
+    } else if(v==='reumokam'){
+      qtyIn.value=1; timesIn.value=1; timeinfo.value='Buổi tối 18:00 sau ăn'; route.value='Tiêm';
+    }
+  });
+
+  stopBtn.addEventListener('click',()=>{ end.value = todayStr(); end.style.display='block'; });
+  row.querySelector('.removeMed').addEventListener('click',()=>{ row.remove(); });
+// ✅ Nếu thuốc đã có Thuỷ châm, khôi phục lựa chọn mode
+if(model?.route === 'Thuỷ châm') {
+  themLuaChonThuyCham(row); // thêm dropdown Liên tiếp / Cách ngày
+  const select = row.querySelector('.thuycham-mode');
+  if(select && model.mode) select.value = model.mode; // chọn lại giá trị đã lưu
+}
+  return row;
+}
+
+function createThangRow(model){
+  const row = document.createElement('div'); row.className='thang-row';
+  row.innerHTML = `
+    <input class="thang-name" placeholder="Tên thang..." />
+    <input type="date" class="thang-start" />
+    <input type="date" class="thang-end" />
+    <input class="thang-count" readonly placeholder="Số thang" />
+    <div style="display:flex;gap:6px">
+      <button class="btn small calcThang"style="display:none">Tính</button>
+      <button class="btn small removeThang">Xóa</button>
+    </div>`;
+  const name = row.querySelector('.thang-name'); const s = row.querySelector('.thang-start'); const e = row.querySelector('.thang-end'); const cnt = row.querySelector('.thang-count');
+  s.value = model?.start||''; e.value = model?.end||''; name.value = model?.name||'';
+  function calc(){ if(s.value && e.value){ const a=new Date(s.value), b=new Date(e.value); const diff = Math.round((b-a)/(1000*60*60*24))+1; cnt.value = diff>0? diff:0 } }
+  row.querySelector('.calcThang').addEventListener('click',calc);
+  [s,e].forEach(el=>el.addEventListener('change',calc));
+  row.querySelector('.removeThang').addEventListener('click',()=>row.remove());
+  return row;
+}
+
+function createProcRow(model){
+  const row = document.createElement('div'); row.className='proc-row';
+  row.innerHTML = `
+    <select class="proc-type"><option>Điện châm</option><option>Hồng ngoại</option><option>Xoa bóp</option><option>Thuỷ châm</option><option>Giác hơi</option></select>
+    <input type="date" class="proc-start" />
+    <input type="date" class="proc-end" />
+    <input class="proc-days" readonly placeholder="Số ngày" />
+    <div style="display:flex;gap:6px">
+      <button class="btn small calcProc"style="display:none">Tính</button>
+      <button class="btn small removeProc">Xóa</button>
+    </div>`;
+  const type = row.querySelector('.proc-type'); const s = row.querySelector('.proc-start'); const e = row.querySelector('.proc-end'); const days = row.querySelector('.proc-days');
+  s.value = model?.start||''; e.value = model?.end||''; type.value = model?.type||'Điện châm';
+  function calc(){ if(type.value==='Thuỷ châm'){ s.value = todayStr(); e.value = todayStr(); days.value=1; return;} if(type.value==='Giác hơi'){ s.value = todayStr(); e.value = addDays(s.value,4); days.value = 5; return;} if(s.value && e.value){ const d = daysBetween(s.value,e.value); days.value = d!==''? d+1 : '';} }
+  row.querySelector('.calcProc').addEventListener('click',calc);
+  type.addEventListener('change',calc);
+  [s,e].forEach(el=>el.addEventListener('change',()=>{ if(s.value && e.value){ const d = daysBetween(s.value,e.value); days.value = d!==''? d+1 : '';} }));
+  row.querySelector('.removeProc').addEventListener('click',()=>row.remove());
+  return row;
+}
+
+// events
+addPatientBtn.addEventListener('click',()=>{ modal.classList.add('open'); });
+modalClose.addEventListener('click',()=>modal.classList.remove('open'));
+modalSave.addEventListener('click', async ()=>{
+  const name=document.getElementById('new_name').value.trim();
+  const age=document.getElementById('new_age').value; const gender=document.getElementById('new_gender').value; const address=document.getElementById('new_address').value;
+  const id = 'p_'+Date.now();
+  const p = {id,name,age,gender,address,dx:'',meds:[],thangs:[],procs:[],admit:'',discharge:'',total:''};
+  patients.push(p); await savePatientsToDropbox(patients); modal.classList.remove('open'); renderPatientList(); openPatient(id);
+});
+
+document.getElementById('search').addEventListener('input',e=>renderPatientList(e.target.value));
+
+addMedBtn.addEventListener('click',()=> medList.appendChild(createMedRow({})));
+addThangBtn.addEventListener('click',()=> thangList.appendChild(createThangRow({})));
+
+// add default one med/thang/proc when new open
+function ensureSections(){ if(medList.children.length===0) medList.appendChild(createMedRow({})); if(thangList.children.length===0) thangList.appendChild(createThangRow({})); if(procList.children.length===0) procList.appendChild(createProcRow({})); }
+
+savePatientBtn.addEventListener('click',()=>{
+  if(!currentPatientId) return alert('Chọn bệnh nhân trước');
+  const p = patients.find(x=>x.id===currentPatientId);
+  p.name = inputs.name.value.trim(); p.age = inputs.age.value; p.gender = inputs.gender.value; p.address = inputs.address.value; p.dx = inputs.dx.value;
+  // meds
+  p.meds = Array.from(medList.children).map(r=>({
+    name: r.querySelector('.med-name').value,
+    qty: r.querySelector('.med-qty').value,
+    times: r.querySelector('.med-times').value,
+    timeinfo: r.querySelector('.med-timeinfo').value,
+    route: r.querySelector('.med-route').value,
+    start: r.querySelector('.med-start').value,
+  end: r.querySelector('.med-end').value,
+  mode: r.querySelector('.thuycham-mode') ? r.querySelector('.thuycham-mode').value : 'Liên tiếp'  // ✅ thêm dòng này
+})).filter(m=>m.name||m.qty||m.times);
+  // thangs
+  p.thangs = Array.from(thangList.children).map(r=>({
+    name: r.querySelector('.thang-name').value,
+    start: r.querySelector('.thang-start').value,
+    end: r.querySelector('.thang-end').value,
+    count: r.querySelector('.thang-count').value
+  })).filter(t=>t.name||t.start||t.end);
+  // procs
+  p.procs = Array.from(procList.children).map(r=>({
+    type: r.querySelector('.proc-type').value,
+    start: r.querySelector('.proc-start').value,
+    end: r.querySelector('.proc-end').value,
+    days: r.querySelector('.proc-days').value
+  })).filter(x=>x.type);
+  // dates
+  p.admit = inputs.admit.value; p.discharge = inputs.discharge.value;
+  if(p.admit && p.discharge){ const tot = parseInt(daysBetween(p.admit,p.discharge)); p.total = isNaN(tot)?'': tot+1; } else p.total=''; inputs.total.value = p.total;
+// persist list
+(async ()=>{
+  await savePatientsToDropbox(patients);
+  renderPatientList();
+})();
+  savePatientBtn.addEventListener('click',()=>{
+  if(!currentPatientId) return alert('Chọn bệnh nhân trước');
+  const p = patients.find(x=>x.id===currentPatientId);
+  p.name = inputs.name.value.trim(); 
+  p.age = inputs.age.value; 
+  p.gender = inputs.gender.value; 
+  p.address = inputs.address.value; 
+  p.dx = inputs.dx.value;
+
+  // meds
+  p.meds = Array.from(medList.children).map(r=>({
+    name: r.querySelector('.med-name').value,
+    qty: r.querySelector('.med-qty').value,
+    times: r.querySelector('.med-times').value,
+    timeinfo: r.querySelector('.med-timeinfo').value,
+    route: r.querySelector('.med-route').value,
+    start: r.querySelector('.med-start').value,
+    end: r.querySelector('.med-end').value,
+    mode: r.querySelector('.thuycham-mode') ? r.querySelector('.thuycham-mode').value : 'Liên tiếp' // ✅ thêm dòng này nếu chưa có
+  })).filter(m=>m.name||m.qty||m.times);
+
+  // thangs
+  p.thangs = Array.from(thangList.children).map(r=>({
+    name: r.querySelector('.thang-name').value,
+    start: r.querySelector('.thang-start').value,
+    end: r.querySelector('.thang-end').value,
+    count: r.querySelector('.thang-count').value
+  })).filter(t=>t.name||t.start||t.end);
+
+  // procs
+  p.procs = Array.from(procList.children).map(r=>({
+    type: r.querySelector('.proc-type').value,
+    start: r.querySelector('.proc-start').value,
+    end: r.querySelector('.proc-end').value,
+    days: r.querySelector('.proc-days').value
+  })).filter(x=>x.type);
+
+  // dates
+  p.admit = inputs.admit.value; 
+  p.discharge = inputs.discharge.value;
+  if(p.admit && p.discharge){
+    const tot = parseInt(daysBetween(p.admit,p.discharge));
+    p.total = isNaN(tot)?'': tot+1;
+  } else p.total='';
+  inputs.total.value = p.total;
+
+// persist list
+(async ()=>{
+  await savePatientsToDropbox(patients);
+  renderPatientList();
+})();
+  capNhatThongBao(); // ✅ thêm dòng này để cập nhật thông báo ngay
+});
+});
+
+saveWordBtn.addEventListener('click',()=>{
+  if(!currentPatientId) return alert('Chọn bệnh nhân trước');
+  const p = patients.find(x=>x.id===currentPatientId);
+  // build html content for doc
+  let html = `<html><head><meta charset="utf-8"><title>Hồ sơ ${p.name}</title></head><body>`;
+  html += `<h2>Hồ sơ bệnh nhân: ${p.name}</h2>`;
+  html += `<p>Tuổi: ${p.age} • Giới: ${p.gender}</p>`;
+  html += `<p>Địa chỉ: ${p.address||''}</p>`;
+  html += `<h3>Chẩn đoán</h3><p>${p.dx||''}</p>`;
+  html += `<h3>Thuốc tân dược</h3><ul>`;
+  (p.meds||[]).forEach(m=>{ html += `<li>${m.name} — SL:${m.qty} • lần/ngày:${m.times} • ${m.timeinfo} • đường: ${m.route} • ${m.start||''} → ${m.end||''}</li>`}); html += `</ul>`;
+  html += `<h3>Thuốc sắc</h3><ul>`; (p.thangs||[]).forEach(t=>{ html += `<li>${t.name} — ${t.start||''} → ${t.end||''} • ${t.count||''} thang</li>`}); html += `</ul>`;
+  html += `<h3>Thủ thuật</h3><ul>`; (p.procs||[]).forEach(pr=>{ html += `<li>${pr.type} — ${pr.start||''} → ${pr.end||''} • ${pr.days||''} ngày</li>`}); html += `</ul>`;
+  html += `<p>Ngày vào: ${p.admit||''} • Ngày ra: ${p.discharge||''} • Tổng: ${p.total||''}</p>`;
+  html += `</body></html>`;
+
+  // save into localStorage per patient
+  localStorage.setItem('patient_doc_'+p.id, html);
+  // create downloadable .doc
+  const blob = new Blob([html], {type:'application/msword'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download = `${p.name||'patient'}_${p.id}.doc`; a.click(); URL.revokeObjectURL(url);
+
+});
+
+
+
+// ====== NÚT XÓA BỆNH NHÂN (CÓ POPUP) ======
+window.addEventListener('load', () => {
+  const deleteModal = document.getElementById('deleteConfirm');
+  const deleteText = document.getElementById('deleteText');
+  const cancelDelete = document.getElementById('cancelDelete');
+  const confirmDelete = document.getElementById('confirmDelete');
+  const deletePatientBtn = document.getElementById('deletePatientBtn');
+
+  if (!deleteModal || !deletePatientBtn) return; // nếu popup chưa có thì thoát
+
+  deletePatientBtn.addEventListener('click', () => {
+    if (!currentPatientId) return alert('Chưa chọn bệnh nhân!');
+    const p = patients.find(x => x.id === currentPatientId);
+    if (!p) return;
+
+    deleteText.innerHTML = `Bạn có chắc muốn xóa <b>${p.name}</b> khỏi danh sách không?`;
+    deleteModal.style.display = 'flex';
+  });
+
+  // Hủy xóa
+  cancelDelete.addEventListener('click', () => {
+    deleteModal.style.display = 'none';
+  });
+
+  // Xác nhận xóa
+confirmDelete.addEventListener('click', async () => {
+    const p = patients.find(x => x.id === currentPatientId);
+    if (!p) return;
+
+    patients = patients.filter(x => x.id !== currentPatientId);
+await savePatientsToDropbox(patients);
+
+
+    deleteModal.style.display = 'none';
+    document.getElementById('patientDetailArea').style.display = 'none';
+    const intro = document.getElementById('introScreen');
+    if (intro) intro.style.display = 'block';
+    currentPatientId = null;
+    renderPatientList();
+  });
+});
+
+
+
+// when opening patient ensure sections exist
+document.addEventListener('click',(e)=>{
+  if(e.target && e.target.matches('.patient-item')){
+    const id = e.target.getAttribute('data-id'); if(id) openPatient(id);
+  }
+});
+
+// update total days when admit/discharge change
+inputs.admit.addEventListener('change',()=>{ if(inputs.admit.value && inputs.discharge.value){ const tot=daysBetween(inputs.admit.value, inputs.discharge.value); inputs.total.value = tot!==''? tot+1 : ''; } });
+inputs.discharge.addEventListener('change',()=>{ if(inputs.admit.value && inputs.discharge.value){ const tot=daysBetween(inputs.admit.value, inputs.discharge.value); inputs.total.value = tot!==''? tot+1 : ''; } });
+
+// initial render
+renderPatientList();
+// ✅ Hiển thị màn hình giới thiệu thay vì mở bệnh nhân đầu tiên
+// ✅ Tạo div riêng cho trang giới thiệu, thêm vào phía trên
+const introDiv = document.createElement("div");
+introDiv.id = "introScreen";
+introDiv.innerHTML = `
+  <div style="text-align:center;padding:60px 20px;color:#444;line-height:1.6">
+    <h1 style="color:#ff7a18;font-size:28px;margin-bottom:16px">🏥 Phần mềm Quản lý Bệnh nhân</h1>
+    <p style="font-size:16px">
+      Chào mừng bạn đến với <strong>Doctor Châu Clinic System</strong> — nền tảng quản lý hồ sơ bệnh nhân hiện đại, tự động và thân thiện.<br>
+      Hệ thống hỗ trợ:
+    </p>
+    <ul style="text-align:left;display:inline-block;margin:16px auto;font-size:15px;line-height:1.8">
+      <li>🔹 Quản lý thông tin bệnh nhân, thuốc, thủ thuật, ngày vào – ra viện</li>
+      <li>🔹 Theo dõi và cảnh báo tự động Thủy châm, Tiêm</li>
+      <li>🔹 Lưu, xuất hồ sơ sang Word nhanh chóng</li>
+    </ul>
+    <p style="margin-top:20px;font-size:14px;color:#666">
+      👉 Hãy chọn bệnh nhân ở khung bên trái để bắt đầu xem và chỉnh sửa hồ sơ.
+    </p>
+  </div>    <footer>Design By Dr. Châu</footer>
+`;
+document.querySelector('.main').appendChild(introDiv);
+
+
+
+// open first patient by default
+//if(patients[0]) openPatient(patients[0].id); ensureSections();
+
+/* ====== THÔNG BÁO THUỶ CHÂM + TIÊM ====== */
+const thongBaoChung = document.createElement('div');
+thongBaoChung.id = 'thongBaoChung';
+thongBaoChung.style.cssText = `
+  background:#fff3e0;
+  border:1px solid #ffc085;
+  border-radius:10px;
+  padding:10px 14px;
+  margin-top:15px;
+  font-size:14px;
+  color:#b34700;
+  line-height:1.5;
+`;
+document.querySelector('.main').prepend(thongBaoChung);
+
+function laCuoiTuan(d){
+  const day = d.getDay();
+  return day===5 || day===6 || day===0; // T6-T7-CN
+}
+
+function tinhNgayCanLen(route, startDate, mode){
+  const today = new Date();
+  const ngayBatDau = new Date(startDate);
+  const danhSach = [];
+  const diff = Math.floor((today - ngayBatDau)/(1000*60*60*24));
+  if(diff < 0) return [];
+  if(route === 'Thuỷ châm'){
+    if(mode==='Liên tiếp'){
+      for(let i=1;i<=diff+1;i++){
+        const d = new Date(ngayBatDau); d.setDate(d.getDate()+i);
+        if(d.getDay()!==6 && d.getDay()!==0) danhSach.push(d);
+      }
+    } else if(mode==='Cách ngày'){
+      for(let i=2;i<=diff+2;i+=2){
+        const d = new Date(ngayBatDau); d.setDate(d.getDate()+i);
+        if(d.getDay()!==6 && d.getDay()!==0) danhSach.push(d);
+      }
+    }
+  }
+  if(route === 'Tiêm'){
+    for(let i=1;i<=diff+1;i++){
+      const d = new Date(ngayBatDau); d.setDate(d.getDate()+i);
+      danhSach.push(d);
+    }
+  }
+  // Nếu hôm nay là T6-T7-CN thì thêm thứ 2 tuần sau
+  if(laCuoiTuan(today)){
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + ((1 + 7 - today.getDay()) % 7));
+    danhSach.push(monday);
+  }
+  return danhSach;
+}
+
+function dinhDangNgayVN(d){return d.toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'})}
+
+function capNhatThongBao(){
+  let html = '';
+  const today = new Date();
+  patients.forEach(p=>{
+const tiems = (p.meds||[]).filter(m=>m.route==='Tiêm');
+const demThuocTiem = {};
+
+// Đếm số lần tiêm theo tên thuốc
+tiems.forEach(m=>{
+  const ten = m.name?.trim().toLowerCase() || '(chưa đặt tên)';
+  demThuocTiem[ten] = (demThuocTiem[ten] || 0) + 1;
+});
+
+// Nếu tên thuốc tiêm có hơn 3 lần -> cảnh báo
+Object.keys(demThuocTiem).forEach(ten=>{
+  if(demThuocTiem[ten] > 3){
+    html += `<div><strong>${p.name}</strong>: Thuốc <b>${ten}</b> tiêm quá 3 lần (${demThuocTiem[ten]} lần).</div>`;
+  }
+});
+
+// Thủy châm vẫn giữ logic cũ
+(p.meds||[]).forEach(m=>{
+  if(m.route==='Thuỷ châm' && m.start){
+    const selectMode = m.mode || 'Liên tiếp';
+    const danhSach = tinhNgayCanLen(m.route, m.start, selectMode);
+    if(danhSach.length>0){
+      const ngayText = danhSach.map(d=>dinhDangNgayVN(d)).join(', ');
+      html += `<div><strong>${p.name}</strong>: Chưa lên thuốc <b>${m.route}</b> cho các ngày: ${ngayText}</div>`;
+    }
+  }
+});
+  });
+  thongBaoChung.innerHTML = html || '✅ Không có thông báo cần nhắc.';
+}
+
+/* ====== Thêm 2 selection khi chọn Thuỷ châm ====== */
+function themLuaChonThuyCham(row){
+  if(row.querySelector('.thuycham-mode')) return;
+  const select = document.createElement('select');
+  select.className='thuycham-mode';
+  select.innerHTML = `<option>Liên tiếp</option><option>Cách ngày</option>`;
+  row.querySelector('.med-route').after(select);
+  select.addEventListener('change',()=> {
+    const p = patients.find(x=>x.id===currentPatientId);
+    if(!p) return;
+    const tenThuoc = row.querySelector('.med-name').value;
+    const med = (p.meds||[]).find(m=>m.name===tenThuoc);
+    if(med) { med.mode = select.value; 
+	
+// persist list
+(async ()=>{
+  await savePatientsToDropbox(patients);
+  renderPatientList();
+})();
+	
+	
+	capNhatThongBao(); }
+  });
+}
+
+document.addEventListener('change',e=>{
+  if(e.target && e.target.classList.contains('med-route')){
+    const row = e.target.closest('.med-row');
+    if(e.target.value==='Thuỷ châm'){ themLuaChonThuyCham(row); }
+  }
+});
+// ✅ Tự động hiện chọn Liên tiếp / Cách ngày nếu load form có sẵn Thuỷ châm
+document.querySelectorAll('.med-route').forEach(sel=>{
+  if(sel.value==='Thuỷ châm'){
+    const row = sel.closest('.med-row');
+    themLuaChonThuyCham(row);
+  }
+});
+
+
+</script>
+
+
+
+
+
+
+
+<script>
+// ✅ Cho phép kéo giãn sidebar bằng divider
+const sidebar = document.querySelector('.sidebar');
+const divider = document.getElementById('divider');
+const main = document.querySelector('.main');
+
+let isDragging = false;
+
+divider.addEventListener('mousedown', e => {
+  isDragging = true;
+  document.body.style.userSelect = 'none';
+});
+
+window.addEventListener('mouseup', e => {
+  if(isDragging){
+    isDragging = false;
+    document.body.style.userSelect = 'auto';
+    // ✅ lưu lại độ rộng sidebar để nhớ lần sau
+    localStorage.setItem('sidebarWidth', sidebar.offsetWidth);
+  }
+});
+
+window.addEventListener('mousemove', e => {
+  if(!isDragging) return;
+  const newWidth = e.clientX - sidebar.getBoundingClientRect().left;
+  if(newWidth > 150 && newWidth < 500){
+    sidebar.style.width = newWidth + 'px';
+  }
+});
+
+// ✅ khôi phục độ rộng sidebar khi tải lại trang
+window.addEventListener('load', ()=>{
+  const saved = localStorage.getItem('sidebarWidth');
+  if(saved) sidebar.style.width = saved + 'px';
+});
+/* ====== PHÍM TẮT: Ctrl+S, Ctrl+Shift+S ====== */
+document.addEventListener('keydown', function(e) {
+  // Ctrl + S → Lưu bệnh nhân
+  if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 's') {
+    e.preventDefault(); // chặn trình duyệt lưu trang
+    const saveBtn = document.getElementById('savePatientBtn');
+    if (saveBtn) saveBtn.click();
+  }
+
+  // Ctrl + Shift + S → Lưu Word
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') {
+    e.preventDefault();
+    const saveWordBtn = document.getElementById('saveWordBtn');
+    if (saveWordBtn) saveWordBtn.click();
+  }
+});/* ====== PHÍM TẮT: Ctrl+L ẩn/hiện Thông tin cơ bản ====== */
+document.addEventListener('keydown', function(e) {
+  // Kiểm tra Ctrl + L
+  if (e.ctrlKey && e.key.toLowerCase() === 'l') {
+    e.preventDefault();
+    // Tìm phần Thông tin cơ bản
+    const infoSection = document.querySelector('h3')?.textContent.includes('Thông tin cơ bản')
+      ? document.querySelector('h3').closest('.section')
+      : document.querySelector('.section:nth-of-type(1)'); // fallback nếu có thay đổi
+    if (!infoSection) return;
+
+    // Toggle display
+    if (infoSection.style.display === 'none') {
+      infoSection.style.display = ''; // hiện lại
+    } else {
+      infoSection.style.display = 'none'; // ẩn đi
+    }
+	
+  }
+});
+/* ====== PHÍM TẮT: Ctrl+S, Ctrl+Shift+S ====== */
+document.addEventListener('keydown', function(e) {
+  // Ctrl + S → Lưu bệnh nhân
+    if (e.key === 'Escape') {
+   e.preventDefault();
+    const cancelBtn = document.getElementById('cancelBtn');
+    if (cancelBtn) cancelBtn.click();
+  }
+});
+
+</script>
+
+
+<style>
+@keyframes fadeIn {
+  from {opacity:0; transform:translateY(-10px);}
+  to {opacity:1; transform:translateY(0);}
+}
+</style>
+<!-- ===== POPUP XÁC NHẬN XÓA ===== -->
+<div id="deleteConfirm" class="modal" style="display:none;">
+  <div class="card" style="width:360px;backdrop-filter:blur(10px);background:rgba(255,255,255,0.95);text-align:center;animation:fadeIn 0.3s ease;">
+    <h3 style="color:#c0392b;">🗑 Xóa bệnh nhân</h3>
+    <p id="deleteText" style="margin:12px 0 18px;color:#555;">Bạn có chắc muốn xóa bệnh nhân này không?</p>
+    <div style="display:flex;justify-content:center;gap:10px;">
+      <button class="btn secondary" id="cancelDelete">Hủy</button>
+      <button class="btn" id="confirmDelete" style="background:#e74c3c;">Xóa</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== POPUP ĐĂNG NHẬP ===== -->
+<div id="loginModal" class="modal" style="display:none;">
+  <div class="card" style="width:340px;backdrop-filter:blur(10px);background:rgba(255,255,255,0.95);text-align:center;animation:fadeIn 0.3s ease;">
+    <h3 style="color:#ff7a18;">🔒 Đăng nhập hệ thống</h3>
+    <p style="margin:12px 0 8px;color:#555;">Nhập mật khẩu để xem chi tiết bệnh nhân</p>
+    <input id="loginPassword" type="password" placeholder="Mật khẩu" style="padding:8px;width:80%;border-radius:8px;border:1px solid #ffd9b0;">
+    <div style="display:flex;justify-content:center;gap:10px;margin-top:16px;">
+      <button class="btn secondary" id="cancelLogin">Hủy</button>
+      <button class="btn" id="confirmLogin">Đăng nhập</button>
+    </div>
+    <p id="loginError" style="color:#c0392b;font-size:13px;margin-top:10px;display:none;">Sai mật khẩu!</p>
+  </div>
+</div>
+
+<script>/* ===== ĐĂNG NHẬP XEM HỒ SƠ ===== */
+const loginModal = document.getElementById('loginModal');
+const loginPassword = document.getElementById('loginPassword');
+const loginError = document.getElementById('loginError');
+const cancelLogin = document.getElementById('cancelLogin');
+const confirmLogin = document.getElementById('confirmLogin');
+
+let pendingOpenId = null; // lưu bệnh nhân định mở trước khi đăng nhập
+const CORRECT_PASSWORD = "1!"; // 🔑 thay mật khẩu tại đây
+
+// --- Bọc lại hàm openPatient để yêu cầu đăng nhập ---
+const originalOpenPatient = openPatient;
+openPatient = function(id) {
+  if (!localStorage.getItem('isLoggedIn')) {
+    pendingOpenId = id;
+    loginModal.style.display = 'flex';
+    loginPassword.value = '';
+    loginError.style.display = 'none';
+    // 👇 tự động focus vào ô nhập mật khẩu
+    setTimeout(() => loginPassword.focus(), 100);
+    return;
+  }
+  originalOpenPatient(id);
+};
+
+// --- Xử lý đăng nhập ---
+function doLogin() {
+  if (loginPassword.value === CORRECT_PASSWORD) {
+    localStorage.setItem('isLoggedIn', 'true');
+    loginModal.style.display = 'none';
+    loginError.style.display = 'none';
+    showLogoutButton();
+    if (pendingOpenId) {
+      originalOpenPatient(pendingOpenId);
+      pendingOpenId = null;
+    }
+  } else {
+    loginError.style.display = 'block';
+  }
+}
+
+confirmLogin.addEventListener('click', doLogin);
+cancelLogin.addEventListener('click', () => {
+  loginModal.style.display = 'none';
+});
+
+// ✅ Bấm Enter trong ô mật khẩu cũng đăng nhập
+loginPassword.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    doLogin();
+  }
+});
+
+// --- Hàm tạo nút đăng xuất ---
+function showLogoutButton() {
+  if (document.getElementById('logoutBtn')) return; // đã có thì thôi
+  const logoutBtn = document.createElement('button');
+  logoutBtn.id = 'logoutBtn';
+  logoutBtn.textContent = 'Đăng xuất';
+  logoutBtn.className = 'btn secondary';
+  logoutBtn.style.float = 'right';
+  logoutBtn.style.marginLeft = '10px';
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('isLoggedIn');
+
+    document.getElementById('logoutBtn').remove();
+    // Ẩn chi tiết bệnh nhân nếu đang xem
+    document.getElementById('patientDetailArea').style.display = 'none';
+    const intro = document.getElementById('introScreen');
+    if (intro) intro.style.display = 'block';
+  });
+  document.querySelector('.header').appendChild(logoutBtn);
+}
+
+// --- Nếu đã đăng nhập trước đó, tự hiện nút ---
+window.addEventListener('load', () => {
+  if (localStorage.getItem('isLoggedIn')) {
+    showLogoutButton();
+  }
+});
+
+
+</script>
+</body>
+</html>
