@@ -95,7 +95,7 @@ async function savePatientsToDropbox(patients) {
   padding:14px;
   box-shadow:var(--shadow);
   overflow:auto;
-  resize: horizontal;        /* ✅ Cho phép kéo ngang */
+   resize: none;        /* ✅ Cho phép kéo ngang */
   min-width:150px;           /* Giới hạn nhỏ nhất */
   max-width:400px;           /* Giới hạn lớn nhất */
 }
@@ -122,7 +122,7 @@ async function savePatientsToDropbox(patients) {
   padding:18px;
   box-shadow:var(--shadow);
   overflow:auto;
-  resize: both;              /* ✅ Cho phép kéo cả ngang + dọc */
+ resize: none; 
   min-width:400px;
   min-height:300px;
   max-height:100vh;
@@ -300,14 +300,14 @@ async function savePatientsToDropbox(patients) {
         <button class="btn" id="savePatientBtn">Lưu bệnh nhân</button>
       
 
-      </div>
+      </div> <footer>Design By Dr. Châu</footer>
       </div>
 
    
   
     </div>
   </main>
-</div>
+
 
 <!-- modal thêm bệnh nhân -->
 <div class="modal" id="modal">
@@ -800,6 +800,7 @@ introDiv.id = "introScreen";
 introDiv.innerHTML = `
   <div style="text-align:center;padding:60px 20px;color:#444;line-height:1.6">
     <h1 style="color:#ff7a18;font-size:28px;margin-bottom:16px">🏥 Phần mềm Quản lý Bệnh nhân</h1>
+	  <h3 style="color:#ff7a18;font-size:28px;margin-bottom:16px">Bs.Châu - 079.567.9350</h3>
     <p style="font-size:16px">
       Chào mừng bạn đến với <strong>Doctor Châu Clinic System</strong> — nền tảng quản lý hồ sơ bệnh nhân hiện đại, tự động và thân thiện.<br>
       Hệ thống hỗ trợ:
@@ -812,7 +813,7 @@ introDiv.innerHTML = `
     <p style="margin-top:20px;font-size:14px;color:#666">
       👉 Hãy chọn bệnh nhân ở khung bên trái để bắt đầu xem và chỉnh sửa hồ sơ.
     </p>
-  </div>    <footer>Design By Dr. Châu</footer>
+  </div>   
 `;
 document.querySelector('.main').appendChild(introDiv);
 
@@ -898,7 +899,7 @@ function capNhatThongBao(){
       }
     }
 
-    const tiems = (p.meds||[]).filter(m=>m.route==='Tiêm');
+    const tiems = (p.meds||[]).filter(m=>m.route==='Tiêm' && !m.end); // ✅ CHỈ LẤY THUỐC CHƯA CÓ END
     const demThuocTiem = {};
 
     // Đếm số lần tiêm theo tên thuốc
@@ -914,9 +915,9 @@ function capNhatThongBao(){
       }
     });
 
-    // Thủy châm và Tiêm
+    // Thủy châm và Tiêm - CHỈ LẤY THUỐC CHƯA CÓ END
     (p.meds||[]).forEach(m=>{
-      if((m.route==='Thuỷ châm' || m.route==='Tiêm') && m.start){
+      if((m.route==='Thuỷ châm' || m.route==='Tiêm') && m.start && !m.end){ // ✅ THÊM ĐIỀU KIỆN !m.end
         const danhSach = tinhNgayCanLen(m.route, m.start, m.mode || 'Liên tiếp', p.discharge);
         if(danhSach.length>0){
           const ngayText = danhSach.map(d=>dinhDangNgayVN(d)).join(', ');
@@ -1393,8 +1394,8 @@ document.getElementById('btnFuture').addEventListener('click',()=>{
   ds.forEach(p=>{
     const meds = p.meds || [];
     
-    // Lấy tất cả thuốc Thủy châm và Tiêm
-    const tcTiem = meds.filter(m => m.route === 'Thuỷ châm' || m.route === 'Tiêm');
+    // ✅ LẤY TẤT CẢ THUỐC THỦY CHÂM VÀ TIÊM (KHÔNG LỌC !m.end)
+    const tcTiem = meds.filter(m => (m.route === 'Thuỷ châm' || m.route === 'Tiêm'));
     
     if (tcTiem.length > 0) {
       let totalPatientRows = 0;
@@ -1402,13 +1403,20 @@ document.getElementById('btnFuture').addEventListener('click',()=>{
       
       // Tính tổng số dòng và nhóm theo thuốc
       tcTiem.forEach(m => {
-    
-		const dates = getNextTwoDays(m.route, m.start, m.mode || 'Liên tiếp', p.discharge);
+        // ✅ GỌI HÀM NHƯ CŨ (KHÔNG TRUYỀN m.end)
+        const dates = getNextTwoDays(m.route, m.start, m.mode || 'Liên tiếp', p.discharge);
         const medicineName = `${m.name}${m.route === 'Thuỷ châm' ? (m.mode === 'Cách ngày' ? ' (Cách ngày)' : ' (Liên tiếp)') : ''}`;
+        
+        // ✅ LỌC CÁC NGÀY: NẾU THUỐC CÓ END THÌ CHỈ HIỂN THỊ NGÀY TRƯỚC END
+        const filteredDates = dates.filter(d => {
+          if (!m.end) return true; // Nếu không có end thì hiển thị tất cả
+          const ngayHienTai = d.toISOString().split('T')[0];
+          return ngayHienTai <= m.end; // Chỉ hiển thị ngày <= ngày end
+        });
         
         medicineGroups.push({
           name: medicineName,
-          dates: dates.map(d => ({
+          dates: filteredDates.map(d => ({
             ngay: d.toISOString().split('T')[0],
             status: (d.toISOString().split('T')[0] <= todayStr) 
               ? '<span style="color:#2e7d32;font-weight:600;">Đã lên</span>'
@@ -1416,55 +1424,59 @@ document.getElementById('btnFuture').addEventListener('click',()=>{
           }))
         });
         
-        totalPatientRows += dates.length;
+        totalPatientRows += filteredDates.length;
       });
       
       // Hiển thị dòng đầu tiên của bệnh nhân
-      html += `
-        <tr>
-          <td style="border:1px solid #ccc;padding:6px;" rowspan="${totalPatientRows}">${stt}</td>
-          <td style="border:1px solid #ccc;padding:6px;" rowspan="${totalPatientRows}">${p.name}</td>
-          <td style="border:1px solid #ccc;padding:6px;" rowspan="${medicineGroups[0].dates.length}">${medicineGroups[0].name}</td>
-          <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicineGroups[0].dates[0].ngay)}</td>
-          <td style="border:1px solid #ccc;padding:6px;">${medicineGroups[0].dates[0].status}</td>
-        </tr>
-      `;
-      
-      // Hiển thị các dòng tiếp theo của thuốc đầu tiên
-      for (let i = 1; i < medicineGroups[0].dates.length; i++) {
+      if (totalPatientRows > 0) {
         html += `
           <tr>
-            <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicineGroups[0].dates[i].ngay)}</td>
-            <td style="border:1px solid #ccc;padding:6px;">${medicineGroups[0].dates[i].status}</td>
-          </tr>
-        `;
-      }
-      
-      // Hiển thị các thuốc tiếp theo
-      for (let medIndex = 1; medIndex < medicineGroups.length; medIndex++) {
-        const medicine = medicineGroups[medIndex];
-        
-        // Dòng đầu tiên của mỗi thuốc
-        html += `
-          <tr>
-            <td style="border:1px solid #ccc;padding:6px;" rowspan="${medicine.dates.length}">${medicine.name}</td>
-            <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicine.dates[0].ngay)}</td>
-            <td style="border:1px solid #ccc;padding:6px;">${medicine.dates[0].status}</td>
+            <td style="border:1px solid #ccc;padding:6px;" rowspan="${totalPatientRows}">${stt}</td>
+            <td style="border:1px solid #ccc;padding:6px;" rowspan="${totalPatientRows}">${p.name}</td>
+            <td style="border:1px solid #ccc;padding:6px;" rowspan="${medicineGroups[0].dates.length}">${medicineGroups[0].name}</td>
+            <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicineGroups[0].dates[0].ngay)}</td>
+            <td style="border:1px solid #ccc;padding:6px;">${medicineGroups[0].dates[0].status}</td>
           </tr>
         `;
         
-        // Các dòng tiếp theo của thuốc
-        for (let i = 1; i < medicine.dates.length; i++) {
+        // Hiển thị các dòng tiếp theo của thuốc đầu tiên
+        for (let i = 1; i < medicineGroups[0].dates.length; i++) {
           html += `
             <tr>
-              <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicine.dates[i].ngay)}</td>
-              <td style="border:1px solid #ccc;padding:6px;">${medicine.dates[i].status}</td>
+              <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicineGroups[0].dates[i].ngay)}</td>
+              <td style="border:1px solid #ccc;padding:6px;">${medicineGroups[0].dates[i].status}</td>
             </tr>
           `;
         }
+        
+        // Hiển thị các thuốc tiếp theo
+        for (let medIndex = 1; medIndex < medicineGroups.length; medIndex++) {
+          const medicine = medicineGroups[medIndex];
+          
+          if (medicine.dates.length > 0) {
+            // Dòng đầu tiên của mỗi thuốc
+            html += `
+              <tr>
+                <td style="border:1px solid #ccc;padding:6px;" rowspan="${medicine.dates.length}">${medicine.name}</td>
+                <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicine.dates[0].ngay)}</td>
+                <td style="border:1px solid #ccc;padding:6px;">${medicine.dates[0].status}</td>
+              </tr>
+            `;
+            
+            // Các dòng tiếp theo của thuốc
+            for (let i = 1; i < medicine.dates.length; i++) {
+              html += `
+                <tr>
+                  <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicine.dates[i].ngay)}</td>
+                  <td style="border:1px solid #ccc;padding:6px;">${medicine.dates[i].status}</td>
+                </tr>
+              `;
+            }
+          }
+        }
+        
+        stt++;
       }
-      
-      stt++;
     }
   });
 
@@ -1500,8 +1512,8 @@ document.getElementById('btnFuture').addEventListener('click',()=>{
 });
 
 // Hàm lấy 2 ngày: hôm nay và ngày mai
-function getNextTwoDays(route, startDate, mode, dischargeDate) {
-  if (!startDate) return [];
+function getNextTwoDays(route, startDate, mode, dischargeDate) { // ✅ BỎ THAM SỐ medEnd
+  if (!startDate) return []; // ✅ CHỈ KIỂM TRA startDate
   
   const today = new Date();
   const tomorrow = new Date(today);
