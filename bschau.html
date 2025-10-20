@@ -353,16 +353,31 @@ async function savePatientsToDropbox(patients) {
 <script>
 // Helper
 const medsSuggest = ['Dubemin','Kamelox','Mimosa','Amlodipin','Piracetam','Reumokam'];
-function todayStr() {
+// ✅ HÀM DATE CHUẨN CHO VIỆT NAM
+function todayStr(){
   const d = new Date();
-  d.setHours(d.getHours() + 7); // cộng thêm 7 giờ UTC → giờ VN
-  return d.toISOString().slice(0,10);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
-function addDays(dateStr, n){const d=new Date(dateStr);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
-function daysBetween(a,b){if(!a||!b) return '';
-  const A=new Date(a), B=new Date(b);
-  const diff=Math.round((B-A)/(1000*60*60*24));
-  return diff>=0? diff : '';
+
+function addDays(dateStr, n){
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + n);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function daysBetween(a,b){
+  if(!a||!b) return '';
+  // ✅ Sửa: dùng local date để tính
+  const A = new Date(a);
+  const B = new Date(b);
+  const diff = Math.round((B - A)/(1000 * 60 * 60 * 24));
+  return diff >= 0 ? diff : '';
 }
 
 // App state
@@ -1340,8 +1355,23 @@ function showPopup(title, html){
 /* === TIÊM === */
 document.getElementById('btnTiem').addEventListener('click',()=>{
   let html = '';
+  const now = new Date();
+  const currentDate = now.toISOString().slice(0,10);
+  const currentTime = now.toTimeString().slice(0,5);
+  
   patients.forEach(p=>{
-  if (p.discharge) return; // ✅ bỏ qua bệnh nhân đã ra viện
+    // ✅ KIỂM TRA ĐIỀU KIỆN RA VIỆN: có ngày ra VÀ đã tới ngày VÀ đã tới giờ
+    if (p.discharge) {
+      const dischargeDate = p.discharge;
+      const dischargeTime = p.discharge_time || '23:59';
+      
+      // Nếu đã tới ngày ra viện VÀ đã tới giờ ra viện -> bỏ qua
+      if (dischargeDate <= currentDate && 
+          (dischargeDate < currentDate || dischargeTime <= currentTime)) {
+        return; // bỏ qua bệnh nhân này
+      }
+    }
+
     const tiemList = (p.meds||[]).filter(m=>m.route==='Tiêm' || m.route==='Thuỷ châm');
     if(tiemList.length){
       // Gom nhóm theo tên thuốc
@@ -1372,12 +1402,25 @@ document.getElementById('btnTiem').addEventListener('click',()=>{
   showPopup('💉 Thống kê Tiêm / Thuỷ châm', html);
 });
 
-
 /* === VIÊN === */
 document.getElementById('btnVien').addEventListener('click',()=>{
   let html = '';
+  const now = new Date();
+  const currentDate = now.toISOString().slice(0,10);
+  const currentTime = now.toTimeString().slice(0,5);
+  
   patients.forEach(p=>{
-  if (p.discharge) return; // ✅ bỏ qua bệnh nhân đã ra viện
+    // ✅ KIỂM TRA ĐIỀU KIỆN RA VIỆN: có ngày ra VÀ đã tới ngày VÀ đã tới giờ
+    if (p.discharge) {
+      const dischargeDate = p.discharge;
+      const dischargeTime = p.discharge_time || '23:59';
+      
+      if (dischargeDate <= currentDate && 
+          (dischargeDate < currentDate || dischargeTime <= currentTime)) {
+        return; // bỏ qua bệnh nhân này
+      }
+    }
+
     const vienList = (p.meds||[]).filter(m=>m.route==='Uống');
     if(vienList.length){
       const grouped = {};
@@ -1407,8 +1450,22 @@ document.getElementById('btnVien').addEventListener('click',()=>{
 /* === SẮC === */
 document.getElementById('btnSac').addEventListener('click',()=>{
   let html = '';
+  const now = new Date();
+  const currentDate = now.toISOString().slice(0,10);
+  const currentTime = now.toTimeString().slice(0,5);
+  
   patients.forEach(p=>{
-  if (p.discharge) return; // ✅ bỏ qua bệnh nhân đã ra viện
+    // ✅ KIỂM TRA ĐIỀU KIỆN RA VIỆN: có ngày ra VÀ đã tới ngày VÀ đã tới giờ
+    if (p.discharge) {
+      const dischargeDate = p.discharge;
+      const dischargeTime = p.discharge_time || '23:59';
+      
+      if (dischargeDate <= currentDate && 
+          (dischargeDate < currentDate || dischargeTime <= currentTime)) {
+        return; // bỏ qua bệnh nhân này
+      }
+    }
+
     const thangList = (p.thangs||[]);
     if(thangList.length){
       const grouped = {};
@@ -1433,7 +1490,6 @@ document.getElementById('btnSac').addEventListener('click',()=>{
   if (!html) html = '<p>Không có dữ liệu thuốc Sắc.</p>';
   showPopup('🍵 Thống kê thuốc Sắc (Thang)', html);
 });
-
 /* === GIỜ === */
 document.getElementById('btnGio').addEventListener('click',()=>{
   const now = new Date();
@@ -1538,10 +1594,23 @@ function formatDateForComparison(date) {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
-/* === FUTURE === */
+/* === FUTURE - HIỆN CẢ ĐÃ LÊN VÀ CHƯA LÊN === */
 document.getElementById('btnFuture').addEventListener('click',()=>{
-  // Danh sách bệnh nhân còn nằm viện (chưa có ngày ra viện)
-  const ds = patients.filter(p => !p.discharge);
+  const now = new Date();
+  const currentDate = now.toISOString().slice(0,10);
+  const currentTime = now.toTimeString().slice(0,5);
+  
+  // Danh sách bệnh nhân: chưa ra viện HOẶC đã ra viện nhưng chưa tới giờ ra viện
+  const ds = patients.filter(p => {
+    if (!p.discharge) return true; // chưa có ngày ra viện
+    
+    const dischargeDate = p.discharge;
+    const dischargeTime = p.discharge_time || '23:59';
+    
+    // ✅ KIỂM TRA ĐIỀU KIỆN: chưa tới ngày ra HOẶC (tới ngày nhưng chưa tới giờ)
+    return dischargeDate > currentDate || 
+           (dischargeDate === currentDate && dischargeTime > currentTime);
+  });
 
   let html = `
     <div style="margin-bottom:10px;">
@@ -1568,8 +1637,7 @@ document.getElementById('btnFuture').addEventListener('click',()=>{
   `;
 
   let stt = 1;
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = now.toISOString().split('T')[0];
   
   ds.forEach(p=>{
     const meds = p.meds || [];
@@ -1583,8 +1651,8 @@ document.getElementById('btnFuture').addEventListener('click',()=>{
       
       // Tính tổng số dòng và nhóm theo thuốc
       tcTiem.forEach(m => {
-        // ✅ GỌI HÀM NHƯ CŨ (KHÔNG TRUYỀN m.end)
-        const dates = getNextTwoDays(m.route, m.start, m.mode || 'Liên tiếp', p.discharge);
+        // ✅ GỌI HÀM MỚI: lấy tất cả ngày từ start đến ngày mai (hoặc discharge)
+        const dates = getAllTreatmentDates(m.route, m.start, m.mode || 'Liên tiếp', p.discharge);
         const medicineName = `${m.name}${m.route === 'Thuỷ châm' ? (m.mode === 'Cách ngày' ? ' (Cách ngày)' : ' (Liên tiếp)') : ''}`;
         
         // ✅ LỌC CÁC NGÀY: NẾU THUỐC CÓ END THÌ CHỈ HIỂN THỊ NGÀY TRƯỚC END
@@ -1598,9 +1666,11 @@ document.getElementById('btnFuture').addEventListener('click',()=>{
           name: medicineName,
           dates: filteredDates.map(d => ({
             ngay: d.toISOString().split('T')[0],
-            status: (d.toISOString().split('T')[0] <= todayStr) 
+            status: (d.toISOString().split('T')[0] < todayStr) 
               ? '<span style="color:#2e7d32;font-weight:600;">Đã lên</span>'
-              : '<span style="color:#ef6c00;font-weight:600;">Chưa lên</span>'
+              : (d.toISOString().split('T')[0] === todayStr)
+                ? '<span style="color:#f39c12;font-weight:600;">Hôm nay</span>'
+                : '<span style="color:#ef6c00;font-weight:600;">Chưa lên</span>'
           }))
         });
         
@@ -1690,6 +1760,49 @@ document.getElementById('btnFuture').addEventListener('click',()=>{
     });
   }, 300);
 });
+
+// Hàm mới: lấy tất cả ngày điều trị từ start đến ngày mai (hoặc discharge)
+function getAllTreatmentDates(route, startDate, mode, dischargeDate) {
+  if (!startDate) return [];
+  
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  
+  const start = new Date(startDate);
+  const discharge = dischargeDate ? new Date(dischargeDate) : null;
+  const dates = [];
+  
+  // Nếu có ngày ra viện và đã qua thì không lấy ngày nào
+  if (discharge && discharge < today) {
+    return dates;
+  }
+  
+  // Giới hạn tối đa đến ngày ra viện (nếu có) hoặc ngày mai
+  const maxDate = discharge && discharge < tomorrow ? discharge : tomorrow;
+  
+  if (route === 'Thuỷ châm') {
+    const isCachNgay = (mode === 'Cách ngày');
+    let currentDate = new Date(start);
+    
+    // Lấy tất cả các ngày từ start đến maxDate
+    while (currentDate <= maxDate) {
+      dates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + (isCachNgay ? 2 : 1));
+    }
+  } else if (route === 'Tiêm') {
+    // Tiêm: lấy tất cả các ngày từ start đến maxDate (mỗi ngày 1 lần)
+    let currentDate = new Date(start);
+    while (currentDate <= maxDate) {
+      dates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  }
+  
+  return dates;
+}
+
+
 
 // Hàm lấy 2 ngày: hôm nay và ngày mai
 function getNextTwoDays(route, startDate, mode, dischargeDate) { // ✅ BỎ THAM SỐ medEnd
