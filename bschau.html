@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="vi">
 <head>
@@ -188,6 +189,14 @@ async function savePatientsToDropbox(patients) {
 #thongBaoChung {
   transition: all 0.3s ease;
 }
+#hiddenPatientsNotice {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
   </style>
 </head>
 <body>
@@ -326,12 +335,11 @@ async function savePatientsToDropbox(patients) {
         <label>Giới</label>
         <select id="new_gender"><option>Nam</option><option>Nữ</option><option>Khác</option></select>
       </div>
-	  <div>
+      <div style="grid-column:1/-1"> <!-- Sửa thành chiếm 2 cột -->
         <label>Chẩn đoán</label>
-       <textarea id="p_dx"></textarea>
+        <textarea id="new_dx" rows="2"></textarea> <!-- Đổi id thành new_dx -->
       </div>
-	  
-      <div>
+      <div style="grid-column:1/-1"> <!-- Địa chỉ cũng chiếm 2 cột -->
         <label>Địa chỉ</label>
         <input id="new_address" />
       </div>
@@ -342,7 +350,6 @@ async function savePatientsToDropbox(patients) {
     </div>
   </div>
 </div>
-
 <script>
 // Helper
 const medsSuggest = ['Dubemin','Kamelox','Mimosa','Amlodipin','Piracetam','Reumokam'];
@@ -362,12 +369,13 @@ function daysBetween(a,b){if(!a||!b) return '';
 let patients = [];
 window.addEventListener('load', async () => {
   patients = await loadPatientsFromDropbox();
+  showAllPatients = false; // ✅ THÊM DÒNG NÀY - Mặc định ẩn bệnh nhân đã ra viện
   renderPatientList();
- capNhatThongBao();
+  capNhatThongBao();
 });
 
 let currentPatientId = null;
-
+let showAllPatients = false; // ✅ THÊM DÒNG NÀY - Biến để theo dõi có hiện tất cả bệnh nhân không
 // DOM
 const patientListEl = document.getElementById('patientList');
 const addPatientBtn = document.getElementById('addPatientBtn');
@@ -409,7 +417,35 @@ addProcBtn.addEventListener('click', () => procList.appendChild(createProcRow({}
 // init
 function renderPatientList(filter=''){
   patientListEl.innerHTML='';
-  const arr = patients.filter(p=> (p.name||'').toLowerCase().includes(filter.toLowerCase()) || (''+p.age).includes(filter) || (p.gender||'').toLowerCase().includes(filter.toLowerCase()));
+  const now = new Date();
+  const currentDate = now.toISOString().slice(0,10);
+  const currentTime = now.toTimeString().slice(0,5);
+  
+  const arr = patients.filter(p=> {
+    // Lọc theo từ khóa tìm kiếm
+    const matchSearch = (p.name||'').toLowerCase().includes(filter.toLowerCase()) || 
+                       (''+p.age).includes(filter) || 
+                       (p.gender||'').toLowerCase().includes(filter.toLowerCase());
+    
+    if (!matchSearch) return false;
+    
+    // Nếu đang hiện tất cả (Ctrl+Q) hoặc chưa có ngày ra viện -> hiển thị
+    if (showAllPatients || !p.discharge) return true;
+    
+    // Kiểm tra điều kiện ẩn: có ngày ra viện VÀ đã tới ngày VÀ đã tới giờ
+    const dischargeDate = p.discharge;
+    const dischargeTime = p.discharge_time || '23:59'; // Mặc định cuối ngày nếu không có giờ
+    
+    // Nếu ngày ra viện > ngày hiện tại -> vẫn hiển thị
+    if (dischargeDate > currentDate) return true;
+    
+    // Nếu ngày ra viện = ngày hiện tại nhưng chưa tới giờ ra viện -> vẫn hiển thị
+    if (dischargeDate === currentDate && dischargeTime > currentTime) return true;
+    
+    // Ngược lại -> ẩn đi
+    return false;
+  });
+  
   arr.forEach(p=>{
     const el = document.createElement('div'); el.className='patient-item';
     el.innerHTML = `<div>
@@ -417,40 +453,88 @@ function renderPatientList(filter=''){
       <div class="patient-meta">Tuổi: ${p.age||''} • ${p.gender||''}</div>
     </div>
     <div style="text-align:right;min-width:80px"><button class="btn secondary" data-id="${p.id}" style="padding:6px;border-radius:8px">Mở</button></div>`;
-   // Khi click toàn bộ hàng bệnh nhân -> mở luôn
-el.addEventListener('click',()=>openPatient(p.id));
-
-// Ngăn việc click nút “Mở” bị lặp 2 lần
-el.querySelector('button').addEventListener('click',e=>{
-  e.stopPropagation(); // chặn nổi bọt
-  openPatient(p.id);
-});
-
-patientListEl.appendChild(el);
-  })
+   
+    el.addEventListener('click',()=>openPatient(p.id));
+    el.querySelector('button').addEventListener('click',e=>{
+      e.stopPropagation();
+      openPatient(p.id);
+    });
+    
+    patientListEl.appendChild(el);
+  });
+  
+  // Hiển thị thông báo nếu đang ẩn bệnh nhân
+  updateHiddenPatientsNotice();
 }
-
+function updateHiddenPatientsNotice() {
+  // Xóa thông báo cũ nếu có
+  const oldNotice = document.getElementById('hiddenPatientsNotice');
+  if (oldNotice) oldNotice.remove();
+  
+  if (!showAllPatients) {
+    const now = new Date();
+    const currentDate = now.toISOString().slice(0,10);
+    const currentTime = now.toTimeString().slice(0,5);
+    
+    const hiddenCount = patients.filter(p => {
+      if (!p.discharge) return false;
+      
+      const dischargeDate = p.discharge;
+      const dischargeTime = p.discharge_time || '23:59';
+      
+      return dischargeDate <= currentDate && 
+             (dischargeDate < currentDate || dischargeTime <= currentTime);
+    }).length;
+    
+    if (hiddenCount > 0) {
+      const notice = document.createElement('div');
+      notice.id = 'hiddenPatientsNotice';
+      notice.innerHTML = `
+        <div style="
+          background: #fff3cd;
+          border: 1px solid #ffeaa7;
+          border-radius: 8px;
+          padding: 8px 12px;
+          margin: 10px 0;
+          font-size: 13px;
+          color: #856404;
+          text-align: center;display:none
+        ">
+          🕒 Đang ẩn ${hiddenCount} bệnh nhân đã ra viện 
+          (Bấm <strong>Ctrl+Q</strong> để hiện tất cả)
+        </div>
+      `;
+      patientListEl.parentNode.insertBefore(notice, patientListEl);
+    }
+  }
+}
 function openPatient(id){
   const p = patients.find(x=>x.id===id); 
   if(!p) return;
   
   const intro = document.getElementById('introScreen');
-if(intro) intro.style.display = 'none'; // ✅ xóa nội dung giới thiệu cũ trước khi hiển thị bệnh nhân
+  if(intro) intro.style.display = 'none';
   currentPatientId=id;
   patientDetailArea.style.display='block';
   patientHeader.innerHTML = `<strong>${p.name||''}</strong><div class="patient-meta">Tuổi ${p.age||''} • ${p.gender||''}<br/> ${p.address||''}</div>`;
-  inputs.name.value = p.name||''; inputs.age.value=p.age||''; inputs.gender.value=p.gender||'Nam'; inputs.address.value=p.address||''; inputs.dx.value=p.dx||'';
-  // meds
+  
+  // Hiển thị thông tin cơ bản
+  inputs.name.value = p.name||''; 
+  inputs.age.value = p.age||''; 
+  inputs.gender.value = p.gender||'Nam'; 
+  inputs.address.value = p.address||''; 
+  inputs.dx.value = p.dx||''; // ✅ Hiển thị chẩn đoán
+  
+  // Các phần khác...
   medList.innerHTML=''; (p.meds||[]).forEach(m=>medList.appendChild(createMedRow(m)));
-  // thangs
   thangList.innerHTML=''; (p.thangs||[]).forEach(t=>thangList.appendChild(createThangRow(t)));
-  // procs
   procList.innerHTML=''; (p.procs||[]).forEach(pr=>procList.appendChild(createProcRow(pr)));
-  // dates
-  inputs.admit.value = p.admit||''; inputs.discharge.value = p.discharge||''; inputs.total.value = p.total||'';
+  inputs.admit.value = p.admit||''; 
+  inputs.discharge.value = p.discharge||''; 
+  inputs.total.value = p.total||'';
   document.getElementById('admit_time').value = p.admit_time || '';
-document.getElementById('discharge_time').value = p.discharge_time || '';
-document.getElementById('exam_time').value = p.exam_time || '';
+  document.getElementById('discharge_time').value = p.discharge_time || '';
+  document.getElementById('exam_time').value = p.exam_time || '';
 }
 
 function createMedRow(model){
@@ -575,25 +659,61 @@ function createProcRow(model){
 addPatientBtn.addEventListener('click', () => {
   // ✅ kiểm tra đăng nhập
   if (!localStorage.getItem('isLoggedIn')) {
-    // nếu chưa login, bật popup login
-    pendingOpenId = null; // không mở bệnh nhân nào, chỉ login
+    pendingOpenId = null;
     loginModal.style.display = 'flex';
     loginPassword.value = '';
     loginError.style.display = 'none';
     setTimeout(() => loginPassword.focus(), 100);
-    return; // dừng lại, không mở form thêm bệnh nhân
+    return;
   }
 
-  // ✅ nếu đã login, cho phép thêm bệnh nhân
+  // ✅ Làm trống form thêm bệnh nhân
+  document.getElementById('new_name').value = '';
+  document.getElementById('new_age').value = '';
+  document.getElementById('new_gender').value = 'Nam';
+  document.getElementById('new_address').value = '';
+  document.getElementById('new_dx').value = ''; // Làm trống chẩn đoán
+
+  // ✅ Hiển thị modal
   modal.classList.add('open');
 });
 modalClose.addEventListener('click',()=>modal.classList.remove('open'));
 modalSave.addEventListener('click', async ()=>{
-  const name=document.getElementById('new_name').value.trim();
-  const age=document.getElementById('new_age').value; const gender=document.getElementById('new_gender').value; const address=document.getElementById('new_address').value;
+  const name = document.getElementById('new_name').value.trim();
+  const age = document.getElementById('new_age').value; 
+  const gender = document.getElementById('new_gender').value; 
+  const address = document.getElementById('new_address').value;
+  const dx = document.getElementById('new_dx').value; // Lấy chẩn đoán từ new_dx
+  
+  if (!name) {
+    alert('Vui lòng nhập tên bệnh nhân');
+    return;
+  }
+  
   const id = 'p_'+Date.now();
-  const p = {id,name,age,gender,address,dx:'',meds:[],thangs:[],procs:[],admit:'',discharge:'',total:''};
-  patients.push(p); await savePatientsToDropbox(patients); modal.classList.remove('open'); renderPatientList(); openPatient(id);
+  const p = {
+    id, 
+    name, 
+    age, 
+    gender, 
+    address, 
+    dx, // Thêm chẩn đoán vào object bệnh nhân
+    meds:[], 
+    thangs:[], 
+    procs:[], 
+    admit:'', 
+    discharge:'', 
+    total:'',
+    admit_time: '',
+    discharge_time: '',
+    exam_time: ''
+  };
+  
+  patients.push(p); 
+  await savePatientsToDropbox(patients); 
+  modal.classList.remove('open'); 
+  renderPatientList(); 
+  openPatient(id);
 });
 
 document.getElementById('search').addEventListener('input',e=>renderPatientList(e.target.value));
@@ -1316,15 +1436,41 @@ document.getElementById('btnSac').addEventListener('click',()=>{
 
 /* === GIỜ === */
 document.getElementById('btnGio').addEventListener('click',()=>{
-  // Lọc bệnh nhân có giờ khám và chưa ra viện
+  const now = new Date();
+  const currentDate = formatDateForComparison(now);
+  const currentTime = now.toTimeString().slice(0,5);
+  
+  console.log('Current date:', currentDate, 'Current time:', currentTime); // Debug
+  
+  // Lọc bệnh nhân có giờ khám và chưa ra viện HOẶC đã ra viện nhưng chưa tới giờ ra viện
   const ds = patients
-    .filter(p => p.exam_time && !p.discharge) // chỉ bệnh nhân chưa ra viện
+    .filter(p => {
+      if (!p.exam_time) return false;
+      
+      // Nếu chưa có ngày ra viện -> hiển thị
+      if (!p.discharge) return true;
+      
+      const dischargeDate = formatDateForComparison(new Date(p.discharge));
+      console.log('Patient:', p.name, 'Discharge date:', dischargeDate, 'Discharge time:', p.discharge_time); // Debug
+      
+      // Nếu ngày ra viện > ngày hiện tại -> hiển thị
+      if (dischargeDate > currentDate) return true;
+      
+      // Nếu ngày ra viện = ngày hiện tại và chưa tới giờ ra viện -> hiển thị
+      if (dischargeDate === currentDate && p.discharge_time && p.discharge_time > currentTime) {
+        return true;
+      }
+      
+      return false;
+    })
     .sort((a,b)=>{
       // sắp xếp tăng dần theo giờ khám
       if (!a.exam_time) return 1;
       if (!b.exam_time) return -1;
       return a.exam_time.localeCompare(b.exam_time);
     });
+
+  console.log('Filtered patients:', ds.length); // Debug
 
   let html = '';
 
@@ -1336,17 +1482,31 @@ document.getElementById('btnGio').addEventListener('click',()=>{
             <th style="border-bottom:1px solid #ccc;padding:6px;">STT</th>
             <th style="border-bottom:1px solid #ccc;padding:6px;">Tên bệnh nhân</th>
             <th style="border-bottom:1px solid #ccc;padding:6px;">Giờ khám</th>
+            <th style="border-bottom:1px solid #ccc;padding:6px;">Trạng thái</th>
           </tr>
         </thead>
         <tbody>
     `;
 
     ds.forEach((p, i)=>{
+      let status = '';
+      if (!p.discharge) {
+        status = '<span style="color:#2e7d32;">Đang điều trị</span>';
+      } else {
+        const dischargeDate = formatDateForComparison(new Date(p.discharge));
+        if (dischargeDate === currentDate && p.discharge_time && p.discharge_time > currentTime) {
+          status = `<span style="color:#ff9800;">Ra viện lúc ${p.discharge_time}</span>`;
+        } else if (dischargeDate > currentDate) {
+          status = `<span style="color:#2196f3;">Ra viện ngày ${p.discharge}</span>`;
+        }
+      }
+      
       html += `
         <tr>
           <td style="border-bottom:1px solid #eee;padding:6px;">${i+1}</td>
           <td style="border-bottom:1px solid #eee;padding:6px;">${p.name}</td>
           <td style="border-bottom:1px solid #eee;padding:6px;">${p.exam_time}</td>
+          <td style="border-bottom:1px solid #eee;padding:6px;">${status}</td>
         </tr>
       `;
     });
@@ -1356,12 +1516,28 @@ document.getElementById('btnGio').addEventListener('click',()=>{
       </table>
     `;
   } else {
-    html = '<p>Không có bệnh nhân nào có giờ khám hợp lệ hoặc đã ra viện.</p>';
+    html = '<p>Không có bệnh nhân nào có giờ khám hợp lệ.</p>';
+    // Debug: hiển thị tất cả bệnh nhân có giờ khám để kiểm tra
+    const allWithExamTime = patients.filter(p => p.exam_time);
+    if (allWithExamTime.length > 0) {
+      html += '<p style="color:#666;font-size:12px;margin-top:10px;">Debug - Bệnh nhân có giờ khám:</p><ul style="color:#666;font-size:12px;">';
+      allWithExamTime.forEach(p => {
+        html += `<li>${p.name} - Giờ khám: ${p.exam_time} - Ra viện: ${p.discharge || 'Chưa'} ${p.discharge_time || ''}</li>`;
+      });
+      html += '</ul>';
+    }
   }
 
-  showPopup('🕒 Thống kê Giờ khám & Giờ vào viện', html);
+  showPopup('🕒 Thống kê Giờ khám', html);
 });
 
+// Hàm phụ trợ để định dạng ngày cho so sánh (yyyy-mm-dd)
+function formatDateForComparison(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 /* === FUTURE === */
 document.getElementById('btnFuture').addEventListener('click',()=>{
   // Danh sách bệnh nhân còn nằm viện (chưa có ngày ra viện)
@@ -1622,6 +1798,30 @@ window.addEventListener('load', () => {
     thongBaoChung.style.display = 'none';
   }
 });
+
+
+
+/* ====== PHÍM TẮT: Ctrl+Q HIỆN/ẨN BỆNH NHÂN ĐÃ RA VIỆN ====== */
+document.addEventListener('keydown', function(e) {
+  // Ctrl + Q → Hiện/ẩn bệnh nhân đã ra viện
+  if (e.ctrlKey && e.key.toLowerCase() === 'q') {
+    e.preventDefault();
+    showAllPatients = !showAllPatients;
+    
+    // Hiển thị thông báo tạm thời
+    const toast = document.getElementById('saveToast');
+    if (toast) {
+      toast.textContent = showAllPatients ? '👁 Đang hiện TẤT CẢ bệnh nhân' : '👁 Đang ẩn bệnh nhân đã ra viện';
+      toast.style.background = showAllPatients ? '#3498db' : '#e67e22';
+      toast.style.opacity = '1';
+      setTimeout(()=>{ toast.style.opacity = '0'; }, 2000);
+    }
+    
+    renderPatientList(document.getElementById('search').value);
+  }
+});
+
+
 </script>
 </body>
 </html>
