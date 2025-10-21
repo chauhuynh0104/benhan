@@ -981,46 +981,46 @@ function laCuoiTuan(d){
   return day===5 || day===6 || day===0; // T6-T7-CN
 }
 
-function tinhNgayCanLen(route, startDate, mode, dischargeDate) {
+function tinhNgayCanLen(route, startDate, mode, dischargeDate, patient) {
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-  
   const start = new Date(startDate);
   const discharge = dischargeDate ? new Date(dischargeDate) : null;
   const danhSach = [];
 
-  if(route === 'Thuỷ châm' || route === 'Tiêm'){
-    // Nếu có ngày ra viện và ngày ra viện đã qua thì không báo
-    if (discharge && discharge < today) {
-      return danhSach;
-    }
+  if (route !== 'Thuỷ châm' && route !== 'Tiêm') return danhSach;
 
-    // Giới hạn tối đa đến ngày ra viện (nếu có) hoặc ngày mai
-    const maxDate = discharge && discharge < tomorrow ? discharge : tomorrow;
+  // Lấy tất cả thuốc cùng tên và cùng route
+  const medsCungLoai = (patient.meds || []).filter(m => 
+    m.route === route && 
+    m.name?.trim().toLowerCase() === patient.meds.find(x => x.start === startDate)?.name?.trim().toLowerCase()
+  );
 
-    if (route === 'Thuỷ châm') {
-      const isCachNgay = (mode === 'Cách ngày');
-      const ngayTiepTheo = new Date(start);
-      
-      while (ngayTiepTheo <= maxDate) {
-        // Chỉ thêm ngày nếu nó là hôm nay hoặc ngày mai
-        if (ngayTiepTheo.toDateString() === tomorrow.toDateString()) {
-          danhSach.push(new Date(tomorrow));
-          break;
-        }
-        ngayTiepTheo.setDate(ngayTiepTheo.getDate() + (isCachNgay ? 2 : 1));
-      }
-    } else if (route === 'Tiêm') {
-      // Chỉ thêm ngày mai nếu chưa vượt quá ngày ra viện
-      if (tomorrow <= maxDate) {
-        danhSach.push(new Date(tomorrow));
-      }
+  // ✅ Lấy ngày start mới nhất (lần lên gần nhất)
+  const latest = medsCungLoai.reduce((a,b)=> new Date(a.start) > new Date(b.start) ? a : b, medsCungLoai[0]);
+  const lastDate = latest ? new Date(latest.start) : start;
+
+  if (discharge && discharge < today) return danhSach; // ra viện rồi
+
+  const maxDate = discharge && discharge < tomorrow ? discharge : tomorrow;
+
+  if (route === 'Thuỷ châm') {
+    const isCachNgay = (mode === 'Cách ngày');
+    const nextDate = new Date(lastDate);
+    nextDate.setDate(nextDate.getDate() + (isCachNgay ? 2 : 1));
+
+    // ⚙️ Nếu ngày tiếp theo > hôm nay mà <= ngày mai thì mới báo
+    if (nextDate.toDateString() === tomorrow.toDateString()) {
+      danhSach.push(nextDate);
     }
+  } else if (route === 'Tiêm') {
+    if (tomorrow <= maxDate) danhSach.push(tomorrow);
   }
 
   return danhSach;
 }
+
 
 
 function dinhDangNgayVN(d){return d.toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'})}
@@ -1029,7 +1029,10 @@ function capNhatThongBao(){
   let html = '';
   const today = new Date();
   
-  patients.forEach(p=>{
+  // Dùng Set để theo dõi các thông báo đã hiển thị
+  const daThongBao = new Set();
+  
+  patients.forEach(p => {
     // Kiểm tra nếu bệnh nhân đã ra viện và ngày ra viện đã qua thì bỏ qua
     if (p.discharge) {
       const dischargeDate = new Date(p.discharge);
@@ -1038,29 +1041,40 @@ function capNhatThongBao(){
       }
     }
 
-    const tiems = (p.meds||[]).filter(m=>m.route==='Tiêm' && !m.end); // ✅ CHỈ LẤY THUỐC CHƯA CÓ END
+    const tiems = (p.meds||[]).filter(m => m.route === 'Tiêm' && !m.end);
     const demThuocTiem = {};
 
     // Đếm số lần tiêm theo tên thuốc
-    tiems.forEach(m=>{
+    tiems.forEach(m => {
       const ten = m.name?.trim().toLowerCase() || '(chưa đặt tên)';
       demThuocTiem[ten] = (demThuocTiem[ten] || 0) + 1;
     });
 
     // Nếu tên thuốc tiêm có hơn 3 lần -> cảnh báo
-    Object.keys(demThuocTiem).forEach(ten=>{
+    Object.keys(demThuocTiem).forEach(ten => {
       if(demThuocTiem[ten] > 3){
-        html += `<div><strong>${p.name}</strong>: Thuốc <b>${ten}</b> tiêm quá 3 lần (${demThuocTiem[ten]} lần).</div>`;
+        const key = `${p.id}_${ten}_tiem`;
+        if (!daThongBao.has(key)) {
+          html += `<div><strong>${p.name}</strong>: Thuốc <b>${ten}</b> tiêm quá 3 lần (${demThuocTiem[ten]} lần).</div>`;
+          daThongBao.add(key);
+        }
       }
     });
 
     // Thủy châm và Tiêm - CHỈ LẤY THUỐC CHƯA CÓ END
-    (p.meds||[]).forEach(m=>{
-      if((m.route==='Thuỷ châm' || m.route==='Tiêm') && m.start && !m.end){ // ✅ THÊM ĐIỀU KIỆN !m.end
-        const danhSach = tinhNgayCanLen(m.route, m.start, m.mode || 'Liên tiếp', p.discharge);
-        if(danhSach.length>0){
-          const ngayText = danhSach.map(d=>dinhDangNgayVN(d)).join(', ');
-          html += `<div><strong>${p.name}</strong>: Chưa lên thuốc <b>${m.route}</b> cho các ngày: ${ngayText}</div>`;
+    (p.meds||[]).forEach(m => {
+      if((m.route === 'Thuỷ châm' || m.route === 'Tiêm') && m.start && !m.end){
+        const danhSach = tinhNgayCanLen(m.route, m.start, m.mode || 'Liên tiếp', p.discharge, p);
+
+        if(danhSach.length > 0){
+          const ngayText = danhSach.map(d => dinhDangNgayVN(d)).join(', ');
+          const key = `${p.id}_${m.route}_${m.name}_${ngayText}`;
+          
+          // Chỉ thêm thông báo nếu chưa có
+          if (!daThongBao.has(key)) {
+            html += `<div><strong>${p.name}</strong>: Chưa lên thuốc <b>${m.route}</b> cho các ngày: ${ngayText}</div>`;
+            daThongBao.add(key);
+          }
         }
       }
     });
@@ -1383,7 +1397,7 @@ document.getElementById('btnTiem').addEventListener('click',()=>{
       });
 
       // Xuất HTML
-      html += `<h4 style="margin-top:10px;color:#e67e22;">Bệnh nhân: ${p.name}</h4>`;
+      html += `<h4 style="margin-top:10px;color:#e67e22;">Bệnh nhân: ${p.name} <span style="color:#FF0000;">${formatDateVN(p.discharge)} ${p.discharge_time}</span></h4>`;
       html += `<ul style="margin-left:15px;">`;
       Object.keys(grouped).forEach(name=>{
         const dates = grouped[name].filter(d=>d!=='').join(', ');
@@ -1496,8 +1510,6 @@ document.getElementById('btnGio').addEventListener('click',()=>{
   const currentDate = formatDateForComparison(now);
   const currentTime = now.toTimeString().slice(0,5);
   
-  console.log('Current date:', currentDate, 'Current time:', currentTime); // Debug
-  
   // Lọc bệnh nhân có giờ khám và chưa ra viện HOẶC đã ra viện nhưng chưa tới giờ ra viện
   const ds = patients
     .filter(p => {
@@ -1507,7 +1519,6 @@ document.getElementById('btnGio').addEventListener('click',()=>{
       if (!p.discharge) return true;
       
       const dischargeDate = formatDateForComparison(new Date(p.discharge));
-      console.log('Patient:', p.name, 'Discharge date:', dischargeDate, 'Discharge time:', p.discharge_time); // Debug
       
       // Nếu ngày ra viện > ngày hiện tại -> hiển thị
       if (dischargeDate > currentDate) return true;
@@ -1525,8 +1536,6 @@ document.getElementById('btnGio').addEventListener('click',()=>{
       if (!b.exam_time) return -1;
       return a.exam_time.localeCompare(b.exam_time);
     });
-
-  console.log('Filtered patients:', ds.length); // Debug
 
   let html = '';
 
@@ -1551,9 +1560,9 @@ document.getElementById('btnGio').addEventListener('click',()=>{
       } else {
         const dischargeDate = formatDateForComparison(new Date(p.discharge));
         if (dischargeDate === currentDate && p.discharge_time && p.discharge_time > currentTime) {
-          status = `<span style="color:#ff9800;">Ra viện lúc ${p.discharge_time}</span>`;
+          status = `<span style="color:#ff9800;">Ra viện lúc ${p.discharge_time} (${formatDateVN(p.discharge)})</span>`;
         } else if (dischargeDate > currentDate) {
-          status = `<span style="color:#2196f3;">Ra viện ngày ${p.discharge}</span>`;
+          status = `<span style="color:#FF0000;">Ra viện ngày ${formatDateVN(p.discharge)} (${p.discharge_time})</span>`;
         }
       }
       
@@ -1573,20 +1582,10 @@ document.getElementById('btnGio').addEventListener('click',()=>{
     `;
   } else {
     html = '<p>Không có bệnh nhân nào có giờ khám hợp lệ.</p>';
-    // Debug: hiển thị tất cả bệnh nhân có giờ khám để kiểm tra
-    const allWithExamTime = patients.filter(p => p.exam_time);
-    if (allWithExamTime.length > 0) {
-      html += '<p style="color:#666;font-size:12px;margin-top:10px;">Debug - Bệnh nhân có giờ khám:</p><ul style="color:#666;font-size:12px;">';
-      allWithExamTime.forEach(p => {
-        html += `<li>${p.name} - Giờ khám: ${p.exam_time} - Ra viện: ${p.discharge || 'Chưa'} ${p.discharge_time || ''}</li>`;
-      });
-      html += '</ul>';
-    }
   }
 
   showPopup('🕒 Thống kê Giờ khám', html);
 });
-
 // Hàm phụ trợ để định dạng ngày cho so sánh (yyyy-mm-dd)
 function formatDateForComparison(date) {
   const year = date.getFullYear();
@@ -1594,172 +1593,127 @@ function formatDateForComparison(date) {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
-/* === FUTURE - HIỆN CẢ ĐÃ LÊN VÀ CHƯA LÊN === */
+/* === FUTURE: CHỈ HIỂN THỊ ĐÃ LÊN (TỪ JSON) VÀ CHƯA LÊN (TỪ THÔNG BÁO) === */
 document.getElementById('btnFuture').addEventListener('click',()=>{
-  const now = new Date();
-  const currentDate = now.toISOString().slice(0,10);
-  const currentTime = now.toTimeString().slice(0,5);
-  
-  // Danh sách bệnh nhân: chưa ra viện HOẶC đã ra viện nhưng chưa tới giờ ra viện
-  const ds = patients.filter(p => {
-    if (!p.discharge) return true; // chưa có ngày ra viện
-    
-    const dischargeDate = p.discharge;
-    const dischargeTime = p.discharge_time || '23:59';
-    
-    // ✅ KIỂM TRA ĐIỀU KIỆN: chưa tới ngày ra HOẶC (tới ngày nhưng chưa tới giờ)
-    return dischargeDate > currentDate || 
-           (dischargeDate === currentDate && dischargeTime > currentTime);
-  });
-
   let html = `
-    <div style="margin-bottom:10px;">
-      <label>Tên thuốc:</label>
-      <input type="text" id="filterThuoc" placeholder="Nhập tên thuốc..." style="padding:5px; margin-right:10px; width:150px;">
-      <label>Ngày:</label>
-      <input type="date" id="filterNgay" style="padding:5px;">
-      <button id="applyFilter" style="padding:6px 12px; margin-left:10px;">Lọc</button>
-    </div>
-  `;
-
-  html += `
-    <table id="futureTable" style="width:100%;border-collapse:collapse;font-size:14px;border:1px solid #ccc;">
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
       <thead>
-        <tr style="background:#f8f8f8;text-align:left;">
-          <th style="border:1px solid #ccc;padding:6px;">STT</th>
-          <th style="border:1px solid #ccc;padding:6px;">Tên Bệnh Nhân</th>
-          <th style="border:1px solid #ccc;padding:6px;">Loại Thuốc</th>
-          <th style="border:1px solid #ccc;padding:6px;">Ngày</th>
-          <th style="border:1px solid #ccc;padding:6px;">Tình Trạng</th>
+        <tr style="background:#fff3e0;">
+          <th style="padding:6px;">STT</th>
+          <th style="padding:6px;">Tên Bệnh Nhân</th>
+          <th style="padding:6px;">Tên Thuốc</th>
+          <th style="padding:6px;">Ngày</th>
+          <th style="padding:6px;">Tình Trạng</th>
         </tr>
       </thead>
       <tbody>
   `;
 
   let stt = 1;
-  const todayStr = now.toISOString().split('T')[0];
-  
-  ds.forEach(p=>{
-    const meds = p.meds || [];
+  const todayStr = new Date().toISOString().slice(0,10);
+  const today = new Date(todayStr);
+
+  // Dùng Set để tránh trùng lặp
+  const displayedRecords = new Set();
+
+  patients.forEach(p => {
+    // Kiểm tra bệnh nhân đã ra viện chưa
+    if (p.discharge) {
+      const dischargeDate = new Date(p.discharge);
+      if (dischargeDate < today) return; // Bỏ qua bệnh nhân đã ra viện
+    }
+
+    const listThuoc = (p.meds || []).filter(m => 
+      (m.route === 'Thuỷ châm' || m.route === 'Tiêm') && 
+      m.start && 
+      !m.end
+    );
+
+    if (!listThuoc.length) return;
+
+    let coDongNao = false;
     
-    // ✅ LẤY TẤT CẢ THUỐC THỦY CHÂM VÀ TIÊM (KHÔNG LỌC !m.end)
-    const tcTiem = meds.filter(m => (m.route === 'Thuỷ châm' || m.route === 'Tiêm'));
-    
-    if (tcTiem.length > 0) {
-      let totalPatientRows = 0;
-      const medicineGroups = [];
+    // HIỂN THỊ CÁC THUỐC ĐÃ LÊN (từ JSON)
+    listThuoc.forEach(m => {
+      const startStr = m.start;
+      if (!startStr) return;
       
-      // Tính tổng số dòng và nhóm theo thuốc
-      tcTiem.forEach(m => {
-        // ✅ GỌI HÀM MỚI: lấy tất cả ngày từ start đến ngày mai (hoặc discharge)
-        const dates = getAllTreatmentDates(m.route, m.start, m.mode || 'Liên tiếp', p.discharge);
-        const medicineName = `${m.name}${m.route === 'Thuỷ châm' ? (m.mode === 'Cách ngày' ? ' (Cách ngày)' : ' (Liên tiếp)') : ''}`;
-        
-        // ✅ LỌC CÁC NGÀY: NẾU THUỐC CÓ END THÌ CHỈ HIỂN THỊ NGÀY TRƯỚC END
-        const filteredDates = dates.filter(d => {
-          if (!m.end) return true; // Nếu không có end thì hiển thị tất cả
-          const ngayHienTai = d.toISOString().split('T')[0];
-          return ngayHienTai <= m.end; // Chỉ hiển thị ngày <= ngày end
-        });
-        
-        medicineGroups.push({
-          name: medicineName,
-          dates: filteredDates.map(d => ({
-            ngay: d.toISOString().split('T')[0],
-            status: (d.toISOString().split('T')[0] < todayStr) 
-              ? '<span style="color:#2e7d32;font-weight:600;">Đã lên</span>'
-              : (d.toISOString().split('T')[0] === todayStr)
-                ? '<span style="color:#f39c12;font-weight:600;">Hôm nay</span>'
-                : '<span style="color:#ef6c00;font-weight:600;">Chưa lên</span>'
-          }))
-        });
-        
-        totalPatientRows += filteredDates.length;
-      });
+      const tenThuoc = m.name || '(Không tên)';
+
+      // Hiển thị ngày start như là "đã lên"
+      const recordKey = `${p.id}_${tenThuoc}_${startStr}`;
       
-      // Hiển thị dòng đầu tiên của bệnh nhân
-      if (totalPatientRows > 0) {
+      if (!displayedRecords.has(recordKey)) {
         html += `
           <tr>
-            <td style="border:1px solid #ccc;padding:6px;" rowspan="${totalPatientRows}">${stt}</td>
-            <td style="border:1px solid #ccc;padding:6px;" rowspan="${totalPatientRows}">${p.name}</td>
-            <td style="border:1px solid #ccc;padding:6px;" rowspan="${medicineGroups[0].dates.length}">${medicineGroups[0].name}</td>
-            <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicineGroups[0].dates[0].ngay)}</td>
-            <td style="border:1px solid #ccc;padding:6px;">${medicineGroups[0].dates[0].status}</td>
-          </tr>
-        `;
+            <td style="padding:6px;border-bottom:1px solid #eee;">${stt++}</td>
+            <td style="padding:6px;border-bottom:1px solid #eee;">${p.name}</td>
+            <td style="padding:6px;border-bottom:1px solid #eee;">${tenThuoc}</td>
+            <td style="padding:6px;border-bottom:1px solid #eee;">${new Date(startStr).toLocaleDateString('vi-VN')}</td>
+            <td style="padding:6px;border-bottom:1px solid #eee;"><span style="color:green;">✅ Đã lên</span></td>
+          </tr>`;
         
-        // Hiển thị các dòng tiếp theo của thuốc đầu tiên
-        for (let i = 1; i < medicineGroups[0].dates.length; i++) {
-          html += `
-            <tr>
-              <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicineGroups[0].dates[i].ngay)}</td>
-              <td style="border:1px solid #ccc;padding:6px;">${medicineGroups[0].dates[i].status}</td>
-            </tr>
-          `;
-        }
-        
-        // Hiển thị các thuốc tiếp theo
-        for (let medIndex = 1; medIndex < medicineGroups.length; medIndex++) {
-          const medicine = medicineGroups[medIndex];
-          
-          if (medicine.dates.length > 0) {
-            // Dòng đầu tiên của mỗi thuốc
-            html += `
-              <tr>
-                <td style="border:1px solid #ccc;padding:6px;" rowspan="${medicine.dates.length}">${medicine.name}</td>
-                <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicine.dates[0].ngay)}</td>
-                <td style="border:1px solid #ccc;padding:6px;">${medicine.dates[0].status}</td>
-              </tr>
-            `;
-            
-            // Các dòng tiếp theo của thuốc
-            for (let i = 1; i < medicine.dates.length; i++) {
-              html += `
-                <tr>
-                  <td style="border:1px solid #ccc;padding:6px;">${formatDateVN(medicine.dates[i].ngay)}</td>
-                  <td style="border:1px solid #ccc;padding:6px;">${medicine.dates[i].status}</td>
-                </tr>
-              `;
-            }
-          }
-        }
-        
-        stt++;
+        displayedRecords.add(recordKey);
+        coDongNao = true;
       }
+    });
+
+    // HIỂN THỊ CÁC THUỐC CHƯA LÊN (từ thông báo)
+    const danhSachChuaLen = layDanhSachChuaLenTuThongBao(p);
+    danhSachChuaLen.forEach(item => {
+      const recordKey = `${p.id}_${item.tenThuoc}_${item.ngay}`;
+      
+      if (!displayedRecords.has(recordKey)) {
+        html += `
+          <tr>
+            <td style="padding:6px;border-bottom:1px solid #eee;">${stt++}</td>
+            <td style="padding:6px;border-bottom:1px solid #eee;">${p.name}</td>
+            <td style="padding:6px;border-bottom:1px solid #eee;">${item.tenThuoc}</td>
+            <td style="padding:6px;border-bottom:1px solid #eee;">${item.ngay}</td>
+            <td style="padding:6px;border-bottom:1px solid #eee;"><span style="color:red;font-weight:bold;">❌ Chưa lên</span></td>
+          </tr>`;
+        
+        displayedRecords.add(recordKey);
+        coDongNao = true;
+      }
+    });
+
+    // Thêm dòng trống ngăn cách giữa các bệnh nhân
+    if (coDongNao) {
+      html += '<tr style="height:8px;background:#f9f9f9;"><td colspan="5"></td></tr>';
     }
   });
 
-  html += `
-      </tbody>
-    </table>
-  `;
-
   if (stt === 1) {
-    html = '<p>Không có dữ liệu Thủy châm / Tiêm.</p>';
+    html += `<tr><td colspan="5" style="padding:10px;text-align:center;color:#777;">✅ Không có bệnh nhân nào có thủy châm hoặc tiêm.</td></tr>`;
   }
-
-  showPopup('🧭 Thống kê Future (Thủy châm / Tiêm)', html);
-
-  // Sau khi popup mở — thêm chức năng lọc
-  setTimeout(()=>{
-    const filterThuoc = document.getElementById('filterThuoc');
-    const filterNgay = document.getElementById('filterNgay');
-    const applyFilter = document.getElementById('applyFilter');
-    const table = document.getElementById('futureTable');
-
-    applyFilter.addEventListener('click', ()=>{
-      const ten = filterThuoc.value.toLowerCase();
-      const ngay = filterNgay.value;
-      Array.from(table.querySelectorAll('tbody tr')).forEach(row=>{
-        const text = row.textContent.toLowerCase();
-        const matchThuoc = ten ? text.includes(ten) : true;
-        const matchNgay = ngay ? text.includes(ngay) : true;
-        row.style.display = (matchThuoc && matchNgay) ? '' : 'none';
-      });
-    });
-  }, 300);
+  
+  html += '</tbody></table>';
+  showPopup('📅 Thống kê Future (Thuỷ châm / Tiêm)', html);
 });
+
+// Hàm lấy danh sách thuốc chưa lên từ thông báo
+function layDanhSachChuaLenTuThongBao(p) {
+  const danhSach = [];
+  const today = new Date();
+  
+  (p.meds || []).forEach(m => {
+    if ((m.route === 'Thuỷ châm' || m.route === 'Tiêm') && m.start && !m.end) {
+      const danhSachNgay = tinhNgayCanLen(m.route, m.start, m.mode || 'Liên tiếp', p.discharge, p);
+      
+      if (danhSachNgay.length > 0) {
+        danhSachNgay.forEach(ngay => {
+          danhSach.push({
+            tenThuoc: m.name || '(Không tên)',
+            ngay: dinhDangNgayVN(ngay)
+          });
+        });
+      }
+    }
+  });
+  
+  return danhSach;
+}
 
 // Hàm mới: lấy tất cả ngày điều trị từ start đến ngày mai (hoặc discharge)
 function getAllTreatmentDates(route, startDate, mode, dischargeDate) {
