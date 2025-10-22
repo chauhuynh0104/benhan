@@ -239,10 +239,21 @@ async function savePatientsToDropbox(patients) {
               <label>Tuổi</label>
               <input id="p_age" type="number"/>
             </div>
-            <div>
-              <label>Giới</label>
-              <select id="p_gender"style="width:60px;"><option>Nam</option><option>Nữ</option><option>Khác</option></select>
-            </div>
+<div style="grid-column:1/-1; display:flex; align-items:center; gap:20px;">
+  <div style="display:flex; align-items:center; gap:6px;">
+    <label>Giới</label>
+    <select id="p_gender" style="width:80px;">
+      <option>Nam</option><option>Nữ</option><option>Khác</option>
+    </select>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:6px; white-space:nowrap;">
+    <input type="checkbox" id="p_outpatient" style="transform:scale(1.1); cursor:pointer;" />
+    <label for="p_outpatient" style="margin:0; cursor:pointer;">Ngoại trú</label>
+  </div>
+</div>
+
+
             <div>
               <label>Địa chỉ</label>
               <input id="p_address" />
@@ -336,15 +347,26 @@ async function savePatientsToDropbox(patients) {
         <label>Tuổi</label>
         <input id="new_age" type="number" />
       </div>
-      <div>
-        <label>Giới</label>
-        <select id="new_gender"><option>Nam</option><option>Nữ</option><option>Khác</option></select>
-      </div>
-      <div style="grid-column:1/-1"> <!-- Sửa thành chiếm 2 cột -->
+<div style="grid-column:1/-1; display:flex; align-items:center; gap:20px;">
+  <div style="display:flex; align-items:center; gap:6px;">
+    <label>Giới</label>
+    <select id="new_gender" style="width:90px;">
+      <option>Nam</option><option>Nữ</option><option>Khác</option>
+    </select>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:6px; white-space:nowrap;">
+    <input type="checkbox" id="new_outpatient" style="transform:scale(1.1); cursor:pointer;" />
+    <label for="new_outpatient" style="margin:0; cursor:pointer;">Ngoại trú</label>
+  </div>
+</div>
+
+	  
+      <div> <!-- Sửa thành chiếm 2 cột -->
         <label>Chẩn đoán</label>
         <textarea id="new_dx" rows="2"></textarea> <!-- Đổi id thành new_dx -->
       </div>
-      <div style="grid-column:1/-1"> <!-- Địa chỉ cũng chiếm 2 cột -->
+      <div> <!-- Địa chỉ cũng chiếm 2 cột -->
         <label>Địa chỉ</label>
         <input id="new_address" />
       </div>
@@ -367,7 +389,14 @@ async function savePatientsToDropbox(patients) {
       <button class="btn" id="modalSave">Thêm</button>
     </div>
   </div>
-</div>
+</div><script>
+document.getElementById('new_name').addEventListener('input', function () {
+  const name = this.value.trim().toLowerCase();
+  const genderSelect = document.getElementById('new_gender');
+  if (name.includes('thị')) {
+    genderSelect.value = 'Nữ';
+  }
+});</script>
 <script>
 // Helper
 const medsSuggest = ['Dubemin','Kamelox','Mimosa','Amlodipin','Piracetam','Reumokam'];
@@ -404,7 +433,9 @@ window.addEventListener('load', async () => {
   patients = await loadPatientsFromDropbox();
   showAllPatients = false; // ✅ THÊM DÒNG NÀY - Mặc định ẩn bệnh nhân đã ra viện
   renderPatientList();
-  capNhatThongBao();
+capNhatThongBao();
+canhBaoSoNgayNamVien();
+
 });
 
 let currentPatientId = null;
@@ -563,6 +594,7 @@ function openPatient(id){
   inputs.address.value = p.address||''; 
   inputs.dx.value = p.dx||''; // ✅ Hiển thị chẩn đoán
   document.getElementById('p_room').value = p.room || '';
+  document.getElementById('p_outpatient').checked = !!p.outpatient;
 
   // Các phần khác...
   medList.innerHTML=''; (p.meds||[]).forEach(m=>medList.appendChild(createMedRow(m)));
@@ -745,10 +777,10 @@ const admit_time = document.getElementById('new_admit_time').value;
     name, 
     age, 
     gender, 
+	outpatient: document.getElementById('new_outpatient').checked,
     address, 
     dx, // Thêm chẩn đoán vào object bệnh nhân
 	room,
-
     meds:[], 
     thangs:[], 
     procs:[], 
@@ -782,7 +814,8 @@ function ensureSections(){ if(medList.children.length===0) medList.appendChild(c
 savePatientBtn.addEventListener('click',()=>{
   if(!currentPatientId) return alert('Chọn bệnh nhân trước');
   const p = patients.find(x=>x.id===currentPatientId);
-  p.name = inputs.name.value.trim(); p.age = inputs.age.value; p.gender = inputs.gender.value; p.address = inputs.address.value; p.dx = inputs.dx.value;p.room = document.getElementById('p_room').value;
+  p.name = inputs.name.value.trim(); p.age = inputs.age.value; p.gender = inputs.gender.value; p.address = inputs.address.value; p.dx = inputs.dx.value;p.room = document.getElementById('p_room').value;p.outpatient = document.getElementById('p_outpatient').checked;
+
 
   // meds
   p.meds = Array.from(medList.children).map(r=>({
@@ -833,7 +866,8 @@ setTimeout(()=>{ toast.style.opacity = '0'; }, 1000); // ẩn sau 1 giây
   p.gender = inputs.gender.value; 
   p.address = inputs.address.value; 
   p.dx = inputs.dx.value;
-p.room = document.getElementById('p_room').value;
+  p.room = document.getElementById('p_room').value;
+  p.outpatient = document.getElementById('p_outpatient').checked;
 
   // meds
   p.meds = Array.from(medList.children).map(r=>({
@@ -880,7 +914,9 @@ p.exam_time = document.getElementById('exam_time').value;
   await savePatientsToDropbox(patients);
   renderPatientList();
 })();
-  capNhatThongBao(); // ✅ thêm dòng này để cập nhật thông báo ngay
+  capNhatThongBao();
+canhBaoSoNgayNamVien();
+
 });
 });
 
@@ -1063,6 +1099,33 @@ function tinhNgayCanLen(route, startDate, mode, dischargeDate, patient) {
 
 
 function dinhDangNgayVN(d){return d.toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'})}
+// ⚠️ Kiểm tra bệnh nhân nằm quá ngày (ngoại trú >14, nội trú >24)
+function canhBaoSoNgayNamVien() {
+  let html = '';
+  const today = todayStr();
+
+  patients.forEach(p => {
+    if (p.admit && !p.discharge) {
+      const days = daysBetween(p.admit, today) + 1;
+      if (p.outpatient && days > 14) {
+        html += `<div><strong style="color:red">${p.name}</strong> (Ngoại trú) nằm ${days} ngày</div>`;
+        // tô đỏ tên bên danh sách
+        const item = [...document.querySelectorAll('.patient-item')]
+          .find(el => el.textContent.includes(p.name));
+        if (item) item.style.color = 'red';
+      } else if (!p.outpatient && days > 24) {
+        html += `<div><strong style="color:red">${p.name}</strong> (Nội trú) nằm ${days} ngày</div>`;
+        const item = [...document.querySelectorAll('.patient-item')]
+          .find(el => el.textContent.includes(p.name));
+        if (item) item.style.color = 'red';
+      }
+    }
+  });
+
+  if (html) {
+    thongBaoChung.innerHTML = html + '<hr>' + thongBaoChung.innerHTML;
+  }
+}
 
 function capNhatThongBao(){
   let html = '';
@@ -1147,7 +1210,9 @@ setTimeout(()=>{ toast.style.opacity = '0'; }, 1000); // ẩn sau 1 giây
 })();
 	
 	
-	capNhatThongBao(); }
+	capNhatThongBao();
+canhBaoSoNgayNamVien();
+ }
   });
 }
 
