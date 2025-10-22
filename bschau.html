@@ -197,42 +197,7 @@ async function savePatientsToDropbox(patients) {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-/* ---- Ép hiển thị checkbox trong Nativefier ---- */
-input[type="checkbox"] {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  width: 18px;
-  height: 18px;
-  border: 2px solid #666;
-  border-radius: 4px;
-  display: inline-block;
-  position: relative;
-  cursor: pointer;
-  background-color: #fff;
-  vertical-align: middle;
-}
-
-/* Dấu tick khi được chọn */
-input[type="checkbox"]:checked::after {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 0px;
-  width: 5px;
-  height: 10px;
-  border: solid #ff6600; /* màu cam theme Doctor Châu */
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-/* Cho nhấn dễ hơn */
-input[type="checkbox"]:hover {
-  box-shadow: 0 0 3px #ff6600;
-}
-</style>
-
-
+  </style>
 </head>
 <body>
 <div class="app">
@@ -282,10 +247,34 @@ input[type="checkbox"]:hover {
     </select>
   </div>
 
-  <div style="display:flex; align-items:center; gap:6px; white-space:nowrap;">
-    <input type="checkbox" id="p_outpatient" style="transform:scale(1.1); cursor:pointer;" />
-    <label for="p_outpatient" style="margin:0; cursor:pointer;">Ngoại trú</label>
-  </div>
+
+  
+  
+  <!-- Custom checkbox thay thế để hiển thị được trong Nativefier -->
+<div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="toggleOutpatient()">
+  <span id="fake_outpatient" 
+        style="width:18px;height:18px;border:2px solid #666;border-radius:4px;
+               display:inline-block;position:relative;vertical-align:middle;background-color:#fff;">
+  </span>
+      <label for="p_outpatient" style="margin:0;cursor:pointer;">Ngoại trú</label>
+  <input type="hidden" id="p_outpatient" value="false" />
+</div>
+
+<script>
+function toggleOutpatient() {
+  const fake = document.getElementById('fake_outpatient');
+  const real = document.getElementById('p_outpatient');
+  const checked = real.value === 'true';
+  if (checked) {
+    fake.innerHTML = '';
+    real.value = 'false';
+  } else {
+    fake.innerHTML = '<div style="position:absolute;left:4px;top:0;width:5px;height:10px;border:solid #ff6600;border-width:0 2px 2px 0;transform:rotate(45deg);"></div>';
+    real.value = 'true';
+  }
+}
+</script>
+  
 </div>
 
 
@@ -390,10 +379,30 @@ input[type="checkbox"]:hover {
     </select>
   </div>
 
-  <div style="display:flex; align-items:center; gap:6px; white-space:nowrap;">
-    <input type="checkbox" id="new_outpatient" style="transform:scale(1.1); cursor:pointer;" />
-    <label for="new_outpatient" style="margin:0; cursor:pointer;">Ngoại trú</label>
-  </div>
+<!-- Custom checkbox thay thế để hiển thị được trong Nativefier -->
+<div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="toggleOutpatient()">
+  <span id="fake_outpatient" 
+        style="width:18px;height:18px;border:2px solid #666;border-radius:4px;
+               display:inline-block;position:relative;vertical-align:middle;background-color:#fff;">
+  </span>
+  <label style="margin:0;cursor:pointer;">Ngoại trú</label>
+  <input type="hidden" id="new_outpatient" value="false" />
+</div>
+
+<script>
+function toggleOutpatient() {
+  const fake = document.getElementById('fake_outpatient');
+  const real = document.getElementById('new_outpatient');
+  const checked = real.value === 'true';
+  if (checked) {
+    fake.innerHTML = '';
+    real.value = 'false';
+  } else {
+    fake.innerHTML = '<div style="position:absolute;left:4px;top:0;width:5px;height:10px;border:solid #ff6600;border-width:0 2px 2px 0;transform:rotate(45deg);"></div>';
+    real.value = 'true';
+  }
+}
+</script>
 </div>
 
 	  
