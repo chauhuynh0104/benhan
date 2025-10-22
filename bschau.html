@@ -239,20 +239,17 @@ async function savePatientsToDropbox(patients) {
               <label>Tuổi</label>
               <input id="p_age" type="number"/>
             </div>
-<div style="grid-column:1/-1; display:flex; align-items:center; gap:20px;">
-  <div style="display:flex; align-items:center; gap:6px;">
-    <label>Giới</label>
-    <select id="p_gender" style="width:80px;">
-      <option>Nam</option><option>Nữ</option><option>Khác</option>
-    </select>
-  </div>
+
 <div>
         <label>Giới</label>
-        <select id="new_gender"><option>Nam</option><option>Nữ</option><option>Khác</option></select>
+        <select id="p_gender"><option>Nam</option><option>Nữ</option><option>Khác</option></select>
       </div>
 
-    <input type="checkbox" id="p_outpatient"  />
-    <label for="p_outpatient">Ngoại trú</label>
+   <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:6px; grid-column:2;">
+  <input type="checkbox" id="p_outpatient"
+         style="width:16px; height:16px; margin:0 4px 0 0; cursor:pointer; accent-color:#ff7f32; vertical-align:middle;" />
+  <label for="p_outpatient" style="cursor:pointer; user-select:none; line-height:1;">Ngoại trú</label>
+</div>
  
 </div>
 
@@ -376,9 +373,9 @@ async function savePatientsToDropbox(patients) {
   <input id="new_admit_time" type="time" />
 </div>
 <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:6px; grid-column:2;">
-  <input type="checkbox" id="p_outpatient"
+  <input type="checkbox" id="new_outpatient"
          style="width:16px; height:16px; margin:0 4px 0 0; cursor:pointer; accent-color:#ff7f32; vertical-align:middle;" />
-  <label for="p_outpatient" style="cursor:pointer; user-select:none; line-height:1;">Ngoại trú</label>
+  <label for="new_outpatient" style="cursor:pointer; user-select:none; line-height:1;">Ngoại trú</label>
 </div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
