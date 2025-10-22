@@ -247,10 +247,10 @@ async function savePatientsToDropbox(patients) {
     </select>
   </div>
 
-  <div style="display:flex; align-items:center; gap:6px; white-space:nowrap;">
-    <input type="checkbox" id="p_outpatient" style="transform:scale(1.1); cursor:pointer;" />
-    <label for="p_outpatient" style="margin:0; cursor:pointer;">Ngoại trú</label>
-  </div>
+
+    <input type="checkbox" id="p_outpatient"  />
+    <label for="p_outpatient">Ngoại trú</label>
+ 
 </div>
 
 
@@ -1653,6 +1653,7 @@ document.getElementById('btnGio').addEventListener('click',()=>{
         <th style="border-bottom:1px solid #ccc;padding:6px;">Phòng</th>
         <th style="border-bottom:1px solid #ccc;padding:6px;">Giờ khám</th>
         <th style="border-bottom:1px solid #ccc;padding:6px;">Số ngày điều trị</th>
+		 <th style="padding:6px;border-bottom:1px solid #ddd;">Loại</th>
         <th style="border-bottom:1px solid #ccc;padding:6px;">Trạng thái</th>
       </tr>
     </thead>
@@ -1673,7 +1674,7 @@ document.getElementById('btnGio').addEventListener('click',()=>{
         }
       }
         const songay = p.admit && !p.discharge ? `${daysBetween(p.admit, todayStr()) + 1}` : (p.total || '');
-
+ const loai = p.outpatient ? 'Ngoại trú' : 'Nội trú';
       html += `
     <tr>
       <td style="border-bottom:1px solid #eee;padding:6px;">${i+1}</td>
@@ -1681,6 +1682,7 @@ document.getElementById('btnGio').addEventListener('click',()=>{
       <td style="border-bottom:1px solid #eee;padding:6px;">${p.room || ''}</td>
       <td style="border-bottom:1px solid #eee;padding:6px;">${p.exam_time || ''}</td>
       <td style="border-bottom:1px solid #eee;padding:6px;color:#ff7a18;font-weight:600;">${songay ? songay + ' ngày' : ''}</td>
+	  <td style="padding:6px;border-bottom:1px solid #f0e6de;">${loai}</td>
       <td style="border-bottom:1px solid #eee;padding:6px;">${status}</td>
     </tr>
   `;
