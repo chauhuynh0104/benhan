@@ -197,6 +197,14 @@ async function savePatientsToDropbox(patients) {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+	/* Hiện checkbox rõ ràng trong môi trường Electron / Nativefier */
+input[type="checkbox"] {
+  appearance: auto !important;
+  -webkit-appearance: checkbox !important;
+  accent-color: #ff6600; /* màu cam đồng bộ theme Doctor Châu */
+  transform: scale(1.2);
+  cursor: pointer;
+}
   </style>
 </head>
 <body>
