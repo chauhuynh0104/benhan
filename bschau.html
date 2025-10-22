@@ -251,6 +251,11 @@ async function savePatientsToDropbox(patients) {
               <label>Chẩn đoán</label>
               <textarea id="p_dx" rows="2"></textarea>
             </div>
+			
+			<div>
+  <label>Phòng</label>
+  <input id="p_room" placeholder="" />
+</div>
           </div>
         </div>
 <div style="flex:1;min-width:600px" class="section">
@@ -343,6 +348,19 @@ async function savePatientsToDropbox(patients) {
         <label>Địa chỉ</label>
         <input id="new_address" />
       </div>
+	  <div>
+  <label>Phòng</label>
+  <input id="new_room" placeholder="" />
+</div>
+<div>
+  <label>Ngày vào viện</label>
+  <input id="new_admit_date" type="date" />
+</div>
+<div>
+  <label>Giờ vào viện</label>
+  <input id="new_admit_time" type="time" />
+</div>
+
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
       <button class="btn secondary" id="modalClose">Đóng</button>
@@ -465,16 +483,21 @@ function renderPatientList(filter=''){
     const el = document.createElement('div'); el.className='patient-item';
     el.innerHTML = `<div>
       <div style="font-weight:600">${p.name||'(chưa có tên)'}</div>
-      <div class="patient-meta">Tuổi: ${p.age||''} • ${p.gender||''}</div>
+      <div class="patient-meta">Tuổi: ${p.age||''} • ${p.gender||''} • P${p.room||''}</div>
     </div>
-    <div style="text-align:right;min-width:80px"><button class="btn secondary" data-id="${p.id}" style="padding:6px;border-radius:8px">Mở</button></div>`;
+    <div style="text-align:right;min-width:80px"><div style="text-align:right;min-width:120px">
+  <div style="font-size:13px;color:#ff7a18;"><button class="btn secondary">
+    ${p.admit && !p.discharge ? `${daysBetween(p.admit, todayStr()) + 1}` : (p.total || '')}</button>
+  </div>
+</div>
+</div>`;
    
     el.addEventListener('click',()=>openPatient(p.id));
-    el.querySelector('button').addEventListener('click',e=>{
+  /*  el.querySelector('button').addEventListener('click',e=>{
       e.stopPropagation();
       openPatient(p.id);
     });
-    
+   */ 
     patientListEl.appendChild(el);
   });
   
@@ -539,7 +562,8 @@ function openPatient(id){
   inputs.gender.value = p.gender||'Nam'; 
   inputs.address.value = p.address||''; 
   inputs.dx.value = p.dx||''; // ✅ Hiển thị chẩn đoán
-  
+  document.getElementById('p_room').value = p.room || '';
+
   // Các phần khác...
   medList.innerHTML=''; (p.meds||[]).forEach(m=>medList.appendChild(createMedRow(m)));
   thangList.innerHTML=''; (p.thangs||[]).forEach(t=>thangList.appendChild(createThangRow(t)));
@@ -687,7 +711,14 @@ addPatientBtn.addEventListener('click', () => {
   document.getElementById('new_age').value = '';
   document.getElementById('new_gender').value = 'Nam';
   document.getElementById('new_address').value = '';
-  document.getElementById('new_dx').value = ''; // Làm trống chẩn đoán
+  document.getElementById('new_dx').value = '';
+document.getElementById('new_room').value = '';  // Làm trống chẩn đoán
+  // ✅ Lấy ngày giờ hiện tại
+  const now = new Date();
+  const today = now.toISOString().slice(0,10);
+  const time = now.toTimeString().slice(0,5);
+  document.getElementById('new_admit_date').value = today;
+  document.getElementById('new_admit_time').value = time;
 
   // ✅ Hiển thị modal
   modal.classList.add('open');
@@ -699,7 +730,10 @@ modalSave.addEventListener('click', async ()=>{
   const gender = document.getElementById('new_gender').value; 
   const address = document.getElementById('new_address').value;
   const dx = document.getElementById('new_dx').value; // Lấy chẩn đoán từ new_dx
-  
+  const room = document.getElementById('new_room').value;
+const admit_date = document.getElementById('new_admit_date').value;
+const admit_time = document.getElementById('new_admit_time').value;
+
   if (!name) {
     alert('Vui lòng nhập tên bệnh nhân');
     return;
@@ -713,15 +747,18 @@ modalSave.addEventListener('click', async ()=>{
     gender, 
     address, 
     dx, // Thêm chẩn đoán vào object bệnh nhân
+	room,
+
     meds:[], 
     thangs:[], 
     procs:[], 
-    admit:'', 
+	admit: admit_date,
+    admit_time: admit_time,
     discharge:'', 
     total:'',
-    admit_time: '',
     discharge_time: '',
-    exam_time: ''
+    exam_time: '',
+	
   };
   
   patients.push(p); 
@@ -745,7 +782,8 @@ function ensureSections(){ if(medList.children.length===0) medList.appendChild(c
 savePatientBtn.addEventListener('click',()=>{
   if(!currentPatientId) return alert('Chọn bệnh nhân trước');
   const p = patients.find(x=>x.id===currentPatientId);
-  p.name = inputs.name.value.trim(); p.age = inputs.age.value; p.gender = inputs.gender.value; p.address = inputs.address.value; p.dx = inputs.dx.value;
+  p.name = inputs.name.value.trim(); p.age = inputs.age.value; p.gender = inputs.gender.value; p.address = inputs.address.value; p.dx = inputs.dx.value;p.room = document.getElementById('p_room').value;
+
   // meds
   p.meds = Array.from(medList.children).map(r=>({
     name: r.querySelector('.med-name').value,
@@ -795,6 +833,7 @@ setTimeout(()=>{ toast.style.opacity = '0'; }, 1000); // ẩn sau 1 giây
   p.gender = inputs.gender.value; 
   p.address = inputs.address.value; 
   p.dx = inputs.dx.value;
+p.room = document.getElementById('p_room').value;
 
   // meds
   p.meds = Array.from(medList.children).map(r=>({
@@ -1540,18 +1579,21 @@ document.getElementById('btnGio').addEventListener('click',()=>{
   let html = '';
 
   if (ds.length){
-    html += `
-      <table style="width:100%;border-collapse:collapse;font-size:14px;">
-        <thead>
-          <tr style="background:#f8f8f8;text-align:left;">
-            <th style="border-bottom:1px solid #ccc;padding:6px;">STT</th>
-            <th style="border-bottom:1px solid #ccc;padding:6px;">Tên bệnh nhân</th>
-            <th style="border-bottom:1px solid #ccc;padding:6px;">Giờ khám</th>
-            <th style="border-bottom:1px solid #ccc;padding:6px;">Trạng thái</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
+   html += `
+  <table style="width:100%;border-collapse:collapse;font-size:14px;">
+    <thead>
+      <tr style="background:#f8f8f8;text-align:left;">
+        <th style="border-bottom:1px solid #ccc;padding:6px;">STT</th>
+        <th style="border-bottom:1px solid #ccc;padding:6px;">Tên bệnh nhân</th>
+        <th style="border-bottom:1px solid #ccc;padding:6px;">Phòng</th>
+        <th style="border-bottom:1px solid #ccc;padding:6px;">Giờ khám</th>
+        <th style="border-bottom:1px solid #ccc;padding:6px;">Số ngày điều trị</th>
+        <th style="border-bottom:1px solid #ccc;padding:6px;">Trạng thái</th>
+      </tr>
+    </thead>
+    <tbody>
+`;
+
 
     ds.forEach((p, i)=>{
       let status = '';
@@ -1565,15 +1607,19 @@ document.getElementById('btnGio').addEventListener('click',()=>{
           status = `<span style="color:#FF0000;">Ra viện ngày ${formatDateVN(p.discharge)} (${p.discharge_time})</span>`;
         }
       }
-      
+        const songay = p.admit && !p.discharge ? `${daysBetween(p.admit, todayStr()) + 1}` : (p.total || '');
+
       html += `
-        <tr>
-          <td style="border-bottom:1px solid #eee;padding:6px;">${i+1}</td>
-          <td style="border-bottom:1px solid #eee;padding:6px;">${p.name}</td>
-          <td style="border-bottom:1px solid #eee;padding:6px;">${p.exam_time}</td>
-          <td style="border-bottom:1px solid #eee;padding:6px;">${status}</td>
-        </tr>
-      `;
+    <tr>
+      <td style="border-bottom:1px solid #eee;padding:6px;">${i+1}</td>
+      <td style="border-bottom:1px solid #eee;padding:6px;">${p.name || ''}</td>
+      <td style="border-bottom:1px solid #eee;padding:6px;">${p.room || ''}</td>
+      <td style="border-bottom:1px solid #eee;padding:6px;">${p.exam_time || ''}</td>
+      <td style="border-bottom:1px solid #eee;padding:6px;color:#ff7a18;font-weight:600;">${songay ? songay + ' ngày' : ''}</td>
+      <td style="border-bottom:1px solid #eee;padding:6px;">${status}</td>
+    </tr>
+  `;
+
     });
 
     html += `
