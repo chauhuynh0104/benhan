@@ -197,15 +197,42 @@ async function savePatientsToDropbox(patients) {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
-	/* Hiện checkbox rõ ràng trong môi trường Electron / Nativefier */
+
+/* ---- Ép hiển thị checkbox trong Nativefier ---- */
 input[type="checkbox"] {
-  appearance: auto !important;
-  -webkit-appearance: checkbox !important;
-  accent-color: #ff6600; /* màu cam đồng bộ theme Doctor Châu */
-  transform: scale(1.2);
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #666;
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
   cursor: pointer;
+  background-color: #fff;
+  vertical-align: middle;
 }
-  </style>
+
+/* Dấu tick khi được chọn */
+input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0px;
+  width: 5px;
+  height: 10px;
+  border: solid #ff6600; /* màu cam theme Doctor Châu */
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Cho nhấn dễ hơn */
+input[type="checkbox"]:hover {
+  box-shadow: 0 0 3px #ff6600;
+}
+</style>
+
+
 </head>
 <body>
 <div class="app">
