@@ -265,7 +265,27 @@ async function savePatientsToDropbox(patients) {
     font-size: 15px !important;
   }
 }
-
+/* 🌐 Chia đôi màn hình 50:50 khi hiển thị trên mobile */
+@media (max-width: 768px) {
+  .app {
+    flex-direction: row !important; /* Đặt 2 cột cạnh nhau */
+    flex-wrap: wrap;
+    height: auto;
+  }
+  .sidebar, .main {
+    width: 50% !important;
+    max-width: 50% !important;
+    height: auto;
+  }
+  .sidebar {
+    min-width: unset;
+    border-right: 1px solid #f0e0d0;
+    box-shadow: none;
+  }
+  .main {
+    border-left: 1px solid #f0e0d0;
+  }
+}
   </style>
 </head>
 <body>
