@@ -197,6 +197,75 @@ async function savePatientsToDropbox(patients) {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* ==== Nhóm phòng trong danh sách bệnh nhân ==== */
+.room-header {
+  background: linear-gradient(90deg, #fff3e0, #fff);
+  color: #ff7a18;
+  font-weight: 600;
+  font-size: 14px;
+  border-left: 4px solid #ff7a18;
+  padding: 4px 8px;
+  margin: 10px 0 4px 0;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(255, 122, 24, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room-header::before {
+  content: "🏠";
+  font-size: 14px;
+}
+/* ===== Responsive Mobile View ===== */
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+    overflow-x: hidden;
+  }
+
+  #mainContainer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  #leftPanel {
+    width: 100%;
+    max-height: 45vh;
+    overflow-y: auto;
+    border-bottom: 2px solid #f2f2f2;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  #rightPanel {
+    width: 100%;
+    padding: 10px;
+    overflow-y: auto;
+  }
+
+  .patient-item {
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 2px;
+  }
+
+  .room-header {
+    background: linear-gradient(90deg, #fff6ed, #fff);
+    color: #ff7a18;
+    font-weight: 600;
+    font-size: 14px;
+    border-left: 4px solid #ff7a18;
+    padding: 4px 8px;
+    margin: 8px 0 4px 0;
+    border-radius: 6px;
+  }
+
+  button, input, select {
+    font-size: 15px !important;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -271,7 +340,8 @@ async function savePatientsToDropbox(patients) {
 <div style="flex:1;min-width:600px" class="section">
   <div class="grid">
     <div>
-      <label>Giờ khám</label>
+ <label id="gioKhamLabel"><b>Giờ khám</b> <span id="tenBenhNhanLabel" style="color:#ff6600;"></span></label>
+
       <input id="exam_time" type="time" />
     </div>
   </div>
@@ -493,41 +563,59 @@ function renderPatientList(filter=''){
     const dischargeDate = p.discharge;
     const dischargeTime = p.discharge_time || '23:59'; // Mặc định cuối ngày nếu không có giờ
     
-    // Nếu ngày ra viện > ngày hiện tại -> vẫn hiển thị
     if (dischargeDate > currentDate) return true;
-    
-    // Nếu ngày ra viện = ngày hiện tại nhưng chưa tới giờ ra viện -> vẫn hiển thị
     if (dischargeDate === currentDate && dischargeTime > currentTime) return true;
-    
-    // Ngược lại -> ẩn đi
     return false;
   });
-  
-  arr.forEach(p=>{
-    const el = document.createElement('div'); el.className='patient-item';
-    el.innerHTML = `<div>
-      <div style="font-weight:600">${p.name||'(chưa có tên)'}</div>
-      <div class="patient-meta">Tuổi: ${p.age||''} • ${p.gender||''} • P${p.room||''}</div>
-    </div>
-    <div style="text-align:right;min-width:80px"><div style="text-align:right;min-width:120px">
-  <div style="font-size:13px;color:#ff7a18;"><button class="btn secondary">
-    ${p.admit && !p.discharge ? `${daysBetween(p.admit, todayStr()) + 1}` : (p.total || '')}</button>
-  </div>
-</div>
-</div>`;
-   
-    el.addEventListener('click',()=>openPatient(p.id));
-  /*  el.querySelector('button').addEventListener('click',e=>{
-      e.stopPropagation();
-      openPatient(p.id);
-    });
-   */ 
-    patientListEl.appendChild(el);
+
+  // --- 🧩 Nhóm bệnh nhân theo phòng ---
+  const grouped = {};
+  arr.forEach(p => {
+    const room = p.room ? p.room.toString().trim() : 'Khác';
+    if (!grouped[room]) grouped[room] = [];
+    grouped[room].push(p);
   });
-  
+
+  // --- 🧩 Sắp xếp theo số phòng ---
+  const sortedRooms = Object.keys(grouped).sort((a, b) => {
+    const na = parseInt(a.replace(/\D/g, '')) || 0;
+    const nb = parseInt(b.replace(/\D/g, '')) || 0;
+    return na - nb;
+  });
+
+  // --- 🧩 Render ra danh sách ---
+  sortedRooms.forEach(room => {
+    // Thêm tiêu đề phòng
+    const header = document.createElement('div');
+    header.textContent = 'Phòng ' + room;
+    header.style.fontWeight = 'bold';
+    header.style.margin = '6px 0 4px 4px';
+    header.style.color = '#ff6600';
+    patientListEl.appendChild(header);
+
+    // Render từng bệnh nhân (giữ nguyên code cũ)
+    grouped[room].forEach(p => {
+      const el = document.createElement('div');
+      el.className = 'patient-item';
+      el.innerHTML = `<div>
+      <div style="font-weight:600">${p.name || '(chưa có tên)'}${p.outpatient ? '*' : ''}</div>
+
+        <div class="patient-meta">Tuổi: ${p.age || ''} • ${p.gender || ''} • P${p.room || ''}</div>
+      </div>
+      <div style="text-align:right;min-width:80px"><div style="text-align:right;min-width:120px">
+        <div style="font-size:13px;color:#ff7a18;"><button class="btn secondary">
+          ${p.admit && !p.discharge ? `${daysBetween(p.admit, todayStr()) + 1}` : (p.total || '')}
+        </button></div>
+      </div></div>`;
+      el.addEventListener('click',()=>openPatient(p.id));
+      patientListEl.appendChild(el);
+    });
+  });
+
   // Hiển thị thông báo nếu đang ẩn bệnh nhân
   updateHiddenPatientsNotice();
 }
+
 function updateHiddenPatientsNotice() {
   // Xóa thông báo cũ nếu có
   const oldNotice = document.getElementById('hiddenPatientsNotice');
@@ -599,6 +687,7 @@ function openPatient(id){
   document.getElementById('admit_time').value = p.admit_time || '';
   document.getElementById('discharge_time').value = p.discharge_time || '';
   document.getElementById('exam_time').value = p.exam_time || '';
+  document.getElementById('tenBenhNhanLabel').textContent = '' + (p.name || '');
 }
 
 function createMedRow(model){
@@ -1051,43 +1140,92 @@ function laCuoiTuan(d){
 
 function tinhNgayCanLen(route, startDate, mode, dischargeDate, patient) {
   const today = new Date();
+  today.setHours(0,0,0,0);
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-  const start = new Date(startDate);
-  const discharge = dischargeDate ? new Date(dischargeDate) : null;
   const danhSach = [];
 
   if (route !== 'Thuỷ châm' && route !== 'Tiêm') return danhSach;
+  if (dischargeDate) {
+    const discharge = new Date(dischargeDate);
+    discharge.setHours(0,0,0,0);
+    if (discharge < today) return danhSach; // đã ra viện -> bỏ qua
+  }
 
-  // Lấy tất cả thuốc cùng tên và cùng route
-  const medsCungLoai = (patient.meds || []).filter(m => 
-    m.route === route && 
-    m.name?.trim().toLowerCase() === patient.meds.find(x => x.start === startDate)?.name?.trim().toLowerCase()
-  );
+  // Xác định thuốc tham chiếu
+  const refMed = (patient.meds || []).find(m => m.start === startDate && m.route === route);
+  const refName = refMed?.name?.trim().toLowerCase();
 
-  // ✅ Lấy ngày start mới nhất (lần lên gần nhất)
-  const latest = medsCungLoai.reduce((a,b)=> new Date(a.start) > new Date(b.start) ? a : b, medsCungLoai[0]);
-  const lastDate = latest ? new Date(latest.start) : start;
+  // Lọc thuốc cùng tên + route
+  let medsCungLoai = [];
+  if (refName) {
+    medsCungLoai = (patient.meds || []).filter(m => 
+      m.route === route && 
+      (m.name || '').trim().toLowerCase() === refName
+    );
+  }
 
-  if (discharge && discharge < today) return danhSach; // ra viện rồi
+  // Ngày start mới nhất
+  let lastDate;
+  if (medsCungLoai.length > 0) {
+    lastDate = medsCungLoai.reduce((a, b) => 
+      new Date(a.start || a) > new Date(b.start || b) ? a : b
+    );
+    lastDate = new Date(lastDate.start || lastDate);
+  } else {
+    lastDate = new Date(startDate);
+  }
+  lastDate.setHours(0,0,0,0);
+  if (isNaN(lastDate)) return danhSach;
 
-  const maxDate = discharge && discharge < tomorrow ? discharge : tomorrow;
-
+  // ---- Logic Thủy châm ----
   if (route === 'Thuỷ châm') {
     const isCachNgay = (mode === 'Cách ngày');
     const nextDate = new Date(lastDate);
     nextDate.setDate(nextDate.getDate() + (isCachNgay ? 2 : 1));
 
-    // ⚙️ Nếu ngày tiếp theo > hôm nay mà <= ngày mai thì mới báo
-    if (nextDate.toDateString() === tomorrow.toDateString()) {
+    // Nếu rơi vào T7/CN -> dời sang T2
+    const day = nextDate.getDay(); // CN=0, T2=1,...,T7=6
+    if (day === 6) nextDate.setDate(nextDate.getDate() + 2); // T7 → +2 → T2
+    else if (day === 0) nextDate.setDate(nextDate.getDate() + 1); // CN → +1 → T2
+    nextDate.setHours(0,0,0,0);
+
+    // Nếu hôm nay hoặc ngày mai là ngày cần lên → báo
+    if (
+      nextDate.toDateString() === today.toDateString() ||
+      nextDate.toDateString() === tomorrow.toDateString()
+    ) {
       danhSach.push(nextDate);
     }
-  } else if (route === 'Tiêm') {
-    if (tomorrow <= maxDate) danhSach.push(tomorrow);
+    // Nếu hôm nay là T6 và lịch bị dời sang T2 -> báo sớm
+    else if (today.getDay() === 5 && nextDate.getDay() === 1) {
+      const diffDays = Math.round((nextDate - today) / (1000*60*60*24));
+      if (diffDays <= 3 && diffDays >= 1) {
+        danhSach.push(nextDate);
+      }
+    }
+  }
+
+  // ---- Logic Tiêm ----
+  else if (route === 'Tiêm') {
+    const nextDate = new Date(lastDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+    nextDate.setHours(0,0,0,0);
+
+    // Báo nếu hôm nay hoặc ngày mai là lịch tiêm
+    if (
+      nextDate.toDateString() === today.toDateString() ||
+      nextDate.toDateString() === tomorrow.toDateString()
+    ) {
+      danhSach.push(nextDate);
+    }
   }
 
   return danhSach;
 }
+
+
+
 
 
 
@@ -1182,7 +1320,7 @@ function themLuaChonThuyCham(row){
   if(row.querySelector('.thuycham-mode')) return;
   const select = document.createElement('select');
   select.className='thuycham-mode';
-  select.innerHTML = `<option>Liên tiếp</option><option>Cách ngày</option>`;
+  select.innerHTML = `<option>Cách ngày</option><option>Liên tiếp</option>`;
   row.querySelector('.med-route').after(select);
   select.addEventListener('change',()=> {
     const p = patients.find(x=>x.id===currentPatientId);
@@ -1994,6 +2132,18 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+// === Double-click (mobile) = Ctrl + L ===
+let lastTap = 0;
+document.addEventListener('touchend', function(e) {
+  const now = new Date().getTime();
+  const tapLength = now - lastTap;
+  if (tapLength < 400 && tapLength > 0) {
+    // Giả lập Ctrl + L
+    const event = new KeyboardEvent('keydown', { ctrlKey: true, key: 'l' });
+    document.dispatchEvent(event);
+  }
+  lastTap = now;
+});
 
 </script>
 </body>
