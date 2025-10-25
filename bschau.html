@@ -218,11 +218,28 @@ async function savePatientsToDropbox(patients) {
   font-size: 14px;
 }
 /* ===== Responsive Mobile View ===== */
-@media (max-width: 768px) {
-  body {
-    font-size: 15px;
-    overflow-x: hidden;
+/* ==== Giao diện mobile chia đôi 50:50 ==== */
+@media (max-width:900px) {
+  .app {
+    flex-direction: row !important;   /* đặt 2 cột song song */
+    flex-wrap: nowrap;
+    height: auto;
   }
+  .sidebar {
+    width: 50% !important;
+    max-width: 50%;
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid #f3d9c6;
+  }
+  .main {
+    width: 50% !important;
+    max-width: 50%;
+    height: 100vh;
+    overflow-y: auto;
+    border-left: 1px solid #f3d9c6;
+  }
+
 
   #mainContainer {
     display: flex;
