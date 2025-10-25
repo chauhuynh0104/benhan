@@ -1,4 +1,14 @@
+<!-- 
 
+///////////////////////////////////////////////
+/////Code được viết bởi Chauhuynh0104/////////
+////http://fb.com/chauhuynh0104//////////////
+/////////////079.567.9350///////////////////
+///Vui lòng tôn trọng bản quyền tác giả////
+/////////Không xoá dòng này //////////////
+/////////////////////////////////////////
+
+!-->
 <!doctype html>
 <html lang="vi">
 <head>
@@ -82,6 +92,7 @@ async function savePatientsToDropbox(patients) {
 }
 </script>
   <style>
+
     :root{
       --bg:#fff7f0; --accent:#ff7a18; --muted:#6b6b6b; --card:#ffffff; --glass: rgba(255,255,255,0.6);
       --shadow: 0 6px 18px rgba(0,0,0,0.08);
@@ -100,6 +111,29 @@ async function savePatientsToDropbox(patients) {
   min-width:150px;           /* Giới hạn nhỏ nhất */
   max-width:400px;           /* Giới hạn lớn nhất */
 }
+
+.room-header {
+  background: rgba(240, 240, 240, 0.7);  /* nền xám mờ nhẹ */
+  color: #ff7a18;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 6px 10px;
+  margin: 10px 0 4px 0;
+  border-radius: 6px;
+  border-left: 4px solid #ff7a18;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+
+/* Hiệu ứng hover nhẹ cho đẹp */
+.room-header:hover {
+  background: rgba(180, 180, 180, 0.45);
+  transition: background 0.2s ease;
+}
+
     .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
     h2{margin:0;color:var(--accent)}
     .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:10px;border:none;cursor:pointer}
@@ -197,26 +231,20 @@ async function savePatientsToDropbox(patients) {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
-/* ==== Nhóm phòng trong danh sách bệnh nhân ==== */
-.room-header {
-  background: linear-gradient(90deg, #fff3e0, #fff);
+
+
+/* ==== HIỆU ỨNG UỐN LƯỢN CHỮ "ĐANG TẢI..." ==== */
+.loading-text {
+  font-weight: 500;
   color: #ff7a18;
-  font-weight: 600;
-  font-size: 14px;
-  border-left: 4px solid #ff7a18;
-  padding: 4px 8px;
-  margin: 10px 0 4px 0;
-  border-radius: 6px;
-  box-shadow: 0 1px 2px rgba(255, 122, 24, 0.2);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  animation: pulse 1.5s infinite;
 }
 
-.room-header::before {
-  content: "🏠";
-  font-size: 14px;
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
 }
+
   </style>
 </head>
 <body>
@@ -444,13 +472,37 @@ function daysBetween(a,b){
 // App state
 let patients = [];
 window.addEventListener('load', async () => {
-  patients = await loadPatientsFromDropbox();
-  showAllPatients = false; // ✅ THÊM DÒNG NÀY - Mặc định ẩn bệnh nhân đã ra viện
-  renderPatientList();
-capNhatThongBao();
-canhBaoSoNgayNamVien();
+  // --- Hiện "Đang tải danh sách bệnh nhân..." ---
+  const patientListEl = document.getElementById('patientList');
+patientListEl.innerHTML = `
+  <div style="text-align:center;color:#ff7a18;padding:20px;font-weight:500;">
+    ⏳ <span class="loading-text">Đang tải danh sách bệnh nhân...</span>
+  </div>
+`;
 
+
+  // --- Hiện "Đang tải thông báo..." ---
+  const thongBaoChung = document.getElementById('thongBaoChung');
+  if (thongBaoChung) {
+    thongBaoChung.innerHTML = `
+  <div style="color:#b34700;padding:10px;text-align:center;">
+    ⏳ <span class="loading-text">Đang tải thông báo...</span>
+  </div>
+`;
+
+  }
+
+  // --- Bắt đầu tải dữ liệu ---
+  patients = await loadPatientsFromDropbox();
+
+  showAllPatients = false;
+  renderPatientList();
+
+  // Sau khi render xong danh sách -> cập nhật thông báo
+  capNhatThongBao();
+  canhBaoSoNgayNamVien();
 });
+
 
 let currentPatientId = null;
 let showAllPatients = false; // ✅ THÊM DÒNG NÀY - Biến để theo dõi có hiện tất cả bệnh nhân không
@@ -536,13 +588,13 @@ function renderPatientList(filter=''){
 
   // --- 🧩 Render ra danh sách ---
   sortedRooms.forEach(room => {
-    // Thêm tiêu đề phòng
-    const header = document.createElement('div');
-    header.textContent = 'Phòng ' + room;
-    header.style.fontWeight = 'bold';
-    header.style.margin = '6px 0 4px 4px';
-    header.style.color = '#ff6600';
-    patientListEl.appendChild(header);
+// Thêm tiêu đề phòng (dạng có nền mờ)
+// Thêm tiêu đề phòng có nền mờ
+const header = document.createElement('div');
+header.className = 'room-header';
+header.textContent = 'Phòng ' + room;
+patientListEl.appendChild(header);
+
 
     // Render từng bệnh nhân (giữ nguyên code cũ)
     grouped[room].forEach(p => {
