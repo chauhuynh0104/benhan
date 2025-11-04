@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Kiểm tra tờ điều trị</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background: #fff7f0;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+
+  header {
+    background: linear-gradient(90deg, #0066FF, #66FFFF);
+    color: white;
+    padding: 20px 40px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 26px;
+  }
+
+  main {
+    max-width: 900px;
+    margin: 40px auto;
+    background: white;
+    padding: 30px 40px;
+    border-radius: 16px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+
+  .upload-box {
+    border: 2px dashed #3498db;
+    background: #fffaf3;
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .upload-box:hover {
+    background: #fff3e0;
+  }
+
+  button {
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 22px;
+    margin: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  button:hover {
+    background: #e96b00;
+  }
+
+  #fileName {
+    margin-top: 10px;
+    color: #444;
+    font-style: italic;
+  }
+
+  #resultSection {
+    display: none; /* 🔹 Ẩn toàn bộ kết quả ban đầu */
+    margin-top: 30px;
+  }
+
+  .result-box {
+    margin-top: 10px;
+    padding: 20px;
+    border-radius: 10px;
+    background: #fff8f3;
+    border-left: 5px solid #3498db;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  .success {
+    background: #f1fff2;
+    border-left: 5px solid #4caf50;
+  }
+
+  .error {
+    background: #fff1f1;
+    border-left: 5px solid #f44336;
+  }
+
+  .footer-note {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #777;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+
+<main>
+  <div class="upload-box">
+   
+
+    <!-- input ẩn -->
+    <input type="file" id="fileInput" accept=".html" style="display:none">
+    <input type="file" id="folderInput" webkitdirectory directory style="display:none">
+
+    <!-- Nút hiển thị -->
+    <button onclick="document.getElementById('fileInput').click()">📄 Chọn file thủ công</button><br>
+    <button onclick="document.getElementById('folderInput').click()">📁 Chọn thư mục (Tự động tìm file)</button>
+
+    <!-- Tên file được chọn -->
+    <div id="fileName"></div>
+  </div>
+
+  <!-- Ẩn toàn bộ kết quả ban đầu -->
+  <div id="resultSection">
+    <h2>Kết quả kiểm tra:</h2>
+    <div id="output" class="result-box"></div>
+  </div>
+
+  <p class="footer-note">Design By Dr.Châu</p>
+</main>
+
+<script>
+let selectedFile = null;
+
+document.getElementById('fileInput').addEventListener('change', function() {
+  if (this.files.length > 0) {
+    selectedFile = this.files[0];
+    document.getElementById('fileName').textContent = `✅ Đã chọn file: ${selectedFile.name}`;
+    checkFile(); // tự động kiểm tra
+  }
+});
+
+document.getElementById('folderInput').addEventListener('change', function() {
+  const files = Array.from(this.files).filter(f => f.name.endsWith('.html'));
+  if (files.length === 0) {
+    alert('Không tìm thấy file HTML nào trong thư mục.');
+    return;
+  }
+
+  const readPromises = files.map(f =>
+    new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const text = e.target.result;
+        resolve({ file: f, valid: text.includes('cs53A8CA98') });
+      };
+      reader.readAsText(f);
+    })
+  );
+
+  Promise.all(readPromises).then(results => {
+    const validFiles = results.filter(r => r.valid).map(r => r.file);
+    if (validFiles.length === 0) {
+      alert('Không có file HTML hợp lệ trong thư mục!');
+      return;
+    }
+
+    validFiles.sort((a, b) => b.lastModified - a.lastModified);
+    selectedFile = validFiles[0];
+    document.getElementById('fileName').textContent = `✅ Đã chọn file mới nhất: ${selectedFile.name}`;
+    checkFile(); // tự động kiểm tra
+  });
+});
+
+function checkFile() {
+  const resultSection = document.getElementById('resultSection');
+  const output = document.getElementById('output');
+  resultSection.style.display = "block"; // 🔹 Hiện phần kết quả khi bắt đầu xử lý
+  output.textContent = '⏳ Đang xử lý...';
+  output.className = 'result-box';
+
+  if (!selectedFile) {
+    output.textContent = '⚠️ Vui lòng chọn file hoặc thư mục!';
+    output.classList.add('error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(e.target.result, 'text/html');
+const dateCells = doc.querySelectorAll('td.cs53A8CA98[rowspan], td.csD113743C[rowspan]');
+    const days = [];
+
+    dateCells.forEach(td => {
+      const fullText = td.innerText.trim().replace(/\s+/g, ' ');
+      const dateMatch = fullText.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
+      const dateStr = dateMatch ? dateMatch[1] : '';
+      const dateObj = parseVietnameseDate(dateStr);
+      const weekday = dateObj ? getWeekdayName(dateObj) : 'Không xác định';
+
+      let html = '';
+      let next = td.parentElement.nextElementSibling;
+      while (next && !next.querySelector('td.cs53A8CA98[rowspan], td.csD113743C[rowspan]')) {
+        html += next.innerText + '\n';
+        next = next.nextElementSibling;
+      }
+
+      days.push({ date: dateStr, weekday, content: html, dateObj });
+    });
+
+    if (days.length === 0) {
+      output.textContent = '❌ Không tìm thấy dữ liệu ngày trong file.';
+      output.classList.add('error');
+      return;
+    }
+
+    const errors = [];
+    const checks = [
+      { key: 'Sắc thuốc thang', type: 'always', label:'Sắc thuốc thang' },
+      { key: '[kim ngắn]', type: 'skipWeekend', label:'Điện châm' },
+      { key: 'tia hồng ngoại', type: 'skipWeekend',label: 'Điều trị bằng tia hồng ngoại'},
+      { key: 'bấm huyệt bằng tay', type: 'skipWeekend',label:'Xoa bóp bấm huyệt bằng tay' },
+      { key: 'Kỹ thuật xoa', type: 'skipWeekend', label:'Kỹ thuật xoa bóp vùng'}
+    ];
+
+    const ongoingChecks = [
+      { key: 'Amlodipine', active: false },
+      { key: 'Mimosa', active: false }
+    ];
+
+    const firstDay = days[0];
+
+for (const chk of checks) {
+  if (firstDay.content.includes(chk.key)) {
+    for (let i = 1; i < days.length; i++) {
+      const d = days[i];
+      const skip = chk.type === 'skipWeekend' && isWeekend(d.dateObj);
+      const isDischarge = /ra viện/i.test(d.content); // 🔹 kiểm tra ngày có "ra viện"
+      if (isDischarge) continue; // 🔹 bỏ qua ngày ra viện
+      if (!skip && !d.content.includes(chk.key)) {
+        errors.push(`❌ Ngày ${d.date} (${d.weekday}) thiếu "${chk.label}"`);
+      }
+    }
+  }
+}
+
+
+    for (const d of days) {
+      if (d.content.includes('Dubemin') && !d.content.includes('mỗi huyệt')) {
+        errors.push(`❌ Ngày ${d.date} (${d.weekday}) có Dubemin nhưng thiếu thủ thuật thủy châm`);
+      }
+    }
+
+for (const chk of ongoingChecks) {
+  let activeFrom = -1;
+  for (let i = 0; i < days.length; i++) {
+    const text = days[i].content;
+    const isDischarge = /ra viện/i.test(text); // 🔹 kiểm tra ngày có "ra viện"
+    if (isDischarge) continue; // 🔹 bỏ qua kiểm tra ngày đó
+
+    if (text.includes(chk.key)) {
+      if (activeFrom === -1) activeFrom = i;
+    } else if (activeFrom !== -1) {
+      errors.push(`❌ Ngày ${days[i].date} (${days[i].weekday}) thiếu ${chk.key}`);
+    }
+  }
+}
+
+
+
+    if (errors.length === 0) {
+      output.innerHTML = '✅ Máy chủ kiểm tra thủ thuật và thuốc đã hiển thị trên tờ điều trị đúng.';
+      output.classList.add('success');
+    } else {
+      output.innerHTML = errors.join('\n');
+      output.classList.add('error');
+    }
+  };
+  reader.readAsText(selectedFile);
+}
+
+function parseVietnameseDate(str) {
+  const match = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (!match) return null;
+  const [_, d, m, y] = match;
+  return new Date(`${y}-${m}-${d}T00:00:00`);
+}
+
+function isWeekend(date) {
+  if (!date) return false;
+  const dow = date.getDay();
+  return dow === 0 || dow === 6;
+}
+
+function getWeekdayName(date) {
+  const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+  return weekdays[date.getDay()];
+}
+</script>
+</body>
+</html>
