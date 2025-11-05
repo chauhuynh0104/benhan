@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -268,6 +269,49 @@ for (const chk of ongoingChecks) {
 }
 
 
+// --- YÊU CẦU 1: Kiểm tra "đếm tổng trở / X-quang" → "Kết quả CLS" ---
+for (let i = 0; i < days.length - 1; i++) {
+  const text = days[i].content.toLowerCase();
+  if (text.includes('đếm tổng trở') || text.includes('x-quang')) {
+    let j = i + 1;
+    // Bỏ qua thứ 7 - CN
+    while (j < days.length && isWeekend(days[j].dateObj)) j++;
+    if (j < days.length && !days[j].content.includes('Kết quả CLS')) {
+      errors.push(`❌ Ngày ${days[j].date} (${days[j].weekday}) thiếu Kết quả CLS"`);
+    }
+  }
+}
+
+// --- YÊU CẦU 2 & 3: Hiển thị khoảng dùng thuốc ---
+const drugList = ['Amlodipine', 'Mimosa', 'Piracetam'];
+const drugPeriods = {};
+
+for (const drug of drugList) {
+  let start = null;
+  for (let i = 0; i < days.length; i++) {
+    const hasDrug = days[i].content.includes(drug);
+    if (hasDrug && !start) start = i;
+    if ((!hasDrug || i === days.length - 1) && start !== null) {
+      const endIdx = hasDrug && i === days.length - 1 ? i : i - 1;
+      const startDate = days[start].date;
+      const endDate = days[endIdx].date;
+      if (!drugPeriods[drug]) drugPeriods[drug] = [];
+      drugPeriods[drug].push({ startDate, endDate });
+      start = null;
+    }
+  }
+}
+
+// --- Hiển thị kết quả dùng thuốc ---
+for (const [drug, periods] of Object.entries(drugPeriods)) {
+  for (const p of periods) {
+    if (drug === 'Piracetam') {
+      errors.push(`💊 ${drug} từ ngày ${p.startDate} → ${p.endDate}`);
+    } else {
+      errors.push(`💊 ${drug} từ ngày ${p.startDate} → ${p.endDate}`);
+    }
+  }
+}
 
     if (errors.length === 0) {
       output.innerHTML = '✅ Máy chủ kiểm tra thủ thuật và thuốc đã hiển thị trên tờ điều trị đúng.';
