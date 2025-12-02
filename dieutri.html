@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -312,6 +313,79 @@ function checkFile() {
     }
 
     const errors = [];
+
+
+// ======================
+// ✅ Bổ sung kiểm tra "Sắc thuốc thang" theo ngày bắt đầu bài thuốc
+// ======================
+
+// 1. Tìm tất cả các bài thuốc y học cổ truyền
+const herbalPeriods = [];
+const doc2 = parser.parseFromString(e.target.result, 'text/html'); // Đổi tên biến
+const herbalElements = doc2.querySelectorAll('p.csDFA850B2');
+
+herbalElements.forEach(p => {
+    const text = p.textContent || p.innerText;
+    if (text.includes('Vị thuốc y học cổ truyền')) {
+        const dateMatch = text.match(/từ ngày\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+đến ngày\s+(\d{1,2}\/\d{1,2}\/\d{4})/);
+        if (dateMatch) {
+            const startDateStr = dateMatch[1];
+            const endDateStr = dateMatch[2];
+            const startDate = parseVietnameseDate(startDateStr);
+            const endDate = parseVietnameseDate(endDateStr);
+            
+            herbalPeriods.push({
+                startDateStr,
+                endDateStr,
+                startDate,
+                endDate
+            });
+        }
+    }
+});
+
+// 2. Kiểm tra từng ngày trong days có nằm trong khoảng bài thuốc không
+days.forEach((day, index) => {
+    const dayDate = parseVietnameseDate(day.date);
+    
+    // Tìm bài thuốc nào chứa ngày này
+    const matchingHerbal = herbalPeriods.find(herbal => {
+        return dayDate >= herbal.startDate && dayDate <= herbal.endDate;
+    });
+    
+    if (matchingHerbal && day.content.includes('Sắc thuốc thang')) {
+        // Kiểm tra xem có đúng ngày bắt đầu không
+        const expectedDate = matchingHerbal.startDateStr;
+        const dateRegex = new RegExp(`ngày\\s*${expectedDate.replace(/\//g, '\\/')}`);
+        
+        if (!dateRegex.test(day.content)) {
+            errors.push(`❌ Ngày ${day.date} (${day.weekday}) có "Sắc thuốc thang" nhưng không đúng ngày bắt đầu bài thuốc (phải là ngày ${expectedDate})`);
+        }
+    }
+});
+
+// 3. Kiểm tra các ngày trong khoảng bài thuốc phải có thủ thuật sắc thuốc (trừ ngày ra viện)
+herbalPeriods.forEach(herbal => {
+    const startDate = parseVietnameseDate(herbal.startDateStr);
+    const endDate = parseVietnameseDate(herbal.endDateStr);
+    
+    // Tìm các ngày nằm trong khoảng (không tính cuối tuần)
+    for (let i = 0; i < days.length; i++) {
+        const dayDate = parseVietnameseDate(days[i].date);
+        const isDischargeDay = /cho ra viện|ra viện/i.test(days[i].content);
+        
+        // Bỏ qua nếu là ngày ra viện
+        if (isDischargeDay) continue;
+        
+        if (dayDate >= startDate && dayDate <= endDate && !isWeekend(dayDate)) {
+            // Kiểm tra ngày này có thủ thuật sắc thuốc không
+            const hasHerbalProcedure = days[i].content.includes('Sắc thuốc thang');
+            if (!hasHerbalProcedure) {
+                errors.push(`❌ Ngày ${days[i].date} (${days[i].weekday}) nằm trong khoảng bài thuốc ${herbal.startDateStr}-${herbal.endDateStr} nhưng thiếu thủ thuật "Sắc thuốc thang"`);
+            }
+        }
+    }
+});
 
     // ======================
     // ✅ Ý 1: Kiểm tra "đếm tổng trở / X-quang" → "Kết quả CLS"
