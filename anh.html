@@ -1,1 +1,2474 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FINAL TEST REVISION - ENGLISH FOR NURSING</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --success: #27ae60;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --gray: #7f8c8d;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --radius: 10px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            font-size: 1.4rem;
+            margin: 25px 0 15px;
+            color: var(--dark);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .test-info {
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 15px;
+        }
+        
+        .info-item i {
+            color: var(--secondary);
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .section {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .question-container {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .question-container:last-child {
+            border-bottom: none;
+        }
+        
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        @media (min-width: 768px) {
+            .options-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .ultra-simple-matching {
+    margin: 20px 0;
+}
 
+.match-row {
+    margin: 15px 0;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.match-row span {
+    font-weight: bold;
+    min-width: 120px;
+}
+
+.match-row select {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.check-btn {
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.check-btn:hover {
+    background: #0056b3;
+}/* Hộp từ vựng ngang */
+.word-box-horizontal {
+    border: 2px solid #2c3e50;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 20px 0;
+    background: white;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+.word-item {
+    padding: 10px 18px;
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 6px;
+    font-weight: 500;
+    color: #1565c0;
+}
+
+/* Hệ hô hấp diagram */
+.diagram-labeling {
+    margin: 25px 0;
+}
+
+.respiratory-diagram {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.diagram-placeholder {
+    text-align: center;
+}
+
+.diagram-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #3498db;
+}
+
+.diagram-image {
+    position: relative;
+    min-height: 400px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 10px;
+    border: 1px solid #bdc3c7;
+    margin: 20px 0;
+    padding: 20px;
+}
+
+/* Các phần của diagram */
+.diagram-part {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Vị trí các phần (giả lập) */
+.part1 { top: 20%; left: 25%; }
+.part2 { top: 20%; left: 65%; }
+.part3 { top: 30%; left: 45%; }
+.part4 { top: 40%; left: 35%; }
+.part5 { top: 55%; left: 40%; }
+.part6 { top: 55%; left: 50%; }
+.part7 { top: 80%; left: 45%; }
+
+.label-point {
+    width: 32px;
+    height: 32px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+.label-input {
+    background: white;
+    padding: 5px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.diagram-label-input {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    min-width: 180px;
+    text-align: center;
+}
+
+.diagram-label-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.diagram-label-input.correct {
+    border-color: #27ae60;
+    background: #d4edda;
+}
+
+.diagram-label-input.incorrect {
+    border-color: #e74c3c;
+    background: #f8d7da;
+}
+
+/* Controls */
+.labeling-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin: 25px 0;
+}
+
+.check-labeling-btn, .reset-labeling-btn {
+    padding: 14px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.check-labeling-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.check-labeling-btn:hover {
+    background: linear-gradient(135deg, #2980b9, #1c5a87);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
+}
+
+.reset-labeling-btn {
+    background: #95a5a6;
+    color: white;
+}
+
+.reset-labeling-btn:hover {
+    background: #7f8c8d;
+    transform: translateY(-2px);
+}
+
+/* Feedback */
+.labeling-feedback {
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    display: none;
+}
+
+.labeling-feedback.show {
+    display: block;
+}
+
+.correct-answers-labeling {
+    background: #e8f5e9;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    border-left: 4px solid #27ae60;
+}
+
+.correct-answers-labeling.hidden {
+    display: none;
+}
+
+.answer-item {
+    padding: 10px 15px;
+    margin: 8px 0;
+    background: white;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .diagram-image {
+        min-height: 300px;
+    }
+    
+    .diagram-part {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .part1 { top: 15%; left: 10%; }
+    .part2 { top: 15%; left: 60%; }
+    .part3 { top: 25%; left: 35%; }
+    .part4 { top: 40%; left: 20%; }
+    .part5 { top: 60%; left: 25%; }
+    .part6 { top: 60%; left: 45%; }
+    .part7 { top: 85%; left: 35%; }
+    
+    .diagram-label-input {
+        min-width: 120px;
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+    
+    .word-box-horizontal {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .word-item {
+        width: 100%;
+        text-align: center;
+    }
+}
+        .option {
+            background: var(--light);
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .option:hover {
+            background: #e3f2fd;
+            border-color: var(--secondary);
+        }
+        
+        .option.selected {
+            border-color: var(--secondary);
+            background: #e3f2fd;
+        }
+        
+        .option.correct {
+            border-color: var(--success);
+            background: #d4edda;
+        }
+        
+        .option.incorrect {
+            border-color: var(--accent);
+            background: #f8d7da;
+        }
+        
+        .option-letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .option.correct .option-letter {
+            background: var(--success);
+        }
+        
+        .option.incorrect .option-letter {
+            background: var(--accent);
+        }
+        
+        .answer-feedback {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .answer-feedback.show {
+            display: block;
+        }
+        
+        .correct-answer {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid var(--success);
+        }
+        
+        .incorrect-answer {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .feedback-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .passage {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .passage-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .true-false-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .true-false-option {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .results-summary {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--secondary);
+            margin: 20px 0;
+        }
+        
+        .score-bar {
+            height: 20px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 30px 0;
+        }
+        
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--secondary), var(--success));
+            width: 0%;
+            transition: width 1.5s ease;
+        }
+        
+        .results-details {
+            text-align: left;
+            margin-top: 30px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            margin: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+        }
+        
+        .btn-secondary:hover {
+            background: #d5dbdb;
+        }
+        
+        .written-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .answer-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .diagram-container {
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        .diagram-img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .diagram-labels {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .diagram-label {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .legend-correct {
+            background-color: #d4edda;
+            border: 1px solid var(--success);
+        }
+        
+        .legend-incorrect {
+            background-color: #f8d7da;
+            border: 1px solid var(--accent);
+        }
+        
+        .legend-selected {
+            background-color: #e3f2fd;
+            border: 1px solid var(--secondary);
+        }
+		/* CSS cho các ô input điền từ */
+.blank-input,
+.diagram-input,
+.allergy-input {
+    padding: 10px 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 5px 10px 5px 5px;
+    width: 180px;
+    transition: all 0.3s ease;
+    background-color: white;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.blank-input:focus,
+.diagram-input:focus,
+.allergy-input:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    background-color: #f8fdff;
+}
+
+.blank-input:hover,
+.diagram-input:hover,
+.allergy-input:hover {
+    border-color: #bbb;
+}
+
+/* Khi input có giá trị đúng */
+.blank-input.correct,
+.diagram-input.correct,
+.allergy-input.correct {
+    border-color: var(--success);
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Khi input có giá trị sai */
+.blank-input.incorrect,
+.diagram-input.incorrect,
+.allergy-input.incorrect {
+    border-color: var(--accent);
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Container cho các ô input */
+.written-answer {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    border-left: 4px solid var(--secondary);
+}
+
+.written-answer > div {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.written-answer > div:last-child {
+    margin-bottom: 0;
+}
+
+.written-answer label {
+    font-weight: 600;
+    color: var(--dark);
+    min-width: 30px;
+    margin-right: 10px;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    .blank-input,
+    .diagram-input,
+    .allergy-input {
+        width: 100%;
+        margin: 5px 0;
+    }
+    
+    .written-answer > div {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .written-answer > div label {
+        margin-bottom: 5px;
+    }
+}
+
+/* Animation khi kiểm tra đáp án */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.blank-input.checked,
+.diagram-input.checked,
+.allergy-input.checked {
+    animation: pulse 0.5s ease;
+}
+		    /* Chỉ thêm một số style mới cho phần written response */
+        
+        .written-answer-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin: 10px 0;
+            transition: border-color 0.3s;
+        }
+        
+        .written-answer-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+        
+        .check-answer-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        
+        .check-answer-btn:hover {
+            background: #2980b9;
+        }
+        
+        .written-feedback {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .written-feedback.show {
+            display: block;
+        }
+        /* Thêm vào CSS hiện có */
+.horizontal-word-box {
+    border: 2px solid var(--dark);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0 20px 0;
+    background-color: white;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.horizontal-word-box::before {
+    content: "Words:";
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    background: white;
+    padding: 0 10px;
+    font-weight: bold;
+    color: var(--primary);
+    font-size: 14px;
+}
+/* Hộp từ vựng */
+.simple-word-box {
+    border: 2px solid #333;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 20px 0;
+    background: #f8f9fa;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.simple-word-box span {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Hình ảnh diagram */
+.diagram-exercise {
+    margin: 25px 0;
+}
+
+.diagram-image-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.respiratory-diagram-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Các ô nhập liệu */
+.label-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.label-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.label-number {
+    font-weight: bold;
+    color: #2c3e50;
+    min-width: 25px;
+}
+
+.label-input {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.label-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.label-input.correct {
+    border-color: #27ae60;
+    background: #d4edda;
+}
+
+.label-input.incorrect {
+    border-color: #e74c3c;
+    background: #f8d7da;
+}
+
+/* Nút bấm */
+.exercise-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.check-btn, .reset-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.check-btn {
+    background: #3498db;
+    color: white;
+}
+
+.check-btn:hover {
+    background: #2980b9;
+}
+
+.reset-btn {
+    background: #95a5a6;
+    color: white;
+}
+
+.reset-btn:hover {
+    background: #7f8c8d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .label-inputs {
+        grid-template-columns: 1fr;
+    }
+    
+    .simple-word-box {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+.word-inline {
+    padding: 8px 15px;
+    border: 1px solid var(--secondary);
+    border-radius: 4px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 16px;
+    color: var(--dark);
+    background-color: #f0f7ff;
+    transition: all 0.2s;
+}
+
+.word-inline:hover {
+    background-color: var(--secondary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+        .written-correct {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid var(--success);
+        }
+        
+        .written-incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .written-answer {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .written-score {
+            font-weight: bold;
+            color: var(--secondary);
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>FINAL TEST REVISION</h1>
+            <div class="subtitle">SUBJECT: ENGLISH FOR NURSING</div>
+        </header>
+        
+        <div class="test-info">
+            <div class="info-item">
+                <i class="fas fa-clock"></i>
+                <span>Thời gian: 90 phút</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Điểm: 4.5 (Trắc nghiệm)</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-question-circle"></i>
+                <span>Số câu: 58 câu</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-info-circle"></i>
+                <span>Kết quả hiển thị ngay khi chọn đáp án</span>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color legend-selected"></div>
+                <span>Đã chọn</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-correct"></div>
+                <span>Đáp án đúng</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-incorrect"></div>
+                <span>Đáp án sai</span>
+            </div>
+        </div>
+        
+        <!-- SECTION I: MULTIPLE CHOICE -->
+        <div class="section">
+            <h2>SECTION I: MULTIPLE CHOICE (4.5 points)</h2>
+            
+            <!-- Part I.1 -->
+            <h3>I. Choose the correct answer</h3>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">1. An orange is divided into a ______.</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        slice
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        carton
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        segment
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        stick
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="A">
+                <div class="question-text">2. Which equipment is used for blood pressure?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        Sphygmomanometer
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        Thermometer
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Pulse oximeter
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        Oxygen mask
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">3. Who gives emergency care in an ambulance?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        A surgeon
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        A paramedic
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        A porter
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        A receptionist
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">4. Fruit juice is in a ______.</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        packet
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        piece
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        carton
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        slice
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="D">
+                <div class="question-text">5. Which statement <em>BEST</em> summarizes the main danger of food allergies?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        They make people tired.
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        They only affect the stomach.
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        They only happen to children.
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        They can affect many body systems and may be fatal.
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">6. Choose the correct noun form of painful:</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        painfully
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        pain
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        painless
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        painlessly
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">7. A food allergy occurs when the ______ believes a food is dangerous.</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        antibody
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        immune system
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        stomach
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        respiratory system
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">8. BMI is used to decide:</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        A person's height
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        A person's age
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        If a person's weight is healthy or not
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        If a person is sick
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">9. A strong allergic reaction can:</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        make you sleepy
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        cure disease
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        kill you
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        improve digestion
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="A">
+                <div class="question-text">10. The device used to measure blood sugar is called a ______.</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        glucometer
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        test strip
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        lancet
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        plaster
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <!-- Reading Passage 1 -->
+            <h3>II. Read the passage below.</h3>
+            <div class="passage">
+                <div class="passage-title">Asthma – A Common Global Disease</div>
+                <p>Asthma is a chronic disease that affects the respiratory system. People with asthma often experience symptoms such as coughing, wheezing, chest tightness, and difficulty breathing. These symptoms happen because the airways become narrow and swollen, making it hard for air to move in and out of the lungs.</p>
+                <p>Asthma attacks are often triggered by allergens and environmental factors. Common triggers include dust, pollen, pet hair, air pollution, strong chemicals, and tobacco smoke. In some people, physical exercise or cold air can also cause asthma symptoms to become worse.</p>
+                <p>Asthma is one of the most common chronic diseases among children, but adults can suffer from it as well. Although asthma cannot be completely cured, it can usually be controlled with proper treatment. Many patients use inhalers and take regular medication to reduce inflammation in the airways and prevent asthma attacks.</p>
+                <p>According to health experts, asthma is a major public health problem worldwide. A large number of asthma-related deaths occur in low and middle-income countries due to limited access to medical care. With correct treatment, education, and avoidance of triggers, most people with asthma can live a normal and active life.</p>
+            </div>
+            
+            <h4>A. Read the passage and choose correct answers.</h4>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">1. What part of the body does asthma mainly affect?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        The digestive system
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        The respiratory system
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        The nervous system
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        The circulatory system
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">2. What happens to the airways during an asthma attack?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        They become wider
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        They fill with blood
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        They become narrow and swollen
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        They stop working
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="A">
+                <div class="question-text">3. Which of the following is <em>NOT</em> mentioned as an asthma trigger?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        Loud noise
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        Tobacco smoke
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Dust
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        Air pollution
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">4. Which group is most commonly affected by asthma?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        Elderly people
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        Office workers
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Children
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        Athletes
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <h4>B. Choose the correct option: True, False, or Not Given.</h4>
+            
+            <div class="question-container" data-correct="A">
+                <div class="question-text">5. Asthma mainly affects the lungs and prevents normal breathing.</div>
+                <div class="options-container true-false-container">
+                    <div class="option true-false-option" data-value="A">
+                        <span class="option-letter">A</span>
+                        True
+                    </div>
+                    <div class="option true-false-option" data-value="B">
+                        <span class="option-letter">B</span>
+                        False
+                    </div>
+                    <div class="option true-false-option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Not given
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">6. All asthma patients experience symptoms every day.</div>
+                <div class="options-container true-false-container">
+                    <div class="option true-false-option" data-value="A">
+                        <span class="option-letter">A</span>
+                        True
+                    </div>
+                    <div class="option true-false-option" data-value="B">
+                        <span class="option-letter">B</span>
+                        False
+                    </div>
+                    <div class="option true-false-option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Not given
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="A">
+                <div class="question-text">7. Cold air and exercise can trigger asthma symptoms in some people.</div>
+                <div class="options-container true-false-container">
+                    <div class="option true-false-option" data-value="A">
+                        <span class="option-letter">A</span>
+                        True
+                    </div>
+                    <div class="option true-false-option" data-value="B">
+                        <span class="option-letter">B</span>
+                        False
+                    </div>
+                    <div class="option true-false-option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Not given
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">8. Asthma is more common in adults than in children.</div>
+                <div class="options-container true-false-container">
+                    <div class="option true-false-option" data-value="A">
+                        <span class="option-letter">A</span>
+                        True
+                    </div>
+                    <div class="option true-false-option" data-value="B">
+                        <span class="option-letter">B</span>
+                        False
+                    </div>
+                    <div class="option true-false-option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Not given
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <!-- Part I.2 -->
+            <h3>III. Choose the correct answer</h3>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">1. Which word means <em>"to breathe noisily and with difficulty"</em>?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        pollen
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        wheeze
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        mucus
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        relieve
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">2. A BMI of 30 or more means a person is:</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        overweight
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        underweight
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        obese
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        normal
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">3. Which is <em>NOT</em> a vital sign?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        Pulse
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        Height
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Blood pressure
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        Respiration
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="A">
+                <div class="question-text">4. The Diabetes Control Card is also called a ______.</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        blood glucose chart
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        glucometer
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        test strip
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        lancet
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="D">
+                <div class="question-text">5. Oxygen saturation is measured using ……………..</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        stethoscope
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        thermometer
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        pole
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        pulse oximeter
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">6. Which of the following is a sign of injury?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        Fever
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        Bruising and swelling
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Coughing
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        Sneezing
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">7. Why are food allergies considered more dangerous than normal food poisoning?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        Because they happen immediately
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        Because they involve the immune system and can be life-threatening
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Because they are caused by bacteria only
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        Because they only affect digestion
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">8. Which statement <em>BEST</em> summarizes the main danger of food allergies?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        They make people tired
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        They only affect the stomach
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        They can affect many body systems and may be fatal
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        They only happen to children
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="A">
+                <div class="question-text">9. Which of the following foods mainly gives you energy?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        Potatoes, rice, and pasta
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        Fish and eggs
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Seafood
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        Fresh vegetables
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">10. Which food group helps you digest your food?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        Proteins
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        Fats
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Fibre
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        Minerals
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <!-- Reading Passage 2 -->
+            <h3>IV. Read the passage</h3>
+            <div class="passage">
+                <div class="passage-title">The Food Pyramid and a Balanced Diet</div>
+                <p>Good nutrition plays an important role in maintaining good health and preventing disease. One of the most common guides for healthy eating is the food pyramid. It shows different groups of food and how much of each group people should eat every day.</p>
+                <p>At the bottom of the pyramid are foods such as rice, bread, pasta, cereal, and potatoes. These foods provide the body with energy and should be eaten in the largest amount. The next level includes fruit and vegetables, which are rich in vitamins, minerals, and fibre. Eating enough fruit and vegetables helps to protect the body from illness.</p>
+                <p>The third level of the pyramid consists of meat, fish, eggs, beans, and dairy products. These foods are important sources of protein and calcium, which help the body grow and repair itself. However, they should be eaten in moderate amounts.</p>
+                <p>At the top of the pyramid are fats, oils, and sweets. These foods contain a lot of energy but very few nutrients. Eating too much of them can lead to overweight and other health problems such as heart disease and diabetes. For this reason, they should be eaten only in small quantities.</p>
+                <p>A balanced diet means eating the right amount of food from each group every day. Together with regular exercise, good nutrition can help people stay healthy and live a longer life.</p>
+            </div>
+            
+            <h4>A. Read the passage and choose correct answers.</h4>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">1. What is the main purpose of the food pyramid?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        To teach people how to cook
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        To show how much food people should eat from each group
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        To list dangerous foods
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        To compare food prices
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="D">
+                <div class="question-text">2. Which food group provides the most energy according to the passage?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        Fruit and vegetables
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        Meat and dairy products
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Fats and sweets
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        Bread, rice, pasta, and potatoes
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">3. Why are fruit and vegetables important?</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        They contain a lot of fat.
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        They are cheap.
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        They provide vitamins, minerals, and fibre.
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        They give the most energy.
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">4. Foods such as meat, fish, eggs, and beans are important because they:</div>
+                <div class="options-container">
+                    <div class="option" data-value="A">
+                        <span class="option-letter">A</span>
+                        contain a lot of sugar
+                    </div>
+                    <div class="option" data-value="B">
+                        <span class="option-letter">B</span>
+                        help the body grow and repair
+                    </div>
+                    <div class="option" data-value="C">
+                        <span class="option-letter">C</span>
+                        are eaten in the largest amount
+                    </div>
+                    <div class="option" data-value="D">
+                        <span class="option-letter">D</span>
+                        should be avoided
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <h4>B. Choose the correct option: True, False, or Not Given.</h4>
+            
+            <div class="question-container" data-correct="A">
+                <div class="question-text">5. Rice, bread, and pasta should be eaten in the largest amount.</div>
+                <div class="options-container true-false-container">
+                    <div class="option true-false-option" data-value="A">
+                        <span class="option-letter">A</span>
+                        True
+                    </div>
+                    <div class="option true-false-option" data-value="B">
+                        <span class="option-letter">B</span>
+                        False
+                    </div>
+                    <div class="option true-false-option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Not given
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">6. Fruit and vegetables only provide energy for the body.</div>
+                <div class="options-container true-false-container">
+                    <div class="option true-false-option" data-value="A">
+                        <span class="option-letter">A</span>
+                        True
+                    </div>
+                    <div class="option true-false-option" data-value="B">
+                        <span class="option-letter">B</span>
+                        False
+                    </div>
+                    <div class="option true-false-option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Not given
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="B">
+                <div class="question-text">7. People should completely avoid fats and sweets.</div>
+                <div class="options-container true-false-container">
+                    <div class="option true-false-option" data-value="A">
+                        <span class="option-letter">A</span>
+                        True
+                    </div>
+                    <div class="option true-false-option" data-value="B">
+                        <span class="option-letter">B</span>
+                        False
+                    </div>
+                    <div class="option true-false-option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Not given
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+            
+            <div class="question-container" data-correct="C">
+                <div class="question-text">8. Children need to eat more fruit and vegetables than adults.</div>
+                <div class="options-container true-false-container">
+                    <div class="option true-false-option" data-value="A">
+                        <span class="option-letter">A</span>
+                        True
+                    </div>
+                    <div class="option true-false-option" data-value="B">
+                        <span class="option-letter">B</span>
+                        False
+                    </div>
+                    <div class="option true-false-option" data-value="C">
+                        <span class="option-letter">C</span>
+                        Not given
+                    </div>
+                </div>
+                <div class="answer-feedback"></div>
+            </div>
+        </div>
+        
+        <!-- SECTION II: WRITTEN RESPONSE -->
+          <div class="section">
+            <h2>SECTION II: WRITTEN RESPONSE (TỰ LUẬN)</h2>
+            
+            <div class="written-section">
+                <h3>I. Rewrite each of the following sentences as required. Do not change the meaning.</h3>
+                
+                <div class="question-container" data-correct="You should reduce sugar in your diet.">
+                    <div class="question-text">1. It would be better for you to reduce sugar in your diet. (Rewrite using "should")</div>
+                    <textarea class="written-answer-input" placeholder="Nhập câu trả lời của bạn ở đây..." rows="2"></textarea>
+                    <button class="check-answer-btn">Kiểm tra đáp án</button>
+                    <div class="written-feedback"></div>
+                </div>
+                
+                <div class="question-container" data-correct="It's important to sleep more if you often feel tired.">
+                    <div class="question-text">2. I think you need to sleep more if you often feel tired. (Rewrite using "It is important")</div>
+                    <textarea class="written-answer-input" placeholder="Nhập câu trả lời của bạn ở đây..." rows="2"></textarea>
+                    <button class="check-answer-btn">Kiểm tra đáp án</button>
+                    <div class="written-feedback"></div>
+                </div>
+                
+                <div class="question-container" data-correct="The patient is complaining of being headachy.">
+                    <div class="question-text">3. The patient complains: "I've got a headache." (Rewrite using adjective form)</div>
+                    <textarea class="written-answer-input" placeholder="Nhập câu trả lời của bạn ở đây..." rows="2"></textarea>
+                    <button class="check-answer-btn">Kiểm tra đáp án</button>
+                    <div class="written-feedback"></div>
+                </div>
+                
+                <div class="question-container" data-correct="While the nurse was checking the patient's blood pressure, he fainted.">
+                    <div class="question-text">4. While / the nurse / check / the patient's blood pressure / he / faint (Use past simple and past continuous to write a complete sentence)</div>
+                    <textarea class="written-answer-input" placeholder="Nhập câu trả lời của bạn ở đây..." rows="2"></textarea>
+                    <button class="check-answer-btn">Kiểm tra đáp án</button>
+                    <div class="written-feedback"></div>
+                </div>
+            </div>
+            
+         <div class="written-section">
+    <h3>II. Complete the text about emergency rooms with the words in the box.</h3>
+    
+    <div class="horizontal-word-box">
+        <div class="word-inline">abdominal</div>
+        <div class="word-inline">chest</div>
+        <div class="word-inline">contusion</div>
+        <div class="word-inline">injury</div>
+        <div class="word-inline">respiratory</div>
+        <div class="word-inline">sprain</div>
+    </div>
+    
+    <div class="question-container" data-correct="injury,contusion,sprain,chest,abdominal,respiratory">
+        <div class="question-text">
+            Why do people visit the emergency room (ER)? The most common reason is for an (1) ______, 
+            in most cases a strain, (2) ______ or (3) ______. The second most common reason is signs 
+            and symptoms of either (4) ______ or (5) ______ pain. People are also often brought into 
+            the ER with (6) ______ problems.
+        </div>
+        <div class="written-answer">
+            <div>1. <input type="text" class="blank-input" placeholder="Nhập từ thích hợp" data-number="1"></div>
+            <div>2. <input type="text" class="blank-input" placeholder="Nhập từ thích hợp" data-number="2"></div>
+            <div>3. <input type="text" class="blank-input" placeholder="Nhập từ thích hợp" data-number="3"></div>
+            <div>4. <input type="text" class="blank-input" placeholder="Nhập từ thích hợp" data-number="4"></div>
+            <div>5. <input type="text" class="blank-input" placeholder="Nhập từ thích hợp" data-number="5"></div>
+            <div>6. <input type="text" class="blank-input" placeholder="Nhập từ thích hợp" data-number="6"></div>
+        </div>
+        <button class="check-answer-btn" id="checkBlanksBtn">Kiểm tra đáp án</button>
+        <div class="written-feedback" id="blanksFeedback"></div>
+    </div>
+</div>
+            
+            <div class="written-section">
+                <h3>III. Write answers for the following questions.</h3>
+                
+                <div class="question-container" data-correct="People are usually allergic to the main eight allergens: fish, shellfish, peanuts, tree nuts, eggs, milk, wheat, and soy.">
+                    <div class="question-text">1. Which foods are people often allergic to?</div>
+                    <textarea class="written-answer-input" placeholder="Nhập câu trả lời của bạn ở đây..." rows="3"></textarea>
+                    <button class="check-answer-btn">Kiểm tra đáp án</button>
+                    <div class="written-feedback"></div>
+                </div>
+                
+                <div class="question-container" data-correct="Allergic symptoms include: difficulty breathing, vomiting, swelling, hives/rashes, and diarrhoea.">
+                    <div class="question-text">2. What are the symptoms of an allergy?</div>
+                    <textarea class="written-answer-input" placeholder="Nhập câu trả lời của bạn ở đây..." rows="3"></textarea>
+                    <button class="check-answer-btn">Kiểm tra đáp án</button>
+                    <div class="written-feedback"></div>
+                </div>
+            </div>
+            
+            <div class="written-section">
+                <h3>IV. The diagram below shows how to administer a blood sugar test. Label the diagram with the words in the box.</h3>
+                <p><em>Words: Test strip, Lancet, Glucometer, Plaster, Screen, Drop of blood, Finger</em></p>
+                <div class="question-container" data-correct="test strip,finger,lancet,drop of blood,plaster,glucometer and screen">
+                    <div class="question-text">
+                        <div style="margin-bottom: 15px;">
+                            1. ___________<br>
+                            2. ___________<br>
+                            3. ___________<br>
+                            4. ___________<br>
+                            5. ___________<br>
+                            6. ___________
+                        </div>
+                    </div>
+                    <div class="written-answer">
+                        <div>1. <input type="text" class="diagram-input" placeholder="Nhập từ thích hợp" data-number="1"></div>
+                        <div>2. <input type="text" class="diagram-input" placeholder="Nhập từ thích hợp" data-number="2"></div>
+                        <div>3. <input type="text" class="diagram-input" placeholder="Nhập từ thích hợp" data-number="3"></div>
+                        <div>4. <input type="text" class="diagram-input" placeholder="Nhập từ thích hợp" data-number="4"></div>
+                        <div>5. <input type="text" class="diagram-input" placeholder="Nhập từ thích hợp" data-number="5"></div>
+                        <div>6. <input type="text" class="diagram-input" placeholder="Nhập từ thích hợp" data-number="6"></div>
+                    </div>
+                    <button class="check-answer-btn" id="checkDiagramBtn">Kiểm tra đáp án</button>
+                    <div class="written-feedback" id="diagramFeedback"></div>
+                </div>
+            </div>
+            <div class="written-section">
+    <h3>V. Match each illness (1-4) with the correct symptom (A-D).</h3>
+    
+    <div class="ultra-simple-matching">
+        <div class="match-row">
+            <span>1. asthma</span>
+            <select>
+                <option value="">-- Chọn symptom --</option>
+                <option value="A">A. Continuous loss of blood from a wound</option>
+                <option value="B">B. Difficulty breathing and wheezing</option>
+                <option value="C">C. Bone pain and inability to move the hand</option>
+                <option value="D">D. Dark bruising around the eye</option>
+            </select>
+        </div>
+        
+        <div class="match-row">
+            <span>2. black eye</span>
+            <select>
+                <option value="">-- Chọn symptom --</option>
+                <option value="A">A. Continuous loss of blood from a wound</option>
+                <option value="B">B. Difficulty breathing and wheezing</option>
+                <option value="C">C. Bone pain and inability to move the hand</option>
+                <option value="D">D. Dark bruising around the eye</option>
+            </select>
+        </div>
+        
+        <div class="match-row">
+            <span>3. bleeding</span>
+            <select>
+                <option value="">-- Chọn symptom --</option>
+                <option value="A">A. Continuous loss of blood from a wound</option>
+                <option value="B">B. Difficulty breathing and wheezing</option>
+                <option value="C">C. Bone pain and inability to move the hand</option>
+                <option value="D">D. Dark bruising around the eye</option>
+            </select>
+        </div>
+        
+        <div class="match-row">
+            <span>4. broken wrist</span>
+            <select>
+                <option value="">-- Chọn symptom --</option>
+                <option value="A">A. Continuous loss of blood from a wound</option>
+                <option value="B">B. Difficulty breathing and wheezing</option>
+                <option value="C">C. Bone pain and inability to move the hand</option>
+                <option value="D">D. Dark bruising around the eye</option>
+            </select>
+        </div>
+    </div>
+    
+    <button class="check-btn" onclick="checkMatching()">Kiểm tra</button>
+    <div id="matchingResult" style="margin-top: 15px;"></div>
+</div>
+
+<script>
+function checkMatching() {
+    const correct = {
+        "1": "B",
+        "2": "D", 
+        "3": "A",
+        "4": "C"
+    };
+    
+    let score = 0;
+    const selects = document.querySelectorAll('.match-row select');
+    
+    selects.forEach((select, index) => {
+        const illnessId = (index + 1).toString();
+        if (select.value === correct[illnessId]) {
+            score++;
+            select.style.borderColor = 'green';
+            select.style.backgroundColor = '#e6ffe6';
+        } else if (select.value) {
+            select.style.borderColor = 'red';
+            select.style.backgroundColor = '#ffe6e6';
+        }
+    });
+    
+    const resultDiv = document.getElementById('matchingResult');
+    if (score === 4) {
+        resultDiv.innerHTML = '<p style="color: green;">🎉 Hoàn hảo! Tất cả đều đúng!</p>';
+    } else {
+        resultDiv.innerHTML = `<p>Đúng: ${score}/4. Sai: ${4-score}</p>`;
+    }
+}
+</script>
+            <div class="written-section">
+                <h3>V. Complete the text about food allergy with the words in the box.</h3>
+                <p><em>Words: adverse, allergic, harmful, antibodies</em></p>
+                <div class="question-container" data-correct="adverse,harmful,antibodies,allergic">
+                    <div class="question-text">
+                        What is a food allergy? If you experience an (1) ______ reaction to a food, this is 
+                        sometimes because of a food allergy. A food allergy occurs when the immune system believes, 
+                        by mistake, that a food is (2) ______. When this happens, the immune system creates special 
+                        (3) ______ to help it protect the body from the harmful food. The next time you eat that food, 
+                        these antibodies go to work. They tell the immune system to release chemicals called histamines 
+                        into the body. These chemicals cause the (4) ______ symptoms which can affect your respiratory 
+                        system, gastrointestinal tract, skin or cardiovascular system. A strong allergic reaction can 
+                        kill you.
+                    </div>
+                    <div class="written-answer">
+                        <div>1. <input type="text" class="allergy-input" placeholder="Nhập từ thích hợp" data-number="1"></div>
+                        <div>2. <input type="text" class="allergy-input" placeholder="Nhập từ thích hợp" data-number="2"></div>
+                        <div>3. <input type="text" class="allergy-input" placeholder="Nhập từ thích hợp" data-number="3"></div>
+                        <div>4. <input type="text" class="allergy-input" placeholder="Nhập từ thích hợp" data-number="4"></div>
+                    </div>
+                    <button class="check-answer-btn" id="checkAllergyBtn">Kiểm tra đáp án</button>
+                    <div class="written-feedback" id="allergyFeedback"></div>
+                </div>
+            </div>
+            <div class="written-section">
+    <h3>VIII. The diagram below shows the human respiratory system. Label the diagram with the words in the box.</h3>
+    
+    <div class="simple-word-box">
+        <span>Right lung</span>
+        <span>Windpipe</span>
+        <span>Normal bronchiole</span>
+        <span>Asthmatic bronchiole</span>
+        <span>Diaphragm</span>
+        <span>Bronchial tubes</span>
+        <span>Left lung</span>
+    </div>
+    
+    <div class="diagram-exercise">
+        <!-- Hình ảnh hệ hô hấp -->
+        <div class="diagram-image-container">
+            <img src="https://i.ibb.co/XfkR6zjT/121213.png" alt="Human Respiratory System" class="respiratory-diagram-img">
+            
+            <!-- Các ô input cho từng số trên hình -->
+            <div class="label-inputs">
+                <div class="label-input-group" data-number="1">
+                    <div class="label-number">1:</div>
+                    <input type="text" class="label-input" placeholder="Nhập tên">
+                </div>
+                <div class="label-input-group" data-number="2">
+                    <div class="label-number">2:</div>
+                    <input type="text" class="label-input" placeholder="Nhập tên">
+                </div>
+                <div class="label-input-group" data-number="3">
+                    <div class="label-number">3:</div>
+                    <input type="text" class="label-input" placeholder="Nhập tên">
+                </div>
+                <div class="label-input-group" data-number="4">
+                    <div class="label-number">4:</div>
+                    <input type="text" class="label-input" placeholder="Nhập tên">
+                </div>
+                <div class="label-input-group" data-number="5">
+                    <div class="label-number">5:</div>
+                    <input type="text" class="label-input" placeholder="Nhập tên">
+                </div>
+                <div class="label-input-group" data-number="6">
+                    <div class="label-number">6:</div>
+                    <input type="text" class="label-input" placeholder="Nhập tên">
+                </div>
+                <div class="label-input-group" data-number="7">
+                    <div class="label-number">7:</div>
+                    <input type="text" class="label-input" placeholder="Nhập tên">
+                </div>
+            </div>
+        </div>
+        
+        <div class="exercise-controls">
+            <button class="check-btn" id="checkDiagramBtn">Kiểm tra</button>
+            <button class="reset-btn" id="resetDiagramBtn">Làm lại</button>
+        </div>
+        
+        <div id="diagramFeedback" style="margin-top: 15px;"></div>
+    </div>
+</div>
+            <div class="written-results">
+                <h3>Kết quả phần tự luận</h3>
+                <div class="detail-item">
+                    <span>Số câu đã làm:</span>
+                    <span id="writtenAnswered">0</span>
+                </div>
+                <div class="detail-item">
+                    <span>Số câu đúng:</span>
+                    <span id="writtenCorrect">0</span>
+                </div>
+                <div class="detail-item">
+                    <span>Điểm tự luận:</span>
+                    <span id="writtenScore">0</span><span class="written-score">/5.5</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Phần RESULTS và footer giữ nguyên -->
+        
+        <script>
+            // JavaScript cho phần Written Response
+            document.addEventListener('DOMContentLoaded', function() {
+                // Khởi tạo biến cho phần tự luận
+                let writtenResults = {
+                    answered: 0,
+                    correct: 0,
+                    totalPoints: 0
+                };
+                
+                // Cập nhật kết quả phần tự luận
+                function updateWrittenResults() {
+                    document.getElementById('writtenAnswered').textContent = writtenResults.answered;
+                    document.getElementById('writtenCorrect').textContent = writtenResults.correct;
+                    document.getElementById('writtenScore').textContent = writtenResults.totalPoints.toFixed(1);
+                }
+                
+                // Hàm kiểm tra câu trả lời dạng textarea
+                function checkWrittenAnswer(button) {
+                    const container = button.closest('.question-container');
+                    const textarea = container.querySelector('.written-answer-input');
+                    const feedback = container.querySelector('.written-feedback');
+                    const userAnswer = textarea.value.trim().toLowerCase();
+                    const correctAnswer = container.getAttribute('data-correct').toLowerCase();
+                    
+                    // Tăng số câu đã làm
+                    writtenResults.answered++;
+                    
+                    // So sánh câu trả lời (có thể linh hoạt hơn)
+                    let isCorrect = false;
+                    
+                    // Kiểm tra đơn giản - có thể nâng cao bằng cách so sánh từ khóa
+                    if (userAnswer === correctAnswer) {
+                        isCorrect = true;
+                    } else {
+                        // Kiểm tra xem câu trả lời có chứa các từ khóa quan trọng không
+                        const keywords = correctAnswer.split(/[ ,.;:]+/).filter(word => word.length > 3);
+                        let matchedKeywords = 0;
+                        
+                        keywords.forEach(keyword => {
+                            if (userAnswer.includes(keyword.toLowerCase())) {
+                                matchedKeywords++;
+                            }
+                        });
+                        
+                        // Nếu khớp trên 70% từ khóa thì coi là đúng
+                        if (matchedKeywords / keywords.length > 0.7) {
+                            isCorrect = true;
+                        }
+                    }
+                    
+                    // Hiển thị phản hồi
+                    if (isCorrect) {
+                        feedback.innerHTML = `<div class="written-correct">
+                            <i class="fas fa-check-circle feedback-icon"></i>
+                            <strong>Chính xác!</strong> Câu trả lời của bạn đúng.
+                            <div style="margin-top: 10px;"><strong>Đáp án:</strong> ${container.getAttribute('data-correct')}</div>
+                        </div>`;
+                        writtenResults.correct++;
+                        writtenResults.totalPoints += 0.5; // Mỗi câu đúng được 0.5 điểm
+                    } else {
+                        feedback.innerHTML = `<div class="written-incorrect">
+                            <i class="fas fa-times-circle feedback-icon"></i>
+                            <strong>Chưa chính xác.</strong>
+                            <div style="margin-top: 10px;"><strong>Đáp án đúng:</strong> ${container.getAttribute('data-correct')}</div>
+                            <div style="margin-top: 5px;"><strong>Câu trả lời của bạn:</strong> ${textarea.value}</div>
+                        </div>`;
+                    }
+                    
+                    feedback.classList.add('show');
+                    
+                    // Cập nhật kết quả
+                    updateWrittenResults();
+                }
+                
+                // Hàm kiểm tra bài điền vào chỗ trống
+                function checkBlankAnswer(button, inputsClass, feedbackId, correctAnswer) {
+                    const inputs = document.querySelectorAll('.' + inputsClass);
+                    const feedback = document.getElementById(feedbackId);
+                    const correctAnswers = correctAnswer.split(',');
+                    
+                    let allCorrect = true;
+                    let userAnswers = [];
+                    
+                    // Kiểm tra từng ô input
+                    inputs.forEach((input, index) => {
+                        const userAnswer = input.value.trim().toLowerCase();
+                        const correct = correctAnswers[index].trim().toLowerCase();
+                        userAnswers.push(userAnswer);
+                        
+                        if (userAnswer === correct) {
+                            input.style.borderColor = 'var(--success)';
+                            input.style.backgroundColor = '#d4edda';
+                        } else {
+                            input.style.borderColor = 'var(--accent)';
+                            input.style.backgroundColor = '#f8d7da';
+                            allCorrect = false;
+                        }
+                    });
+                    
+                    // Hiển thị phản hồi
+                    if (allCorrect) {
+                        feedback.innerHTML = `<div class="written-correct">
+                            <i class="fas fa-check-circle feedback-icon"></i>
+                            <strong>Hoàn toàn chính xác!</strong> Tất cả các từ đều đúng.
+                        </div>`;
+                        writtenResults.correct++;
+                        writtenResults.totalPoints += 1.5; // Bài điền từ được 1.5 điểm
+                    } else {
+                        feedback.innerHTML = `<div class="written-incorrect">
+                            <i class="fas fa-times-circle feedback-icon"></i>
+                            <strong>Cần kiểm tra lại.</strong>
+                            <div style="margin-top: 10px;">
+                                <strong>Đáp án đúng:</strong><br>
+                                ${correctAnswers.map((ans, idx) => `${idx + 1}. ${ans}`).join('<br>')}
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <strong>Câu trả lời của bạn:</strong><br>
+                                ${userAnswers.map((ans, idx) => `${idx + 1}. ${ans || '(chưa nhập)'}`).join('<br>')}
+                            </div>
+                        </div>`;
+                    }
+                    
+                    feedback.classList.add('show');
+                    writtenResults.answered++;
+                    updateWrittenResults();
+                }
+                
+                // Gắn sự kiện cho các nút kiểm tra textarea
+                document.querySelectorAll('.check-answer-btn').forEach(button => {
+                    // Trừ các nút đặc biệt cho bài điền từ
+                    if (!button.id.includes('check')) {
+                        button.addEventListener('click', function() {
+                            checkWrittenAnswer(this);
+                        });
+                    }
+                });
+                
+                // Gắn sự kiện cho nút kiểm tra bài điền từ ER
+                document.getElementById('checkBlanksBtn').addEventListener('click', function() {
+                    const container = this.closest('.question-container');
+                    const correctAnswer = container.getAttribute('data-correct');
+                    checkBlankAnswer(this, 'blank-input', 'blanksFeedback', correctAnswer);
+                });
+                
+                // Gắn sự kiện cho nút kiểm tra bài điền từ Diagram
+                document.getElementById('checkDiagramBtn').addEventListener('click', function() {
+                    const container = this.closest('.question-container');
+                    const correctAnswer = container.getAttribute('data-correct');
+                    checkBlankAnswer(this, 'diagram-input', 'diagramFeedback', correctAnswer);
+                });
+                
+                // Gắn sự kiện cho nút kiểm tra bài điền từ Allergy
+                document.getElementById('checkAllergyBtn').addEventListener('click', function() {
+                    const container = this.closest('.question-container');
+                    const correctAnswer = container.getAttribute('data-correct');
+                    checkBlankAnswer(this, 'allergy-input', 'allergyFeedback', correctAnswer);
+                });
+                
+                // Cho phép nhấn Enter để kiểm tra (cho textarea)
+                document.querySelectorAll('.written-answer-input').forEach(textarea => {
+                    textarea.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' && e.ctrlKey) {
+                            e.preventDefault();
+                            const button = this.closest('.question-container').querySelector('.check-answer-btn');
+                            button.click();
+                        }
+                    });
+                });
+                
+                // Cho phép nhấn Enter để kiểm tra (cho input)
+                document.querySelectorAll('input[type="text"]').forEach(input => {
+                    input.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            // Tìm nút kiểm tra phù hợp
+                            const container = this.closest('.question-container');
+                            let button;
+                            
+                            if (this.classList.contains('blank-input')) {
+                                button = document.getElementById('checkBlanksBtn');
+                            } else if (this.classList.contains('diagram-input')) {
+                                button = document.getElementById('checkDiagramBtn');
+                            } else if (this.classList.contains('allergy-input')) {
+                                button = document.getElementById('checkAllergyBtn');
+                            }
+                            
+                            if (button) button.click();
+                        }
+                    });
+                });
+                
+                // Khởi tạo hiển thị kết quả
+                updateWrittenResults();
+            });// JavaScript cho bài tập gắn nhãn diagram
+document.addEventListener('DOMContentLoaded', function() {
+    const diagramAnswers = {
+        "1": "right lung",
+        "2": "left lung", 
+        "3": "windpipe",
+        "4": "bronchial tubes",
+        "5": "normal bronchiole",
+        "6": "asthmatic bronchiole",
+        "7": "diaphragm"
+    };
+    
+    // Các cách viết được chấp nhận
+    const acceptedAnswers = {
+        "1": ["right lung", "rightlungs", "right lung"],
+        "2": ["left lung", "leftlungs", "left lung"],
+        "3": ["windpipe", "trachea", "wind pipe"],
+        "4": ["bronchial tubes", "bronchi", "bronchial tube", "bronchial tubes"],
+        "5": ["normal bronchiole", "normal bronchioles", "bronchiole"],
+        "6": ["asthmatic bronchiole", "asthmatic bronchioles", "asthmatic"],
+        "7": ["diaphragm", "diaphragm muscle", "diaphragm"]
+    };
+    
+    // Nút kiểm tra
+    document.getElementById('checkDiagramBtn').addEventListener('click', function() {
+        const inputs = document.querySelectorAll('.label-input');
+        let correctCount = 0;
+        const total = inputs.length;
+        
+        // Reset màu
+        inputs.forEach(input => {
+            input.classList.remove('correct', 'incorrect');
+        });
+        
+        // Kiểm tra từng input
+        inputs.forEach(input => {
+            const group = input.closest('.label-input-group');
+            const number = group.getAttribute('data-number');
+            const userAnswer = input.value.trim().toLowerCase();
+            
+            if (checkAnswer(number, userAnswer)) {
+                input.classList.add('correct');
+                correctCount++;
+            } else if (userAnswer) {
+                input.classList.add('incorrect');
+            }
+        });
+        
+        // Hiển thị kết quả
+        const feedback = document.getElementById('diagramFeedback');
+        if (correctCount === total) {
+            feedback.innerHTML = '<div style="color: green; font-weight: bold;">✅ Tất cả đều đúng! Chính xác!</div>';
+        } else {
+            feedback.innerHTML = `<div style="color: #e74c3c;">
+                ✅ Đúng: ${correctCount}/${total}<br>
+                ❌ Sai: ${total - correctCount}
+            </div>`;
+        }
+    });
+    
+    // Hàm kiểm tra đáp án
+    function checkAnswer(number, userAnswer) {
+        if (!userAnswer) return false;
+        
+        const accepted = acceptedAnswers[number];
+        if (!accepted) return false;
+        
+        return accepted.some(answer => 
+            userAnswer === answer.toLowerCase() || 
+            answer.toLowerCase().includes(userAnswer) ||
+            userAnswer.includes(answer.toLowerCase())
+        );
+    }
+    
+    // Nút làm lại
+    document.getElementById('resetDiagramBtn').addEventListener('click', function() {
+        // Xóa tất cả input
+        document.querySelectorAll('.label-input').forEach(input => {
+            input.value = '';
+            input.classList.remove('correct', 'incorrect');
+        });
+        
+        // Xóa feedback
+        document.getElementById('diagramFeedback').innerHTML = '';
+    });
+});
+        </script>
+    </div>
+</body>
+</html>
