@@ -1,163 +1,1228 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bài thi trắc nghiệm Stata 17</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-
-<style>
-body {
-    font-family: 'Roboto', sans-serif;
-    background: #f0f4f8;
-    margin: 0;
-    padding: 20px;
-}
-h1 {
-    text-align: center;
-    color: #333;
-}
-#quiz, #results {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.question {
-    margin-bottom: 20px;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background: #fdfdfd;
-    transition: background 0.3s;
-}
-.correct {
-    color: green;
-    font-weight: bold;
-}
-.wrong {
-    color: red;
-    font-weight: bold;
-}
-button {
-    display: block;
-    margin: 30px auto;
-    padding: 12px 24px;
-    font-size: 16px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-button:hover {
-    background: #0056b3;
-}
-
-/* Tự động hiển thị đẹp trên mobile */
-@media(max-width: 600px){
-    body { padding: 10px; }
-    #quiz, #results { padding: 15px; }
-    .question { padding: 12px; }
-    button { width: 100%; font-size: 18px; padding: 14px; }
-    input[type='radio'] { transform: scale(1.3); margin-right: 8px; }
-}
-</style>
-</head>
-
-<body>
-<h1>Bài thi trắc nghiệm Stata 17</h1>
-<div id="quiz"></div>
-<button onclick="checkAll()">Nộp bài (Báo đáp án sau)</button>
-<h2>Kết quả từng câu:</h2>
-<div id="results"></div>
-
-<script>
-const questions = [
-  {q: "Đây là biến số liên tục", options: ["Cân nặng (kg)", "Số lượt khám/ngày", "Giới tính (nam/nữ)", "Giai đoạn bệnh (I/II/III)"], answer: 0},
-  {q: "Đây là dạng số liệu chứa nhiều thông tin nhất", options: ["Số liệu rời rạc", "Số liệu liên tục", "Số liệu định danh", "Số liệu thứ hạng"], answer: 1},
-  {q: "Phím tắt chuẩn để lưu bộ số liệu trong Stata 17 (trên Windows) là", options: ["Ctrl + E", "Ctrl + P", "Ctrl + S", "Ctrl + D"], answer: 2},
-  {q: "Trong phần mềm Stata 17, kết quả của câu lệnh: “di 3^2” là", options: ["6", "9", "18", "27"], answer: 1},
-  {q: "Trong phần mềm Stata 17, kết quả của câu lệnh: “di 9/3” là", options: ["6", "3", "12", "18"], answer: 1},
-  {q: "Trong phần mềm Stata 17, đây là lệnh tạo biến số mới", options: ["generate", "rename", "label", "display"], answer: 0},
-  {q: "Trong phần mềm Stata 17, đây là lệnh mã hóa giá trị biến số", options: ["generate", "rename", "label", "recode"], answer: 3},
-  {q: "Trong phần mềm Stata 17, đây là lệnh thay đổi giá trị của biến số", options: ["display", "replace", "label", "describe"], answer: 1},
-  {q: "Trong phần mềm Stata 17, đây là lệnh xem, không sửa bộ số liệu", options: ["edit", "display", "browse", "input"], answer: 2},
-  {q: "Trong phần mềm Stata 17, đây là lệnh mở bộ số liệu", options: ["use", "edit", "browse", "input"], answer: 0},
-
-  {q: "Trong phần mềm Stata 17, đây là lệnh mô tả bộ số liệu", options: ["display", "replace", "label", "describe"], answer: 3},
-  {q: "Trong phần mềm Stata 17, đây là lệnh đổi tên biến số", options: ["generate", "rename", "label", "recode"], answer: 1},
-  {q: "Trong phần mềm Stata 17, đây không phải là một lệnh đúng", options: ["Generate", "gen", "gene", "generat"], answer: 2},
-  {q: "Trong phần mềm Stata 17, đây là lệnh nhập số liệu", options: ["describe", "display", "browse", "input"], answer: 3},
-  {q: "Câu lệnh: “tab gioi”; trong đó “gioi” là biến số nhị phân, Stata 17 không trình bày", options: ["Tổng dòng", "Tổng cột", "Tần số tuyệt đối", "Tần số tích lũy"], answer: 3},
-  {q: "Câu lệnh: “tab noio gioi, row”; trong đó “noio” và “gioi” là nhị phân, Stata 17 không trình bày", options: ["Tổng dòng", "Tổng cột", "Tần số tuyệt đối", "Tần số mong đợi"], answer: 3},
-  {q: "Biểu đồ cột rời của biến số định tính “noio”", options: ["graph pie, over(noio)", "graph bar, over(noio)", "graph box, over(noio)", "histogram, over(noio)"], answer: 1},
-  {q: "Trong bộ số liệu định lượng, số đo độ phân tán", options: ["Trung bình; Độ lệch chuẩn", "Mốt; Độ lệch chuẩn", "Trung vị; Khoảng tứ phân vị", "Biên độ; Phương sai"], answer: 3},
-  {q: "Cân nặng 11 trẻ, trung vị là", options: ["13 kg", "16 kg", "14 kg", "17 kg"], answer: 1},
-  {q: "Các số đo không bị ảnh hưởng bởi giá trị quá lớn hoặc nhỏ", options: ["Mốt; Trung bình", "Trung vị; Trung bình", "Mốt; Trung vị", "Khoảng tứ phân vị; Trung bình"], answer: 2},
-
-  {q: "Lệnh tóm tắt 1 biến số định lượng", options: ["sum", "tab", "generate", "label"], answer: 0},
-  {q: "Biểu đồ hộp của 1 biến số định lượng", options: ["graph pie", "graph box", "histogram", "graph bar"], answer: 1},
-  {q: "Câu lệnh: “tabstat hatd”; Stata 17 trình bày", options: ["Phương sai", "Trung vị", "Độ lệch chuẩn", "Trung bình"], answer: 3},
-  {q: "Lệnh mô tả trung bình, độ lệch chuẩn, min, max, cỡ mẫu", options: ["tab", "ci", "sum", "ttest"], answer: 2},
-  {q: "Lệnh đúng với biến nhị phân ht", options: ["ta ht", "tabs ht", "tai ht", "tabsta ht"], answer: 0},
-
-  {q: "Câu lệnh: “sum hatd,d”; Stata 17 trình bày", options: ["Giá trị p; 95% CI", "Trung vị; Trung bình", "Sai số chuẩn; Độ lệch chuẩn", "Phương sai; Sai số chuẩn"], answer: 2},
-  {q: "Câu lệnh: “ci means hatd”; Stata 17 trình bày", options: ["Độ lệch chuẩn", "Biên độ", "95% khoảng tin cậy", "Giá trị p"], answer: 2},
-  {q: "Câu lệnh: “tabstat hatd, statistics(n, mean, sd, cv, v)”", options: ["Trung bình; Độ lệch chuẩn", "Giá trị p; 95% CI", "Sai số chuẩn; Độ lệch chuẩn", "Phương sai; Sai số chuẩn"], answer: 0},
-  {q: "Câu lệnh: “centile wt, centile(0,25,50,75,100)”", options: ["Độ lệch chuẩn", "Biên độ", "Trung bình", "95% khoảng tin cậy"], answer: 3},
-  {q: "Câu lệnh: “ci means hatd”", options: ["Sai số chuẩn; Giá trị p", "Độ lệch chuẩn; Sai số chuẩn", "Trung bình; Độ lệch chuẩn", "Số quan sát; Sai số chuẩn"], answer: 2},
-
-  {q: "Câu lệnh: “ci means wt, level(90)” không trình bày", options: ["95% khoảng tin cậy", "Sai số chuẩn", "Trung bình", "Số quan sát"], answer: 0},
-  {q: "Câu lệnh: “ci proportions hatd, level(99)”", options: ["Độ lệch chuẩn; Khoảng tứ phân vị", "Sai số chuẩn; Tỉ lệ", "Trung bình; 99% CI", "Biên độ; Giá trị p"], answer: 1},
-  {q: "Câu lệnh: “cii means 200 100 20”", options: ["Tính 95% khoảng tin cậy cho một tỉ lệ", "100 là cỡ mẫu", "Tính 95% khoảng tin cậy cho một trung bình", "200 là trung bình"], answer: 2},
-  {q: "Câu lệnh đúng", options: ["ci proportions 100 20", "ci proportions 100 20, wald", "ci proportions 100 20,", "cii proportions 100 20, level(95)"], answer: 1},
-  {q: "Câu lệnh: “prtesti 100 0.2 0.24, level(99)” không trình bày", options: ["95% khoảng tin cậy", "Cỡ mẫu", "Sai số chuẩn", "Giả thuyết Ho"], answer: 0},
-
-  {q: "Câu lệnh: “prtest ht, by(gioi)” dùng để", options: ["So sánh trung bình của 2 quần thể", "So sánh tỉ lệ của 2 quần thể", "So sánh tỉ lệ của 2 mẫu", "So sánh trung bình của 2 mẫu"], answer: 1},
-  {q: "Lệnh thực hiện khi có biến số phù hợp", options: ["csi", "ttesti", "prtest", "cii"], answer: 2},
-  {q: "Lệnh thực hiện khi có biến số phù hợp", options: ["csi", "ttesti", "ci", "cii"], answer: 2},
-  {q: "Lệnh so sánh 2 tỉ lệ", options: ["prtest", "Prtest", "Prtesti", "Chi2"], answer: 0},
-  {q: "Câu lệnh: “tabi 260 299\\15 41, row chi2” không trình bày đại lượng", options: ["Giá trị p", "Tần số mong đợi", "Tần số quan sát", "Giá trị chi bình phương"], answer: 1}
-];
-
-const quizDiv = document.getElementById('quiz');
-questions.forEach((q, idx) => {
-    const div = document.createElement('div');
-    div.className = 'question';
-    div.innerHTML = `<b>Câu ${idx+1}:</b> ${q.q}<br>`;
-    q.options.forEach((opt, i) => {
-        div.innerHTML += `<input type='radio' name='q${idx}' value='${i}' onchange='checkImmediate(${idx}, ${i})'> ${opt}<br>`;
-    });
-    quizDiv.appendChild(div);
-});
-
-function checkImmediate(qIdx, selected) {
-    const div = quizDiv.children[qIdx];
-    div.style.backgroundColor =
-        selected === questions[qIdx].answer ? '#d4edda' : '#f8d7da';
-}
-
-function checkAll() {
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '';
-    questions.forEach((q, idx) => {
-        const selected = document.querySelector(`input[name='q${idx}']:checked`);
-        let resultText = `Câu ${idx+1}: `;
-        if (!selected) {
-            resultText += `<span class='wrong'>Chưa chọn</span>`;
-        } else if (parseInt(selected.value) === q.answer) {
-            resultText += `<span class='correct'>Đúng</span>`;
-        } else {
-            resultText += `<span class='wrong'>Sai. Đáp án đúng: ${q.options[q.answer]}</span>`;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Kiểm Tra Tin Học - Stata</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        resultsDiv.innerHTML += resultText + '<br>';
-    });
-}
-</script>
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .question-container {
+            margin-bottom: 25px;
+        }
+        
+        .question {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #eaeaea;
+            transition: all 0.3s;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .question-text {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .option {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .option:hover:not(.correct):not(.incorrect) {
+            background-color: #f0f0f0;
+        }
+        
+        .option.selected {
+            border-width: 2px;
+        }
+        
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .option-letter {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .correct .option-letter {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .incorrect .option-letter {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .result-indicator {
+            margin-left: auto;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .correct .result-indicator {
+            color: #28a745;
+        }
+        
+        .incorrect .result-indicator {
+            color: #dc3545;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        #reset-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #show-score-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        #show-score-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .score-container {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .score-container.show {
+            display: block;
+        }
+        
+        .score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .correct-count {
+            color: #28a745;
+        }
+        
+        .incorrect-count {
+            color: #e74c3c;
+        }
+        
+        .progress-bar-container {
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #28a745;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài Kiểm Tra Tin Học - Stata</h1>
+            <p class="description">Kiểm tra kiến thức về Stata và thống kê y học</p>
+        </header>
+   
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span>Tiến độ: <span id="answered-count">0</span>/<span id="total-questions">0</span> câu</span>
+                <span>Đúng: <span id="correct-progress">0</span> | Sai: <span id="incorrect-progress">0</span></span>
+            </div>
+        </div>
+        
+        <div class="question-container" id="questions-container">
+            <!-- Các câu hỏi sẽ được thêm tự động bằng JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button id="show-score-btn">Xem kết quả</button>
+            <button id="reset-btn">Làm lại</button>
+        </div>
+        
+        <div class="score-container" id="score-container">
+            <h3>Kết quả của bạn:</h3>
+            <div class="score" id="score">0/80</div>
+            <p>Đúng: <span class="correct-count" id="correct-count">0</span> | 
+               Sai: <span class="incorrect-count" id="incorrect-count">0</span></p>
+        </div>
+    </div>
 
+    <script>
+        // Dữ liệu câu hỏi - chỉ lấy 80 câu đầu tiên
+        const questionsData = [
+            {
+                question: "Câu 1: Đây là biến số liên tục",
+                options: [
+                    { text: "Cân nặng (kg)", correct: true },
+                    { text: "Số lượt khám/ngày", correct: false },
+                    { text: "Giới tính (nam/nữ)", correct: false },
+                    { text: "Giai đoạn bệnh (I/II/III)", correct: false }
+                ]
+            },
+            {
+                question: "Câu 2: Đây là dạng số liệu chứa nhiều thông tin nhất:",
+                options: [
+                    { text: "Số liệu rời rạc", correct: false },
+                    { text: "Số liệu liên tục", correct: true },
+                    { text: "Số liệu định danh", correct: false },
+                    { text: "Số liệu thứ hạng", correct: false }
+                ]
+            },
+            {
+                question: "Câu 3: Phím tắt chuẩn để lưu bộ số liệu trong Stata 17 (trên Windows) là:",
+                options: [
+                    { text: "Ctrl + E", correct: false },
+                    { text: "Ctrl + P", correct: false },
+                    { text: "Ctrl + S", correct: true },
+                    { text: "Ctrl + D", correct: false }
+                ]
+            },
+            {
+                question: "Câu 4: Trong phần mềm Stata 17, kết quả của câu lệnh: 'di 3^2' là:",
+                options: [
+                    { text: "6", correct: false },
+                    { text: "9", correct: true },
+                    { text: "18", correct: false },
+                    { text: "27", correct: false }
+                ]
+            },
+            {
+                question: "Câu 5: Trong phần mềm Stata 17, kết quả của câu lệnh: 'di 9/3' là:",
+                options: [
+                    { text: "6", correct: false },
+                    { text: "3", correct: true },
+                    { text: "12", correct: false },
+                    { text: "18", correct: false }
+                ]
+            },
+            {
+                question: "Câu 6: Trong phần mềm Stata 17, đây là lệnh tạo biến số mới:",
+                options: [
+                    { text: "generate", correct: true },
+                    { text: "rename", correct: false },
+                    { text: "label", correct: false },
+                    { text: "display", correct: false }
+                ]
+            },
+            {
+                question: "Câu 7: Trong phần mềm Stata 17, đây là lệnh mã hóa giá trị biến số:",
+                options: [
+                    { text: "generate", correct: false },
+                    { text: "rename", correct: false },
+                    { text: "label", correct: false },
+                    { text: "recode", correct: true }
+                ]
+            },
+            {
+                question: "Câu 8: Trong phần mềm Stata 17, đây là lệnh thay đổi giá trị của biến số:",
+                options: [
+                    { text: "display", correct: false },
+                    { text: "replace", correct: true },
+                    { text: "label", correct: false },
+                    { text: "describe", correct: false }
+                ]
+            },
+            {
+                question: "Câu 9: Trong phần mềm Stata 17, đây là lệnh xem, không sửa bộ số liệu:",
+                options: [
+                    { text: "edit", correct: false },
+                    { text: "display", correct: false },
+                    { text: "browse", correct: true },
+                    { text: "input", correct: false }
+                ]
+            },
+            {
+                question: "Câu 10: Trong phần mềm Stata 17, đây là lệnh mở bộ số liệu:",
+                options: [
+                    { text: "use", correct: true },
+                    { text: "edit", correct: false },
+                    { text: "browse", correct: false },
+                    { text: "input", correct: false }
+                ]
+            },
+            {
+                question: "Câu 11: Trong phần mềm Stata 17, đây là lệnh mô tả bộ số liệu:",
+                options: [
+                    { text: "display", correct: false },
+                    { text: "replace", correct: false },
+                    { text: "label", correct: false },
+                    { text: "describe", correct: true }
+                ]
+            },
+            {
+                question: "Câu 12: Trong phần mềm Stata 17, đây là lệnh đổi tên biến số:",
+                options: [
+                    { text: "generate", correct: false },
+                    { text: "rename", correct: true },
+                    { text: "label", correct: false },
+                    { text: "recode", correct: false }
+                ]
+            },
+            {
+                question: "Câu 13: Trong phần mềm Stata 17, đây không phải là một lệnh đúng:",
+                options: [
+                    { text: "Generate", correct: true },
+                    { text: "gen", correct: false },
+                    { text: "gene", correct: false },
+                    { text: "generat", correct: false }
+                ]
+            },
+            {
+                question: "Câu 14: Trong phần mềm Stata 17, đây là lệnh nhập số liệu:",
+                options: [
+                    { text: "describe", correct: false },
+                    { text: "display", correct: false },
+                    { text: "browse", correct: false },
+                    { text: "input", correct: true }
+                ]
+            },
+            {
+                question: "Câu 15: Đây là một câu lệnh trong Stata 17: 'tab gioi'; trong đó 'gioi' là biến số nhị phân. Cửa sổ kết quả Stata 17 không trình bày:",
+                options: [
+                    { text: "Tổng dòng", correct: true },
+                    { text: "Tổng cột", correct: false },
+                    { text: "Tần số tuyệt đối", correct: false },
+                    { text: "Tần số tích lũy", correct: false }
+                ]
+            },
+            {
+                question: "Câu 16: Đây là một câu lệnh trong Stata 17: 'tab noio gioi, row'; trong đó 'noio' và 'gioi' là các biến số nhị phân. Cửa sổ kết quả Stata 17 không trình bày:",
+                options: [
+                    { text: "Tổng dòng", correct: false },
+                    { text: "Tổng cột", correct: false },
+                    { text: "Tần số tuyệt đối", correct: false },
+                    { text: "Tần số mong đợi", correct: true }
+                ]
+            },
+            {
+                question: "Câu 17: Trong phần mềm Stata 17, đây là câu lệnh tạo một biểu đồ cột rời của biến số định tính 'noio':",
+                options: [
+                    { text: "graph pie, over(noio)", correct: false },
+                    { text: "graph bar, over(noio)", correct: true },
+                    { text: "graph box, over(noio)", correct: false },
+                    { text: "histogram, over(noio)", correct: false }
+                ]
+            },
+            {
+                question: "Câu 18: Trong bộ số liệu định lượng, đây là số đo độ phân tán:",
+                options: [
+                    { text: "Trung bình; Độ lệch chuẩn", correct: false },
+                    { text: "Mốt; Độ lệch chuẩn", correct: false },
+                    { text: "Trung vị;Khoảng tứ phân vị", correct: false },
+                    { text: "Biên độ; Phương sai", correct: true }
+                ]
+            },
+            {
+                question: "Câu 19: Cân nặng của 11 trẻ lần lượt là: 13, 14, 14,15, 16, 16, 16, 17, 17, 18 và 20 kg, trung vị là:",
+                options: [
+                    { text: "13 kg", correct: false },
+                    { text: "16 kg", correct: true },
+                    { text: "14 kg", correct: false },
+                    { text: "17 kg", correct: false }
+                ]
+            },
+            {
+                question: "Câu 20: Trong bộ số liệu định lượng, đây là các số đo không bị ảnh hưởng bởi các giá trị quá lớn hoặc quá nhỏ:",
+                options: [
+                    { text: "Mốt; Trung bình", correct: false },
+                    { text: "Trung vị; Trung bình", correct: false },
+                    { text: "Mốt; Trung vị", correct: true },
+                    { text: "Khoảng tứ phân vị; Trung bình", correct: false }
+                ]
+            },
+            {
+                question: "Câu 21: Trong phần mềm Stata 17, đây là lệnh tóm tắt 1 biến số định lượng:",
+                options: [
+                    { text: "sum", correct: true },
+                    { text: "tab", correct: false },
+                    { text: "generate", correct: false },
+                    { text: "label", correct: false }
+                ]
+            },
+            {
+                question: "Câu 22: Trong phần mềm Stata 17, đây là lệnh tạo một biểu đồ hộp để trình bày 1 biến số định lượng:",
+                options: [
+                    { text: "graph pie", correct: false },
+                    { text: "graph box", correct: true },
+                    { text: "histogram", correct: false },
+                    { text: "graph bar", correct: false }
+                ]
+            },
+            {
+                question: "Câu 23: Đây là một câu lệnh trong Stata 17: 'tabstat hatd'; trong đó 'hatd' biến số định lượng. Cửa sổ kết quả Stata 17 trình bày:",
+                options: [
+                    { text: "Phương sai", correct: false },
+                    { text: "Trung vị", correct: false },
+                    { text: "Độ lệch chuẩn", correct: false },
+                    { text: "Trung bình", correct: true }
+                ]
+            },
+            {
+                question: "Câu 24: Trong phần mềm Stata 17, đây là lệnh mô tả trung bình, độ lệch chuẩn, giá trị nhỏ nhất, giá trị lớn nhất và cỡ mẫu của một biến số định lượng:",
+                options: [
+                    { text: "tab", correct: false },
+                    { text: "ci", correct: false },
+                    { text: "sum", correct: true },
+                    { text: "ttest", correct: false }
+                ]
+            },
+            {
+                question: "Câu 25: 'ht' là biến số nhị phân. Trong phần mềm Stata 17, đây là lệnh đúng:",
+                options: [
+                    { text: "ta ht", correct: true },
+                    { text: "tabs ht", correct: false },
+                    { text: "tai ht", correct: false },
+                    { text: "tabsta ht", correct: false }
+                ]
+            },
+            {
+                question: "Câu 26: Đây là một câu lệnh trong Stata 17: 'sum hatd,d'; trong đó 'hatd' biến số định lượng. Cửa sổ kết quả Stata 17 trình bày:",
+                options: [
+                    { text: "Giá trị p; 95% khoảng tin cậy", correct: false },
+                    { text: "Trung vị; Trung bình", correct: true },
+                    { text: "Sai số chuẩn; Độ lệch chuẩn", correct: false },
+                    { text: "Phương sai; Sai số chuẩn", correct: false }
+                ]
+            },
+            {
+                question: "Câu 27: Đây là một câu lệnh trong Stata 17: 'ci means hatd'; trong đó 'hatd' là biến số định lượng. Cửa sổ kết quả của Stata 17 trình bày:",
+                options: [
+                    { text: "Độ lệch chuẩn", correct: false },
+                    { text: "Biên độ", correct: false },
+                    { text: "95% khoảng tin cậy", correct: true },
+                    { text: "Giá trị p", correct: false }
+                ]
+            },
+            {
+                question: "Câu 28: Đây là một câu lệnh trong Stata 17: 'tabstat hatd, statistics (n, mean, sd, cv,v)'; trong đó 'hatd' biến số định lượng. Cửa sổ kết quả Stata 17 trình bày:",
+                options: [
+                    { text: "Trung bình; Độ lệch chuẩn", correct: true },
+                    { text: "Giá trị p; 95% khoảng tin cậy", correct: false },
+                    { text: "Sai số chuẩn; Độ lệch chuẩn", correct: false },
+                    { text: "Phương sai; Sai số chuẩn", correct: false }
+                ]
+            },
+            {
+                question: "Câu 29: Đây là một câu lệnh trong Stata 17: 'centile wt, centile (0, 25, 50, 75, 100)'; trong đó 'wt' là biến số định lượng. Cửa sổ kết quả của Stata 17 trình bày:",
+                options: [
+                    { text: "Độ lệch chuẩn", correct: false },
+                    { text: "Biên độ", correct: false },
+                    { text: "Trung bình", correct: false },
+                    { text: "95% khoảng tin cậy", correct: true }
+                ]
+            },
+            {
+                question: "Câu 30: Đây là một câu lệnh trong Stata 17: 'ci means hatd'; trong đó 'hatd' là biến số định lượng. Cửa sổ kết quả của Stata 17 trình bày:",
+                options: [
+                    { text: "Sai số chuẩn; Giá trị p", correct: false },
+                    { text: "Độ lệch chuẩn; Sai số chuẩn", correct: false },
+                    { text: "Trung bình; Độ lệch chuẩn", correct: false },
+                    { text: "Số quan sát; Sai số chuẩn", correct: true }
+                ]
+            },
+            {
+                question: "Câu 31: Đây là một câu lệnh trong Stata 17: 'ci means wt, level(90)'; trong đó 'wt' là biến số định lượng. Cửa sổ kết quả của Stata 17 không trình bày:",
+                options: [
+                    { text: "95% khoảng tin cậy", correct: true },
+                    { text: "Sai số chuẩn", correct: false },
+                    { text: "Trung bình", correct: false },
+                    { text: "Số quan sát", correct: false }
+                ]
+            },
+            {
+                question: "Câu 32: Đây là một câu lệnh trong Stata 17: 'ci proportions hatd, level(99)'; trong đó 'hatd' là biến số nhị phân. Cửa sổ kết quả của Stata 17 trình bày:",
+                options: [
+                    { text: "Độ lệch chuẩn; Khoảng tứ phân vị", correct: false },
+                    { text: "Sai số chuẩn; Tỉ lệ", correct: true },
+                    { text: "Trung bình; 99% khoảng tin cậy", correct: false },
+                    { text: "Biên độ; Giá trị p", correct: false }
+                ]
+            },
+            {
+                question: "Câu 33: Trong phần mềm Stata 17, đây là phát biểu đúng về kết quả câu lệnh: 'cii means 200 100 20':",
+                options: [
+                    { text: "Tính 95% khoảng tin cậy cho một tỉ lệ", correct: false },
+                    { text: "100 là cỡ mẫu", correct: false },
+                    { text: "Tính 95% khoảng tin cậy cho một trung bình", correct: true },
+                    { text: "200 là trung bình", correct: false }
+                ]
+            },
+            {
+                question: "Câu 34: Trong phần mềm Stata 17, đây là câu lệnh đúng:",
+                options: [
+                    { text: "ci proportions 100 20", correct: false },
+                    { text: "ci proportions 100 20, wald", correct: false },
+                    { text: "ci proportions 100 20,", correct: false },
+                    { text: "cii proportions 100 20", correct: true }
+                ]
+            },
+            {
+                question: "Câu 35: Đây là một câu lệnh trong Stata 17: 'prtesti 100 0.2 0.24, level(99)'. Cửa sổ kết quả của Stata 17 không trình bày:",
+                options: [
+                    { text: "95% khoảng tin cậy", correct: true },
+                    { text: "Cỡ mẫu", correct: false },
+                    { text: "Sai số chuẩn", correct: false },
+                    { text: "Giả thuyết Ho", correct: false }
+                ]
+            },
+            {
+                question: "Câu 36: Đây là một câu lệnh trong Stata 17: 'prtest ht, by(gioi)'. Câu lệnh này là để:",
+                options: [
+                    { text: "So sánh trung bình của 2 quần thể", correct: false },
+                    { text: "So sánh tỉ lệ của 2 quần thể", correct: true },
+                    { text: "So sánh tỉ lệ của 2 mẫu", correct: false },
+                    { text: "So sánh trung bình của 2 mẫu", correct: false }
+                ]
+            },
+            {
+                question: "Câu 37: Trong phần mềm Stata 17, lệnh này thực hiện được khi có biến số phù hợp trong file số liệu:",
+                options: [
+                    { text: "csi", correct: false },
+                    { text: "ttesti", correct: false },
+                    { text: "prtest", correct: true },
+                    { text: "cii", correct: false }
+                ]
+            },
+            {
+                question: "Câu 38: Trong phần mềm Stata 17, lệnh này thực hiện được khi có biến số phù hợp trong file số liệu:",
+                options: [
+                    { text: "csi", correct: false },
+                    { text: "ttesti", correct: false },
+                    { text: "ci", correct: true },
+                    { text: "cii", correct: false }
+                ]
+            },
+            {
+                question: "Câu 39: Trong phần mềm Stata 17, đây là lệnh so sánh 2 tỉ lệ:",
+                options: [
+                    { text: "prtest", correct: true },
+                    { text: "Prtest", correct: false },
+                    { text: "Prtesti", correct: false },
+                    { text: "Chi2", correct: false }
+                ]
+            },
+            {
+                question: "Câu 40: Đây là một câu lệnh trong Stata 17: 'tabi 260 299\\15 41, row chi2'. Cửa sổ kết quả của Stata 17 không trình bày đại lượng này:",
+                options: [
+                    { text: "Giá trị p", correct: false },
+                    { text: "Tần số mong đợi", correct: true },
+                    { text: "Tần số quan sát", correct: false },
+                    { text: "Giá trị chi bình phương", correct: false }
+                ]
+            },
+            {
+                question: "Câu 41: Đây là biến số thứ hạng",
+                options: [
+                    { text: "Cân nặng (kg)", correct: false },
+                    { text: "Số lượt khám/ngày", correct: false },
+                    { text: "Giới tính (nam/nữ)", correct: false },
+                    { text: "Giai đoạn bệnh (I/II/III)", correct: true }
+                ]
+            },
+            {
+                question: "Câu 42: Đây là dạng số liệu chứa ít thông tin nhất:",
+                options: [
+                    { text: "Số liệu rời rạc", correct: false },
+                    { text: "Số liệu liên tục", correct: false },
+                    { text: "Số liệu định danh", correct: true },
+                    { text: "Số liệu thứ hạng", correct: false }
+                ]
+            },
+            {
+                question: "Câu 43: Trong phần mềm Stata 17, đây là phím tắt xóa sạch cửa sổ Command:",
+                options: [
+                    { text: "esc", correct: true },
+                    { text: "f1", correct: false },
+                    { text: "f7", correct: false },
+                    { text: "f2", correct: false }
+                ]
+            },
+            {
+                question: "Câu 44: Trong phần mềm Stata 17, kết quả của câu lệnh: 'di sqrt(9)' là:",
+                options: [
+                    { text: "6", correct: false },
+                    { text: "3", correct: true },
+                    { text: "18", correct: false },
+                    { text: "27", correct: false }
+                ]
+            },
+            {
+                question: "Câu 45: Trong phần mềm Stata 17, kết quả của câu lệnh: 'di 3*3' là:",
+                options: [
+                    { text: "6", correct: false },
+                    { text: "9", correct: true },
+                    { text: "12", correct: false },
+                    { text: "18", correct: false }
+                ]
+            },
+            {
+                question: "Câu 46: Trong phần mềm Stata 17, đây là lệnh tạo nhãn và giá trị cho biến số:",
+                options: [
+                    { text: "generate", correct: false },
+                    { text: "rename", correct: false },
+                    { text: "label", correct: true },
+                    { text: "display", correct: false }
+                ]
+            },
+            {
+                question: "Câu 47: Trong phần mềm Stata 17, đây là lệnh hiển thị phép tính:",
+                options: [
+                    { text: "generate", correct: false },
+                    { text: "rename", correct: false },
+                    { text: "label", correct: false },
+                    { text: "display", correct: true }
+                ]
+            },
+            {
+                question: "Câu 48: Trong phần mềm Stata 17, đây là lệnh xem, sửa, nhập số liệu:",
+                options: [
+                    { text: "display", correct: false },
+                    { text: "edit", correct: true },
+                    { text: "label", correct: false },
+                    { text: "describe", correct: false }
+                ]
+            },
+            {
+                question: "Câu 49: Trong phần mềm Stata 17, đây là lệnh xóa biến số hoặc bản ghi:",
+                options: [
+                    { text: "edit", correct: false },
+                    { text: "display", correct: false },
+                    { text: "drop", correct: true },
+                    { text: "input", correct: false }
+                ]
+            },
+            {
+                question: "Câu 50: Trong phần mềm Stata 17, đây là lệnh đếm số quan sát bộ số liệu:",
+                options: [
+                    { text: "count", correct: true },
+                    { text: "edit", correct: false },
+                    { text: "browse", correct: false },
+                    { text: "input", correct: false }
+                ]
+            },
+            {
+                question: "Câu 51: Trong phần mềm Stata 17, đây là lệnh liệt kê các quan sát của bộ số liệu:",
+                options: [
+                    { text: "display", correct: false },
+                    { text: "replace", correct: false },
+                    { text: "label", correct: false },
+                    { text: "list", correct: true }
+                ]
+            },
+            {
+                question: "Câu 52: Trong phần mềm Stata 17, đây không phải là một lệnh đúng:",
+                options: [
+                    { text: "di", correct: false },
+                    { text: "Display", correct: true },
+                    { text: "dis", correct: false },
+                    { text: "disp", correct: false }
+                ]
+            },
+            {
+                question: "Câu 53: Trong phần mềm Stata 17, đây là lệnh thường đi kèm với lệnh generate để tạo biến số mới:",
+                options: [
+                    { text: "replace", correct: true },
+                    { text: "rename", correct: false },
+                    { text: "input", correct: false },
+                    { text: "edit", correct: false }
+                ]
+            },
+            {
+                question: "Câu 54: Đây là một câu lệnh trong Stata 17: 'tab noio gioi'; trong đó 'noio' và 'gioi' là các biến số nhị phân. Cửa sổ kết quả Stata 17 không trình bày:",
+                options: [
+                    { text: "Tổng dòng", correct: false },
+                    { text: "Tổng cột", correct: false },
+                    { text: "Tần số tuyệt đối", correct: false },
+                    { text: "Tần số tương đối", correct: true }
+                ]
+            },
+            {
+                question: "Câu 55: Đây là một câu lệnh trong Stata 17: 'tab noio gioi, row'; trong đó 'noio' và 'gioi' là các biến số nhị phân. Cửa sổ kết quả Stata 17 không trình bày:",
+                options: [
+                    { text: "Tổng dòng", correct: false },
+                    { text: "Tổng cột", correct: false },
+                    { text: "Tần số tuyệt đối", correct: false },
+                    { text: "Tỷ lệ % theo cột", correct: true }
+                ]
+            },
+            {
+                question: "Câu 56: Trong phần mềm Stata 17, đây là câu lệnh tạo một biểu đồ hình bánh của biến số định tính 'noio':",
+                options: [
+                    { text: "graph pie, over(noio)", correct: true },
+                    { text: "graph bar, over(noio)", correct: false },
+                    { text: "graph box, over(noio)", correct: false },
+                    { text: "histogram, over(noio)", correct: false }
+                ]
+            },
+            {
+                question: "Câu 57: Cân nặng của 11 trẻ lần lượt là: 13, 14, 14,15, 16, 16, 16, 17, 17, 18 và 20 kg, mốt là:",
+                options: [
+                    { text: "13 kg", correct: false },
+                    { text: "16 kg", correct: true },
+                    { text: "14 kg", correct: false },
+                    { text: "17 kg", correct: false }
+                ]
+            },
+            {
+                question: "Câu 58: Trong bộ số liệu định lượng, đây là các số đo bị ảnh hưởng bởi các giá trị quá lớn hoặc quá nhỏ:",
+                options: [
+                    { text: "Trung bình; Phương sai", correct: true },
+                    { text: "Trung vị; Trung bình", correct: false },
+                    { text: "Mốt; Trung vị", correct: false },
+                    { text: "Khoảng tứ phân vị; Trung bình", correct: false }
+                ]
+            },
+            {
+                question: "Câu 59: Trong phần mềm Stata 17, đây là lệnh mô tả chi tiết 1 biến số định lượng:",
+                options: [
+                    { text: "sum,d", correct: true },
+                    { text: "tab", correct: false },
+                    { text: "generate", correct: false },
+                    { text: "label", correct: false }
+                ]
+            },
+            {
+                question: "Câu 60: Trong phần mềm Stata 17, đây là lệnh tạo một biểu đồ cột liên tục để trình bày 1 biến số định lượng:",
+                options: [
+                    { text: "graph pie", correct: false },
+                    { text: "graph box", correct: false },
+                    { text: "histogram", correct: true },
+                    { text: "graph bar", correct: false }
+                ]
+            },
+            {
+                question: "Câu 61: Đây là một câu lệnh trong Stata 17: 'sum hatd' trong đó 'hatd' biến số định lượng. Cửa sổ kết quả Stata 17 không trình bày:",
+                options: [
+                    { text: "Biên độ", correct: false },
+                    { text: "Trung vị", correct: true },
+                    { text: "Độ lệch chuẩn", correct: false },
+                    { text: "Trung bình", correct: false }
+                ]
+            },
+            {
+                question: "Câu 62: Trong phần mềm Stata 17, đây là lệnh mô tả trung bình, độ lệch chuẩn, giá trị nhỏ nhất, giá trị lớn nhất, độ lệch, độ gù và cỡ mẫu của một biến số định lượng:",
+                options: [
+                    { text: "sum,D", correct: false },
+                    { text: "ci", correct: false },
+                    { text: "sum,d", correct: true },
+                    { text: "ttest", correct: false }
+                ]
+            },
+            {
+                question: "Câu 63: 'ht' là biến số định lượng. Trong phần mềm Stata 17, đây là lệnh đúng:",
+                options: [
+                    { text: "hist ht", correct: true },
+                    { text: "hi ht", correct: false },
+                    { text: "his ht", correct: false },
+                    { text: "histo ht", correct: false }
+                ]
+            },
+            {
+                question: "Câu 64: Đây là một câu lệnh trong Stata 17: 'sum hatd'; trong đó 'hatd' biến số định lượng. Cửa sổ kết quả Stata 17 trình bày:",
+                options: [
+                    { text: "Giá trị p; 95% khoảng tin cậy", correct: false },
+                    { text: "Trung bình; Độ lệch chuẩn", correct: true },
+                    { text: "Sai số chuẩn; Độ lệch chuẩn", correct: false },
+                    { text: "Phương sai; Sai số chuẩn", correct: false }
+                ]
+            },
+            {
+                question: "Câu 65: Đây là một câu lệnh trong Stata 17: 'ci means hatd, level(90)'; trong đó 'hatd' là biến số định lượng. Cửa sổ kết quả của Stata 17 trình bày:",
+                options: [
+                    { text: "Độ lệch chuẩn", correct: false },
+                    { text: "Biên độ", correct: false },
+                    { text: "90% khoảng tin cậy", correct: true },
+                    { text: "Giá trị p", correct: false }
+                ]
+            },
+            {
+                question: "Câu 66: Đây là một câu lệnh trong Stata 17: 'sum hatd,d'; trong đó 'hatd' biến số định lượng. Cửa sổ kết quả Stata 17 trình bày:",
+                options: [
+                    { text: "Tứ phân vị thứ 1; Tứ phân vị thứ 3", correct: true },
+                    { text: "Giá trị p; 95% khoảng tin cậy", correct: false },
+                    { text: "Sai số chuẩn; Độ lệch chuẩn", correct: false },
+                    { text: "Phương sai; Sai số chuẩn", correct: false }
+                ]
+            },
+            {
+                question: "Câu 67: Đây là một câu lệnh trong Stata 17: 'ci means wt'; trong đó 'wt' là biến số định lượng. Cửa sổ kết quả của Stata 17 không trình bày:",
+                options: [
+                    { text: "Sai số chuẩn", correct: false },
+                    { text: "Số quan sát", correct: false },
+                    { text: "Trung bình", correct: false },
+                    { text: "90% khoảng tin cậy", correct: true }
+                ]
+            },
+            {
+                question: "Câu 68: Đây là một câu lệnh trong Stata 17: 'ci proportions hatd, level(90)'; trong đó 'hatd' là biến số nhị phân. Cửa sổ kết quả của Stata 17 trình bày:",
+                options: [
+                    { text: "Độ lệch chuẩn; Khoảng tứ phân vị", correct: false },
+                    { text: "Sai số chuẩn; Tỉ lệ", correct: true },
+                    { text: "Trung bình; 90% khoảng tin cậy", correct: false },
+                    { text: "Biên độ; Giá trị p", correct: false }
+                ]
+            },
+            {
+                question: "Câu 69: Trong phần mềm Stata 17, đây là câu lệnh sai:",
+                options: [
+                    { text: "cii proportions 100 20", correct: false },
+                    { text: "cii proportions 100 20, wald", correct: false },
+                    { text: "cii proportions 100 20, leve(95)", correct: false },
+                    { text: "cii prportions 100 20,level(95)", correct: true }
+                ]
+            },
+            {
+                question: "Câu 70: Đây là một câu lệnh trong Stata 17: 'prtesti 100 0.2 0.24'. Cửa sổ kết quả của Stata 17 không trình bày:",
+                options: [
+                    { text: "Độ lệch chuẩn", correct: true },
+                    { text: "Cỡ mẫu", correct: false },
+                    { text: "Sai số chuẩn", correct: false },
+                    { text: "Giả thuyết Ho", correct: false }
+                ]
+            },
+            {
+                question: "Câu 71: Trong phần mềm Stata 17, đây là lệnh so sánh 2 tỉ lệ:",
+                options: [
+                    { text: "Prtest", correct: false },
+                    { text: "prtest", correct: true },
+                    { text: "Prtesti", correct: false },
+                    { text: "Chi2", correct: false }
+                ]
+            },
+            {
+                question: "Câu 72: Trong phần mềm Stata 17, đây là lệnh so sánh 2 tỉ lệ:",
+                options: [
+                    { text: "prtest", correct: true },
+                    { text: "Prtest", correct: false },
+                    { text: "Prtesti", correct: false },
+                    { text: "Chi2", correct: false }
+                ]
+            },
+            {
+                question: "Câu 73: Đây là một câu lệnh trong Stata 17: 'tabi 260 299\\15 41 chi2'. Cửa sổ kết quả của Stata 17 không trình bày đại lượng này:",
+                options: [
+                    { text: "Giá trị p", correct: false },
+                    { text: "Tần số tương đối", correct: true },
+                    { text: "Tần số quan sát", correct: false },
+                    { text: "Giá trị chi bình phương", correct: false }
+                ]
+            },
+            {
+                question: "Câu 74: Người nghiên cứu muốn kiểm định sự khác biệt về tỉ lệ suy dinh dưỡng trước và sau khi can thiệp bằng chế độ ăn của một nhóm trẻ. Trên phần mềm Stata 17, đây là lệnh phù hợp:",
+                options: [
+                    { text: "mcci", correct: true },
+                    { text: "ttesti", correct: false },
+                    { text: "csi", correct: false },
+                    { text: "prtesti", correct: false }
+                ]
+            },
+            {
+                question: "Câu 75: Đây là một câu lệnh trong Stata 17: 'csi 260 299 15 41'. Cửa sổ kết quả Stata 17 không trình bày:",
+                options: [
+                    { text: "Giá trị p", correct: false },
+                    { text: "Tỉ lệ mắc bệnh của nhóm phơi nhiễm", correct: false },
+                    { text: "Risk ratio", correct: false },
+                    { text: "Bậc tự do", correct: true }
+                ]
+            },
+            {
+                question: "Câu 76: Đây là một câu lệnh trong Stata 17: 'ttest hatd = 120'; trong đó 'hatd' là biến số định lượng. Cửa sổ kết quả Stata 17 trình bày:",
+                options: [
+                    { text: "Tứ phân vị; Trung bình", correct: false },
+                    { text: "Trung vị; Độ lệch chuẩn", correct: false },
+                    { text: "Bậc tự do; Trung vị", correct: false },
+                    { text: "Sai số chuẩn; Độ lệch chuẩn", correct: true }
+                ]
+            },
+            {
+                question: "Câu 77: Trong phần mềm Stata 17, đây là lệnh kiểm định phân bố Chuẩn:",
+                options: [
+                    { text: "swilk", correct: true },
+                    { text: "ttest", correct: false },
+                    { text: "prtest", correct: false },
+                    { text: "sdtest", correct: false }
+                ]
+            },
+            {
+                question: "Câu 78: Trong phần mềm Stata 17, câu lệnh 'sdtest ht, by(goi)' trong đó 'ht' là biến số định lượng và 'gioi' biến số nhị phân. Đây là câu lệnh:",
+                options: [
+                    { text: "So sánh 2 tỉ lệ", correct: false },
+                    { text: "So sánh 2 trung vị", correct: false },
+                    { text: "So sánh 2 trung bình", correct: false },
+                    { text: "So sánh 2 phương sai", correct: true }
+                ]
+            },
+            {
+                question: "Câu 79: Người nghiên cứu muốn so sánh sự khác biệt về trung bình chiều cao trước (htt) và sau (hts) khi can thiệp bằng chế độ ăn của một nhóm trẻ. Biến số khác biệt là htkb. Trên phần mềm Stata 17, đây là lệnh phù hợp:",
+                options: [
+                    { text: "ttest htt = hts", correct: true },
+                    { text: "pwcorr htt hts", correct: false },
+                    { text: "ttesti htkb = 0", correct: false },
+                    { text: "prtest htt = hts", correct: false }
+                ]
+            },
+            {
+                question: "Câu 80: Trong phần mềm Stata 17, đây là lệnh so sánh 2 trung bình:",
+                options: [
+                    { text: "ttesti", correct: true },
+                    { text: "onewayi", correct: false },
+                    { text: "sdtesti", correct: false },
+                    { text: "swilki", correct: false }
+                ]
+            }
+        ];
+
+        // Biến lưu trữ trạng thái
+        let userAnswers = Array(questionsData.length).fill(null);
+        let answeredCount = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        // Hàm tạo câu hỏi
+        function createQuestions() {
+            const container = document.getElementById('questions-container');
+            
+            questionsData.forEach((questionData, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question';
+                questionElement.dataset.index = index;
+                
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = `Câu ${index + 1}:`;
+                
+                const questionText = document.createElement('div');
+                questionText.className = 'question-text';
+                questionText.textContent = questionData.question;
+                
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'options';
+                
+                const letters = ['A', 'B', 'C', 'D'];
+                
+                questionData.options.forEach((option, optionIndex) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.dataset.optionIndex = optionIndex;
+                    
+                    const optionLetter = document.createElement('div');
+                    optionLetter.className = 'option-letter';
+                    optionLetter.textContent = letters[optionIndex];
+                    
+                    const optionText = document.createElement('span');
+                    optionText.textContent = option.text;
+                    
+                    // Tạo indicator nhưng ẩn đi cho đến khi người dùng chọn
+                    const indicator = document.createElement('span');
+                    indicator.className = 'result-indicator';
+                    indicator.style.visibility = 'hidden';
+                    
+                    optionElement.appendChild(optionLetter);
+                    optionElement.appendChild(optionText);
+                    optionElement.appendChild(indicator);
+                    
+                    // Thêm sự kiện click
+                    optionElement.addEventListener('click', () => {
+                        selectOption(index, optionIndex);
+                    });
+                    
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                questionElement.appendChild(questionNumber);
+                questionElement.appendChild(questionText);
+                questionElement.appendChild(optionsContainer);
+                container.appendChild(questionElement);
+            });
+            
+            // Cập nhật tổng số câu hỏi
+            document.getElementById('total-questions').textContent = questionsData.length;
+            updateProgressBar();
+        }
+
+        // Hàm chọn đáp án
+        function selectOption(questionIndex, optionIndex) {
+            const questionElement = document.querySelector(`.question[data-index="${questionIndex}"]`);
+            const options = questionElement.querySelectorAll('.option');
+            const questionData = questionsData[questionIndex];
+            
+            // Kiểm tra xem câu hỏi này đã được trả lời chưa
+            const wasAnswered = userAnswers[questionIndex] !== null;
+            
+            // Xóa lớp selected từ tất cả các đáp án trong câu hỏi này
+            options.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Thêm lớp selected cho đáp án được chọn
+            options[optionIndex].classList.add('selected');
+            
+            // Hiển thị kết quả cho tất cả các đáp án trong câu hỏi này
+            options.forEach((option, idx) => {
+                const indicator = option.querySelector('.result-indicator');
+                const isCorrect = questionData.options[idx].correct;
+                
+                // Hiển thị indicator
+                indicator.style.visibility = 'visible';
+                
+                // Đặt nội dung và lớp cho indicator
+                if (isCorrect) {
+                    option.classList.add('correct');
+                    indicator.textContent = ' ✓';
+                } else if (idx === optionIndex) {
+                    option.classList.add('incorrect');
+                    indicator.textContent = ' ✗';
+                }
+                
+                // Nếu là đáp án đúng, hiển thị màu xanh
+                if (isCorrect) {
+                    option.classList.add('correct');
+                }
+            });
+            
+            // Lưu đáp án người dùng chọn
+            userAnswers[questionIndex] = optionIndex;
+            
+            // Cập nhật số lượng câu đã trả lời
+            if (!wasAnswered) {
+                answeredCount++;
+                
+                // Cập nhật số câu đúng/sai
+                if (questionData.options[optionIndex].correct) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+                
+                // Cập nhật thanh tiến độ và số liệu
+                updateProgressBar();
+            }
+        }
+
+        // Hàm cập nhật thanh tiến độ
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progress-fill');
+            const answeredCountElement = document.getElementById('answered-count');
+            const correctProgressElement = document.getElementById('correct-progress');
+            const incorrectProgressElement = document.getElementById('incorrect-progress');
+            
+            // Tính phần trăm
+            const percentage = (answeredCount / questionsData.length) * 100;
+            
+            // Cập nhật thanh tiến độ
+            progressFill.style.width = `${percentage}%`;
+            
+            // Cập nhật số liệu
+            answeredCountElement.textContent = answeredCount;
+            correctProgressElement.textContent = correctCount;
+            incorrectProgressElement.textContent = incorrectCount;
+        }
+
+        // Hàm hiển thị kết quả tổng
+        function showScore() {
+            const scoreContainer = document.getElementById('score-container');
+            const scoreElement = document.getElementById('score');
+            const correctCountElement = document.getElementById('correct-count');
+            const incorrectCountElement = document.getElementById('incorrect-count');
+            
+            scoreElement.textContent = `${correctCount}/${questionsData.length}`;
+            correctCountElement.textContent = correctCount;
+            incorrectCountElement.textContent = incorrectCount;
+            
+            scoreContainer.classList.add('show');
+            
+            // Cuộn đến phần kết quả
+            scoreContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Hàm làm lại bài
+        function resetQuiz() {
+            // Reset tất cả biến
+            userAnswers = Array(questionsData.length).fill(null);
+            answeredCount = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            
+            // Xóa tất cả các lớp và indicator
+            const questions = document.querySelectorAll('.question');
+            questions.forEach(question => {
+                const options = question.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.classList.remove('selected', 'correct', 'incorrect');
+                    
+                    const indicator = option.querySelector('.result-indicator');
+                    if (indicator) {
+                        indicator.style.visibility = 'hidden';
+                        indicator.textContent = '';
+                    }
+                });
+            });
+            
+            // Ẩn kết quả
+            const scoreContainer = document.getElementById('score-container');
+            scoreContainer.classList.remove('show');
+            
+            // Cập nhật thanh tiến độ
+            updateProgressBar();
+        }
+
+        // Khởi tạo bài kiểm tra
+        document.addEventListener('DOMContentLoaded', () => {
+            createQuestions();
+            
+            // Gán sự kiện cho nút xem kết quả
+            document.getElementById('show-score-btn').addEventListener('click', showScore);
+            
+            // Gán sự kiện cho nút làm lại
+            document.getElementById('reset-btn').addEventListener('click', resetQuiz);
+        });
+    </script>
 </body>
 </html>
