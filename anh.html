@@ -1724,7 +1724,7 @@
                 <div class="answer-feedback"></div>
             </div>
             
-            <div class="question-container" data-correct="D">
+            <div class="question-container" data-correct="C">
                 <div class="question-text">2. Which food group provides the most energy according to the passage?</div>
                 <div class="options-container">
                     <div class="option" data-value="A">
@@ -1960,7 +1960,17 @@
             
             <div class="written-section">
                 <h3>IV. The diagram below shows how to administer a blood sugar test. Label the diagram with the words in the box.</h3>
-                <p><em>Words: Test strip, Lancet, Glucometer, Plaster, Screen, Drop of blood, Finger</em></p>
+				<img src="https://i.ibb.co/3mMPcPBx/12112.png">
+			
+	   <div class="horizontal-word-box">
+        <div class="word-inline">Test strip</div>
+        <div class="word-inline">Lancet</div>
+        <div class="word-inline">Glucometer</div>
+        <div class="word-inline">Plaster</div>
+        <div class="word-inline">Screen</div>
+        <div class="word-inline">Drop of blood</div><div class="word-inline">Finger</div>
+    </div>
+               
                 <div class="question-container" data-correct="test strip,finger,lancet,drop of blood,plaster,glucometer and screen">
                     <div class="question-text">
                         <div style="margin-bottom: 15px;">
@@ -2070,8 +2080,18 @@ function checkMatching() {
 }
 </script>
             <div class="written-section">
-                <h3>V. Complete the text about food allergy with the words in the box.</h3>
-                <p><em>Words: adverse, allergic, harmful, antibodies</em></p>
+                <h3>VI. Complete the text about food allergy with the words in the box.</h3>
+               
+				   <div class="horizontal-word-box">
+        <div class="word-inline">adverse</div>
+        <div class="word-inline">allergic</div>
+        <div class="word-inline">harmful</div>
+        <div class="word-inline">antibodies</div>
+       
+    </div>
+       
+        
+    </div>
                 <div class="question-container" data-correct="adverse,harmful,antibodies,allergic">
                     <div class="question-text">
                         What is a food allergy? If you experience an (1) ______ reaction to a food, this is 
@@ -2093,6 +2113,25 @@ function checkMatching() {
                     <div class="written-feedback" id="allergyFeedback"></div>
                 </div>
             </div>
+			<!-- THÊM VÀO SAU PHẦN VI (food allergy) và TRƯỚC PHẦN VIII (respiratory diagram) -->
+<div class="written-section">
+    <h3>VII. Write answers for the following questions.</h3>
+    
+    <div class="question-container" data-correct="asthma symptoms such as coughing, wheezing, chest tightness, and difficulty breathing">
+        <div class="question-text">1. Which are symptoms of asthma?</div>
+        <textarea class="written-answer-input" placeholder="Nhập câu trả lời của bạn ở đây..." rows="3"></textarea>
+        <button class="check-answer-btn">Kiểm tra đáp án</button>
+        <div class="written-feedback"></div>
+    </div>
+    
+    <div class="question-container" data-correct="Common triggers include dust, pollen, pet hair, air pollution, strong chemicals, and tobacco smoke">
+        <div class="question-text">2. What are the causes of asthma?</div>
+        <textarea class="written-answer-input" placeholder="Nhập câu trả lời của bạn ở đây..." rows="3"></textarea>
+        <button class="check-answer-btn">Kiểm tra đáp án</button>
+        <div class="written-feedback"></div>
+    </div>
+</div>
+			
             <div class="written-section">
     <h3>VIII. The diagram below shows the human respiratory system. Label the diagram with the words in the box.</h3>
     
@@ -2115,37 +2154,82 @@ function checkMatching() {
             <div class="label-inputs">
                 <div class="label-input-group" data-number="1">
                     <div class="label-number">1:</div>
-                    <input type="text" class="label-input" placeholder="Nhập tên">
+                    
+					<input class="diagram-label-input" data-number="1">
                 </div>
                 <div class="label-input-group" data-number="2">
                     <div class="label-number">2:</div>
-                    <input type="text" class="label-input" placeholder="Nhập tên">
+                    <input class="diagram-label-input" data-number="2">
                 </div>
                 <div class="label-input-group" data-number="3">
                     <div class="label-number">3:</div>
-                    <input type="text" class="label-input" placeholder="Nhập tên">
+                <input class="diagram-label-input" data-number="3">
                 </div>
                 <div class="label-input-group" data-number="4">
                     <div class="label-number">4:</div>
-                    <input type="text" class="label-input" placeholder="Nhập tên">
+              <input class="diagram-label-input" data-number="4">
                 </div>
                 <div class="label-input-group" data-number="5">
                     <div class="label-number">5:</div>
-                    <input type="text" class="label-input" placeholder="Nhập tên">
+                <input class="diagram-label-input" data-number="5">
                 </div>
                 <div class="label-input-group" data-number="6">
                     <div class="label-number">6:</div>
-                    <input type="text" class="label-input" placeholder="Nhập tên">
+                 <input class="diagram-label-input" data-number="6">
                 </div>
                 <div class="label-input-group" data-number="7">
                     <div class="label-number">7:</div>
-                    <input type="text" class="label-input" placeholder="Nhập tên">
+                 <input class="diagram-label-input" data-number="7">
                 </div>
             </div>
         </div>
-        
+        <div class="labeling-controls">
+    <button class="check-labeling-btn" onclick="checkLogicPartVIII()">Kiểm tra đáp án</button>
+</div>
+
+<div id="logicVIIIResult" class="labeling-feedback"></div>
+<script>
+function checkLogicPartVIII() {
+    const correctAnswers = {
+        1: "windpipe",
+        2: "left lung",
+        3: "diaphragm",
+        4: "bronchial tubes",
+        5: "normal bronchiole",
+        6: "asthmatic bronchiole",
+        7: "right lung"
+    };
+
+    let correctCount = 0;
+    let resultHTML = "<strong>Đáp án đúng:</strong><br>";
+
+    Object.keys(correctAnswers).forEach(num => {
+        const input = document.querySelector(`.diagram-label-input[data-number="${num}"]`);
+        if (!input) return;
+
+        const userAnswer = input.value.trim().toLowerCase();
+        const correct = correctAnswers[num];
+
+        if (userAnswer === correct) {
+            input.classList.remove("incorrect");
+            input.classList.add("correct");
+            correctCount++;
+        } else {
+            input.classList.remove("correct");
+            input.classList.add("incorrect");
+        }
+
+        resultHTML += `${num}: ${correct}<br>`;
+    });
+
+    const resultBox = document.getElementById("logicVIIIResult");
+    resultBox.innerHTML = `✅ Đúng ${correctCount}/7<br><br>${resultHTML}`;
+    resultBox.classList.add("show");
+}
+</script>
+
         <div class="exercise-controls">
-            <button class="check-btn" id="checkDiagramBtn">Kiểm tra</button>
+            <button class="check-btn" id="checkDiagramBtn">Nộp bài</button>
             <button class="reset-btn" id="resetDiagramBtn">Làm lại</button>
         </div>
         
@@ -2172,6 +2256,155 @@ function checkMatching() {
         <!-- Phần RESULTS và footer giữ nguyên -->
         
         <script>
+		
+		   document.addEventListener('DOMContentLoaded', function() {
+            // Tất cả các phần tử option
+            const options = document.querySelectorAll('.option');
+            const totalQuestions = document.querySelectorAll('.question-container[data-correct]').length;
+            const submitBtn = document.getElementById('submitBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const showAllAnswersBtn = document.getElementById('showAllAnswersBtn');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            // Biến lưu kết quả
+            let userAnswers = {};
+            let score = 0;
+            let answeredCount = 0;
+            
+            // Xử lý khi click chọn đáp án
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    const questionContainer = this.closest('.question-container');
+                    const questionId = Array.from(document.querySelectorAll('.question-container')).indexOf(questionContainer);
+                    const selectedValue = this.getAttribute('data-value');
+                    const correctAnswer = questionContainer.getAttribute('data-correct');
+                    const feedbackDiv = questionContainer.querySelector('.answer-feedback');
+                    
+                    // Xóa lựa chọn trước đó trong câu hỏi này
+                    questionContainer.querySelectorAll('.option').forEach(opt => {
+                        opt.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // Đánh dấu lựa chọn hiện tại
+                    this.classList.add('selected');
+                    
+                    // Kiểm tra đáp án và hiển thị kết quả ngay lập tức
+                    if (selectedValue === correctAnswer) {
+                        this.classList.add('correct');
+                        feedbackDiv.innerHTML = `<div class="correct-answer"><i class="fas fa-check-circle feedback-icon"></i>Chính xác! Đáp án đúng là ${correctAnswer}.</div>`;
+                        feedbackDiv.classList.add('show');
+                        
+                        // Cập nhật kết quả
+                        userAnswers[questionId] = {selected: selectedValue, correct: true};
+                    } else {
+                        this.classList.add('incorrect');
+                        
+                        // Tìm và đánh dấu đáp án đúng
+                        questionContainer.querySelectorAll('.option').forEach(opt => {
+                            if (opt.getAttribute('data-value') === correctAnswer) {
+                                opt.classList.add('correct');
+                            }
+                        });
+                        
+                        feedbackDiv.innerHTML = `<div class="incorrect-answer"><i class="fas fa-times-circle feedback-icon"></i>Chưa đúng. Đáp án đúng là ${correctAnswer}.</div>`;
+                        feedbackDiv.classList.add('show');
+                        
+                        // Cập nhật kết quả
+                        userAnswers[questionId] = {selected: selectedValue, correct: false};
+                    }
+                    
+                    // Cập nhật số câu đã trả lời
+                    updateScore();
+                });
+            });
+            
+            // Hàm cập nhật điểm số
+            function updateScore() {
+                answeredCount = Object.keys(userAnswers).length;
+                score = Object.values(userAnswers).filter(answer => answer.correct).length;
+                
+                // Cập nhật hiển thị
+                document.getElementById('answeredQuestions').textContent = answeredCount;
+                document.getElementById('correctAnswers').textContent = score;
+                document.getElementById('incorrectAnswers').textContent = answeredCount - score;
+                
+                const accuracyRate = answeredCount > 0 ? Math.round((score / answeredCount) * 100) : 0;
+                document.getElementById('accuracyRate').textContent = accuracyRate + '%';
+            }
+            
+            // Xử lý khi nhấn nút xem kết quả
+            submitBtn.addEventListener('click', function() {
+                updateScore();
+                
+                // Tính điểm phần trắc nghiệm (4.5 điểm cho 38 câu trắc nghiệm)
+                const mcqCount = 38; // Tổng số câu trắc nghiệm
+                const mcqScore = Math.min(score, mcqCount); // Số câu trắc nghiệm đúng
+                const mcqPercentage = (mcqScore / mcqCount) * 4.5; // Điểm phần trắc nghiệm
+                
+                // Hiển thị điểm
+                document.getElementById('finalScore').textContent = `${score}/${totalQuestions} (${mcqPercentage.toFixed(2)}/4.5 điểm trắc nghiệm)`;
+                
+                // Cập nhật thanh tiến trình
+                const percentage = (score / totalQuestions) * 100;
+                document.getElementById('scoreFill').style.width = percentage + '%';
+                
+                // Hiển thị phần kết quả
+                resultsSection.classList.remove('hidden');
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // Xử lý khi nhấn nút làm lại
+            resetBtn.addEventListener('click', function() {
+                // Xóa tất cả lựa chọn
+                options.forEach(option => {
+                    option.classList.remove('selected', 'correct', 'incorrect');
+                });
+                
+                // Xóa tất cả phản hồi
+                document.querySelectorAll('.answer-feedback').forEach(feedback => {
+                    feedback.classList.remove('show');
+                    feedback.innerHTML = '';
+                });
+                
+                // Reset biến
+                userAnswers = {};
+                score = 0;
+                answeredCount = 0;
+                
+                // Ẩn phần kết quả
+                resultsSection.classList.add('hidden');
+                
+                // Cập nhật hiển thị
+                updateScore();
+            });
+            
+            // Xử lý khi nhấn nút hiển thị tất cả đáp án
+            showAllAnswersBtn.addEventListener('click', function() {
+                // Hiển thị tất cả đáp án đúng
+                document.querySelectorAll('.question-container').forEach((container, index) => {
+                    const correctAnswer = container.getAttribute('data-correct');
+                    const feedbackDiv = container.querySelector('.answer-feedback');
+                    
+                    // Đánh dấu đáp án đúng
+                    container.querySelectorAll('.option').forEach(opt => {
+                        opt.classList.remove('correct', 'incorrect', 'selected');
+                        if (opt.getAttribute('data-value') === correctAnswer) {
+                            opt.classList.add('correct');
+                        }
+                    });
+                    
+                    // Hiển thị phản hồi
+                    if (!userAnswers[index] || !userAnswers[index].correct) {
+                        feedbackDiv.innerHTML = `<div class="correct-answer"><i class="fas fa-check-circle feedback-icon"></i>Đáp án đúng là ${correctAnswer}.</div>`;
+                        feedbackDiv.classList.add('show');
+                    }
+                });
+            });
+            
+            // Khởi tạo hiển thị ban đầu
+            updateScore();
+        });
+		
             // JavaScript cho phần Written Response
             document.addEventListener('DOMContentLoaded', function() {
                 // Khởi tạo biến cho phần tự luận
