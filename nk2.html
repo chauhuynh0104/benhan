@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chauhuynh0104</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .question-container {
+            margin-bottom: 25px;
+        }
+        
+        .question {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #eaeaea;
+            transition: all 0.3s;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .question-text {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .option {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .option:hover:not(.correct):not(.incorrect) {
+            background-color: #f0f0f0;
+        }
+        
+        .option.selected {
+            border-width: 2px;
+        }
+        
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .option-letter {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .correct .option-letter {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .incorrect .option-letter {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .result-indicator {
+            margin-left: auto;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .correct .result-indicator {
+            color: #28a745;
+        }
+        
+        .incorrect .result-indicator {
+            color: #dc3545;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        #reset-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #show-score-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        #show-score-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .score-container {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .score-container.show {
+            display: block;
+        }
+        
+        .score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .correct-count {
+            color: #28a745;
+        }
+        
+        .incorrect-count {
+            color: #e74c3c;
+        }
+        
+        .progress-bar-container {
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #28a745;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+   
+   
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span>Tiến độ: <span id="answered-count">0</span>/<span id="total-questions">0</span> câu</span>
+                <span>Đúng: <span id="correct-progress">0</span> | Sai: <span id="incorrect-progress">0</span></span>
+            </div>
+        </div>
+        
+        <div class="question-container" id="questions-container">
+            <!-- Các câu hỏi sẽ được thêm tự động bằng JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button id="show-score-btn">Xem kết quả</button>
+            <button id="reset-btn">Làm lại</button>
+        </div>
+        
+        <div class="score-container" id="score-container">
+            <h3>Kết quả của bạn:</h3>
+            <div class="score" id="score">0/80</div>
+            <p>Đúng: <span class="correct-count" id="correct-count">0</span> | 
+               Sai: <span class="incorrect-count" id="incorrect-count">0</span></p>
+        </div>
+    </div>
+
+    <script>
+	function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+       // Dữ liệu câu hỏi - chỉ lấy 80 câu đầu tiên
+        const questionsData = [
+ 
+    {
+        question: "Người bệnh đau bụng vùng hạ sườn phải có thể tổn thương ở cơ quan nào?",
+        options: [
+            { text: "Dạ dày, lách, tụy", correct: false },
+            { text: "Ruột non, đại tràng trái", correct: false },
+            { text: "Thận trái, bàng quang", correct: false },
+            { text: "Gan, túi mật, góc đại tràng phải, tuyến thượng thận", correct: true }
+        ]
+    },
+    {
+        question: "Chướng hơi toàn bộ thường giảm sau khi nào?",
+        options: [
+            { text: "Uống thuốc giảm đau", correct: false },
+            { text: "Nằm nghỉ hoàn toàn", correct: false },
+            { text: "Nôn ra thức ăn", correct: false },
+            { text: "Trung tiện hoặc đi ngoài", correct: true }
+        ]
+    },
+    {
+        question: "Dấu hiệu đặc trưng cho tình trạng mất nước do tiêu chảy nặng là gì?",
+        options: [
+            { text: "Sốt cao, đau đầu", correct: false },
+            { text: "Buồn nôn, nôn", correct: false },
+            { text: "Phù toàn thân", correct: false },
+            { text: "Hạ huyết áp, trụy mạch, sụt cân, suy mòn, thiếu máu", correct: true }
+        ]
+    },
+    {
+        question: "Người bệnh đau ngực, nuốt nghẹn thức ăn rắn có thể do nguyên nhân nào?",
+        options: [
+            { text: "Trào ngược dạ dày", correct: false },
+            { text: "Viêm dạ dày", correct: false },
+            { text: "Co thắt thực quản", correct: false },
+            { text: "Hẹp thực quản", correct: true }
+        ]
+    },
+    {
+        question: "Chức năng chính của hệ tiêu hóa là gì?",
+        options: [
+            { text: "Điều hòa thân nhiệt", correct: false },
+            { text: "Thải độc cơ thể", correct: false },
+            { text: "Tạo máu", correct: false },
+            { text: "Hoạt động nghiền xé thức ăn, tiêu hóa và hấp thu thức ăn, vận chuyển thức ăn trong ống tiêu hóa", correct: true }
+        ]
+    },
+    {
+        question: "Cơ quan nào nằm trong ống tiêu hóa?",
+        options: [
+            { text: "Gan, tụy, lách", correct: false },
+            { text: "Thận, bàng quang", correct: false },
+            { text: "Phổi, tim", correct: false },
+            { text: "Miệng, thực quản, dạ dày, ruột non, ruột già, trực tràng, hậu môn", correct: true }
+        ]
+    },
+    {
+        question: "Nguyên nhân gây buồn nôn và nôn có thể là?",
+        options: [
+            { text: "Viêm phổi, hen suyễn", correct: false },
+            { text: "Viêm thận, sỏi thận", correct: false },
+            { text: "Tăng huyết áp", correct: false },
+            { text: "Viêm tụy cấp, sỏi mật, thai nghén, hẹp môn vị, lồng ruột, tắc ruột", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng thường gặp của bệnh lý hệ tiêu hóa là?",
+        options: [
+            { text: "Ho, khó thở", correct: false },
+            { text: "Đau ngực, hồi hộp", correct: false },
+            { text: "Phù chi", correct: false },
+            { text: "Đầy bụng, chướng hơi, buồn nôn, nôn, ợ chua, ợ nóng", correct: true }
+        ]
+    },
+    {
+        question: "Vàng da, vàng mắt kèm phân bạc màu và nước tiểu sẫm thường gặp trong bệnh nào?",
+        options: [
+            { text: "Xơ gan mất bù", correct: false },
+            { text: "Sỏi thận", correct: false },
+            { text: "Viêm ruột", correct: false },
+            { text: "Viêm gan cấp", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng đặc trưng của bệnh lý hệ tiêu hóa là gì?",
+        options: [
+            { text: "Ho khan, khó thở", correct: false },
+            { text: "Đau đầu, chóng mặt", correct: false },
+            { text: "Sốt rét run", correct: false },
+            { text: "Đau bụng, buồn nôn, vàng da", correct: true }
+        ]
+    },
+    {
+        question: "Loét dạ dày – tá tràng thường gặp nhất ở độ tuổi nào?",
+        options: [
+            { text: "Dưới 20 tuổi", correct: false },
+            { text: "Trên 70 tuổi", correct: false },
+            { text: "10–20 tuổi", correct: false },
+            { text: "30–50 tuổi", correct: true }
+        ]
+    },
+    {
+        question: "Yếu tố thuận lợi gây loét dạ dày – tá tràng là gì?",
+        options: [
+            { text: "Lao động nhẹ", correct: false },
+            { text: "Ngủ đủ giấc", correct: false },
+            { text: "Tập thể dục đều", correct: false },
+            { text: "Căng thẳng thần kinh kéo dài", correct: true }
+        ]
+    },
+    {
+        question: "Biến chứng hay gặp nhất của loét dạ dày – tá tràng là?",
+        options: [
+            { text: "Hẹp môn vị", correct: false },
+            { text: "Ung thư dạ dày", correct: false },
+            { text: "Viêm tụy", correct: false },
+            { text: "Chảy máu tiêu hóa", correct: true }
+        ]
+    },
+    {
+        question: "Biểu hiện điển hình của thủng ổ loét là?",
+        options: [
+            { text: "Đau âm ỉ", correct: false },
+            { text: "Đầy bụng", correct: false },
+            { text: "Buồn nôn nhẹ", correct: false },
+            { text: "Đau dữ dội vùng thượng vị", correct: true }
+        ]
+    },
+    {
+        question: "Phương pháp chẩn đoán chính xác nhất loét dạ dày – tá tràng là?",
+        options: [
+            { text: "X-quang bụng", correct: false },
+            { text: "Siêu âm", correct: false },
+            { text: "Xét nghiệm máu", correct: false },
+            { text: "Nội soi dạ dày", correct: true }
+        ]
+    },
+    {
+        question: "Khi người bệnh có dấu hiệu thủng dạ dày cần làm gì?",
+        options: [
+            { text: "Theo dõi tại nhà", correct: false },
+            { text: "Cho ăn lỏng", correct: false },
+            { text: "Dùng thuốc giảm đau", correct: false },
+            { text: "Xử trí cấp cứu và thực hiện phẫu thuật ngay", correct: true }
+        ]
+    },
+    {
+        question: "Biểu hiện đặc trưng của loét dạ dày – tá tràng là?",
+        options: [
+            { text: "Sốt cao", correct: false },
+            { text: "Tiêu chảy", correct: false },
+            { text: "Ho khan", correct: false },
+            { text: "Đau thượng vị âm ỉ, ợ chua, đầy hơi, buồn nôn, ăn không ngon", correct: true }
+        ]
+    },
+    {
+        question: "Nôn ra máu kèm tiêu phân đen chứng tỏ điều gì?",
+        options: [
+            { text: "Xuất huyết nhẹ", correct: false },
+            { text: "Viêm ruột", correct: false },
+            { text: "Trào ngược dạ dày", correct: false },
+            { text: "Chảy máu nhiều ở ống tiêu hóa", correct: true }
+        ]
+    },
+    {
+        question: "Trong xuất huyết tiêu hóa, công thức máu thường cho thấy?",
+        options: [
+            { text: "Tăng bạch cầu", correct: false },
+            { text: "Tăng Hemoglobin", correct: false },
+            { text: "Tăng Hematocrit", correct: false },
+            { text: "Giảm Hematocrit, giảm tiểu cầu, giảm hồng cầu, giảm Hemoglobin", correct: true }
+        ]
+    },
+    {
+        question: "Khi xuất huyết đã cầm, điều dưỡng cần làm gì để giảm lo lắng?",
+        options: [
+            { text: "Hạn chế tiếp xúc", correct: false },
+            { text: "Không giải thích", correct: false },
+            { text: "Cho bệnh nhân ngủ", correct: false },
+            { text: "Trấn an, giải thích với người bệnh", correct: true }
+        ]
+    },
+    {
+        question: "Thuốc cần hạn chế do nguy cơ kích thích niêm mạc dạ dày là?",
+        options: [
+            { text: "Kháng sinh", correct: false },
+            { text: "Vitamin", correct: false },
+            { text: "Paracetamol", correct: false },
+            { text: "Corticoid", correct: true }
+        ]
+    },
+    {
+        question: "Nguyên nhân phổ biến nhất gây xuất huyết tiêu hóa trên là?",
+        options: [
+            { text: "Ung thư gan", correct: false },
+            { text: "Viêm ruột", correct: false },
+            { text: "Trĩ", correct: false },
+            { text: "Loét dạ dày – tá tràng", correct: true }
+        ]
+    },
+    {
+        question: "Biến chứng nguy hiểm nhất của xuất huyết tiêu hóa là?",
+        options: [
+            { text: "Thiếu máu nhẹ", correct: false },
+            { text: "Đau bụng", correct: false },
+            { text: "Suy thận", correct: false },
+            { text: "Sốc giảm thể tích", correct: true }
+        ]
+    },
+    {
+        question: "Dấu hiệu sớm nhất của sốc mất máu là?",
+        options: [
+            { text: "Phù chi", correct: false },
+            { text: "Sốt cao", correct: false },
+            { text: "Tiểu nhiều", correct: false },
+            { text: "Mạch nhanh, huyết áp hạ, vã mồ hôi", correct: true }
+        ]
+    },
+    {
+        question: "Mục tiêu quan trọng nhất trong chăm sóc NB xuất huyết tiêu hóa là?",
+        options: [
+            { text: "Giảm đau", correct: false },
+            { text: "Tăng ăn uống", correct: false },
+            { text: "Vận động sớm", correct: false },
+            { text: "Ngăn chảy máu tái phát và phòng ngừa các biến chứng", correct: true }
+        ]
+    },
+    {
+        question: "Phản ứng ELISA dương tính có ý nghĩa gì?",
+        options: [
+            { text: "Xác định mức độ suy gan", correct: false },
+            { text: "Đánh giá chức năng thận", correct: false },
+            { text: "Chẩn đoán ung thư gan", correct: false },
+            { text: "Chẩn đoán nhiễm amip", correct: true }
+        ]
+    },
+    {
+        question: "Vỡ ổ áp xe gan vào ổ bụng có thể gây ra biến chứng nào?",
+        options: [
+            { text: "Xuất huyết tiêu hóa", correct: false },
+            { text: "Tắc mật", correct: false },
+            { text: "Suy thận", correct: false },
+            { text: "Viêm phúc mạc", correct: true }
+        ]
+    },
+    {
+        question: "Biến chứng suy kiệt trong áp xe gan là do nguyên nhân nào?",
+        options: [
+            { text: "Sốt cao kéo dài", correct: false },
+            { text: "Rối loạn tiêu hóa", correct: false },
+            { text: "Chán ăn", correct: false },
+            { text: "Nung mủ kéo dài", correct: true }
+        ]
+    },
+    {
+        question: "Sau khi chọc dẫn lưu áp xe gan, điều dưỡng cần theo dõi sát điều gì?",
+        options: [
+            { text: "Màu da người bệnh", correct: false },
+            { text: "Nhịp thở", correct: false },
+            { text: "Huyết áp", correct: false },
+            { text: "Tình trạng dịch dẫn lưu", correct: true }
+        ]
+    },
+    {
+        question: "Xét nghiệm cận lâm sàng dùng để chẩn đoán xơ gan gồm?",
+        options: [
+            { text: "X-quang phổi", correct: false },
+            { text: "Điện tâm đồ", correct: false },
+            { text: "Nội soi đại tràng", correct: false },
+            { text: "Siêu âm bụng, xét nghiệm men gan, soi ổ bụng", correct: true }
+        ]
+    },
+    {
+        question: "Trong xơ gan mất bù hoặc có hôn mê gan, chế độ ăn cần như thế nào?",
+        options: [
+            { text: "Tăng đạm", correct: false },
+            { text: "Ăn nhiều chất béo", correct: false },
+            { text: "Không hạn chế gì", correct: false },
+            { text: "Hạn chế hoặc ngừng đạm", correct: true }
+        ]
+    },
+    {
+        question: "Nguyên nhân gây cổ trướng trong xơ gan mất bù là?",
+        options: [
+            { text: "Suy tim", correct: false },
+            { text: "Viêm phúc mạc", correct: false },
+            { text: "Tắc mật", correct: false },
+            { text: "Thiếu hụt protein và tăng áp lực tĩnh mạch cửa", correct: true }
+        ]
+    },
+    {
+        question: "Biến chứng nguy hiểm nhất của xơ gan là?",
+        options: [
+            { text: "Cổ trướng", correct: false },
+            { text: "Nhiễm trùng", correct: false },
+            { text: "Suy dinh dưỡng", correct: false },
+            { text: "Xuất huyết tiêu hóa", correct: true }
+        ]
+    },
+    {
+        question: "Dấu hiệu của bệnh não gan có thể bao gồm?",
+        options: [
+            { text: "Đau đầu, sốt", correct: false },
+            { text: "Co giật", correct: false },
+            { text: "Phù chi", correct: false },
+            { text: "Lú lẫn, nói nhảm, hôn mê", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng điển hình của xơ gan mất bù là?",
+        options: [
+            { text: "Ho, khó thở", correct: false },
+            { text: "Sốt cao", correct: false },
+            { text: "Tiêu chảy", correct: false },
+            { text: "Vàng da, cổ trướng, phù chi dưới", correct: true }
+        ]
+    },
+    {
+        question: "Nôn trong viêm tụy cấp có đặc điểm gì?",
+        options: [
+            { text: "Nôn xong đỡ đau", correct: false },
+            { text: "Chỉ nôn buổi sáng", correct: false },
+            { text: "Nôn ra máu", correct: false },
+            { text: "Không giảm đau sau nôn", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng ít gặp trong viêm tụy cấp nhưng có thể xảy ra là?",
+        options: [
+            { text: "Phù phổi", correct: false },
+            { text: "Ho khan", correct: false },
+            { text: "Sốt rét", correct: false },
+            { text: "Vàng da", correct: true }
+        ]
+    },
+    {
+        question: "Mục đích đặt ống thông mũi – dạ dày trong viêm tụy cấp là gì?",
+        options: [
+            { text: "Nuôi ăn", correct: false },
+            { text: "Giảm sốt", correct: false },
+            { text: "Theo dõi dịch", correct: false },
+            { text: "Dẫn lưu dịch, giúp tụy nghỉ ngơi", correct: true }
+        ]
+    },
+    {
+        question: "Biện pháp cải thiện chức năng hô hấp cho NB viêm tụy cấp là?",
+        options: [
+            { text: "Hạn chế vận động", correct: false },
+            { text: "Nằm đầu thấp", correct: false },
+            { text: "Thở oxy liên tục", correct: false },
+            { text: "Khuyến khích thở sâu, tư thế Fowler nếu HA ổn, thay đổi tư thế mỗi 2 giờ", correct: true }
+        ]
+    },
+    {
+        question: "Nguyên nhân thường gặp nhất gây viêm tụy cấp là?",
+        options: [
+            { text: "Rượu bia", correct: false },
+            { text: "Nhiễm khuẩn", correct: false },
+            { text: "Chấn thương", correct: false },
+            { text: "Sỏi mật", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng điển hình của viêm tụy cấp là?",
+        options: [
+            { text: "Đau hạ vị", correct: false },
+            { text: "Đau ngực", correct: false },
+            { text: "Đau âm ỉ", correct: false },
+            { text: "Đau bụng dữ dội vùng thượng vị", correct: true }
+        ]
+    },
+    {
+        question: "Ngộ độc cấp cứu dễ dàng hơn khi nào?",
+        options: [
+            { text: "Chất độc đã hấp thu", correct: false },
+            { text: "Chất độc vào máu", correct: false },
+            { text: "Chất độc vào gan", correct: false },
+            { text: "Chất độc còn trong dạ dày", correct: true }
+        ]
+    },
+    {
+        question: "Ngộ độc thuốc phiện điển hình với dấu hiệu nào?",
+        options: [
+            { text: "Co giật, sốt cao", correct: false },
+            { text: "Nôn, tiêu chảy", correct: false },
+            { text: "Mạch nhanh", correct: false },
+            { text: "Hôn mê, thở chậm, đồng tử co nhỏ", correct: true }
+        ]
+    },
+    {
+        question: "Khi bệnh nhân hôn mê hoặc co giật cần làm gì ngay?",
+        options: [
+            { text: "Cho uống thuốc", correct: false },
+            { text: "Gây nôn", correct: false },
+            { text: "Cho ăn", correct: false },
+            { text: "Đặt đường truyền, cho thở oxy, theo dõi SpO₂", correct: true }
+        ]
+    },
+    {
+        question: "Than hoạt chống chỉ định trong trường hợp nào?",
+        options: [
+            { text: "Ngộ độc thuốc ngủ", correct: false },
+            { text: "Ngộ độc thực phẩm", correct: false },
+            { text: "Ngộ độc rượu", correct: false },
+            { text: "Ngộ độc acid, kiềm, xăng dầu", correct: true }
+        ]
+    },
+    {
+        question: "Thuốc giải độc đặc hiệu cho ngộ độc heroin là?",
+        options: [
+            { text: "Diazepam", correct: false },
+            { text: "Atropin", correct: false },
+            { text: "Vitamin K", correct: false },
+            { text: "Naloxon", correct: true }
+        ]
+    },
+    {
+        question: "Than hoạt nên dùng trong thời gian nào?",
+        options: [
+            { text: "Sau 12 giờ", correct: false },
+            { text: "Sau 6 giờ", correct: false },
+            { text: "Sau 24 giờ", correct: false },
+            { text: "Trong vòng 2 giờ đầu sau khi ngộ độc", correct: true }
+        ]
+    },
+    {
+        question: "Biện pháp sơ cứu đầu tiên trong ngộ độc cấp qua đường tiêu hóa là?",
+        options: [
+            { text: "Truyền dịch", correct: false },
+            { text: "Cho uống sữa", correct: false },
+            { text: "Cho thuốc giải độc", correct: false },
+            { text: "Thực hiện gây nôn", correct: true }
+        ]
+    },
+    {
+        question: "Việc làm đầu tiên khi tiếp nhận NB nghi ngờ ngộ độc cấp là?",
+        options: [
+            { text: "Khai thác tiền sử", correct: false },
+            { text: "Lấy máu xét nghiệm", correct: false },
+            { text: "Cho dùng thuốc", correct: false },
+            { text: "Loại bỏ nguồn gây độc", correct: true }
+        ]
+    },
+    {
+        question: "Viêm khớp dạng thấp có khuynh hướng ảnh hưởng như thế nào?",
+        options: [
+            { text: "Khớp lớn, không đối xứng", correct: false },
+            { text: "Khớp trục cột sống", correct: false },
+            { text: "Khớp chi dưới là chủ yếu", correct: false },
+            { text: "Ảnh hưởng khớp nhỏ ngoại biên, đối xứng", correct: true }
+        ]
+    },
+    {
+        question: "Nguyên nhân chính gây viêm khớp dạng thấp là gì?",
+        options: [
+            { text: "Nhiễm vi khuẩn", correct: false },
+            { text: "Thoái hóa khớp", correct: false },
+            { text: "Chấn thương", correct: false },
+            { text: "Đây là bệnh tự miễn", correct: true }
+        ]
+    },
+    {
+        question: "Corticoid được sử dụng trong viêm khớp dạng thấp khi nào?",
+        options: [
+            { text: "Viêm nhẹ", correct: false },
+            { text: "Giai đoạn ổn định", correct: false },
+            { text: "Không đau", correct: false },
+            { text: "Viêm nhiều khớp", correct: true }
+        ]
+    },
+    {
+        question: "Vật lý trị liệu cho NB viêm đa khớp dạng thấp nên bắt đầu khi nào?",
+        options: [
+            { text: "Khi bệnh ổn định hoàn toàn", correct: false },
+            { text: "Sau phẫu thuật", correct: false },
+            { text: "Khi hết đau", correct: false },
+            { text: "Ngay từ giai đoạn đầu", correct: true }
+        ]
+    },
+    {
+        question: "Biện pháp giảm đau, giảm khó chịu cho NB viêm khớp dạng thấp là?",
+        options: [
+            { text: "Vận động mạnh", correct: false },
+            { text: "Bất động kéo dài", correct: false },
+            { text: "Xoa bóp mạnh", correct: false },
+            { text: "Nghỉ ngơi, đặt khớp ở tư thế cơ năng", correct: true }
+        ]
+    },
+    {
+        question: "Giáo dục sức khỏe cho NB viêm khớp dạng thấp cần nhấn mạnh điều gì?",
+        options: [
+            { text: "Ngừng thuốc khi đỡ đau", correct: false },
+            { text: "Chỉ tập khi đau", correct: false },
+            { text: "Hạn chế vận động hoàn toàn", correct: false },
+            { text: "Tuân thủ điều trị và phục hồi chức năng", correct: true }
+        ]
+    },
+    {
+        question: "Dấu hiệu đặc trưng nhất của viêm đa khớp dạng thấp là?",
+        options: [
+            { text: "Sốt cao", correct: false },
+            { text: "Phù toàn thân", correct: false },
+            { text: "Đau tăng về đêm", correct: false },
+            { text: "Sưng, đau và cứng khớp buổi sáng kéo dài > 1 giờ", correct: true }
+        ]
+    },
+    {
+        question: "Đái tháo đường là bệnh lý đặc trưng bởi?",
+        options: [
+            { text: "Giảm đường huyết", correct: false },
+            { text: "Rối loạn lipid máu", correct: false },
+            { text: "Tăng insulin máu", correct: false },
+            { text: "Tăng glucose máu", correct: true }
+        ]
+    },
+    {
+        question: "Đái tháo đường type I thường gặp ở đối tượng nào?",
+        options: [
+            { text: "Người cao tuổi", correct: false },
+            { text: "Người béo phì", correct: false },
+            { text: "Phụ nữ có thai", correct: false },
+            { text: "Người trẻ, thiếu hụt hoàn toàn insulin", correct: true }
+        ]
+    },
+    {
+        question: "Giá trị HbA1c nào được xem là nghi ngờ đái tháo đường?",
+        options: [
+            { text: "< 5%", correct: false },
+            { text: "5,5%", correct: false },
+            { text: "6,0%", correct: false },
+            { text: "HbA1c ≥ 6,5%", correct: true }
+        ]
+    },
+    {
+        question: "Biến chứng cấp tính của đái tháo đường là?",
+        options: [
+            { text: "Suy thận mạn", correct: false },
+            { text: "Bệnh võng mạc", correct: false },
+            { text: "Bệnh thần kinh", correct: false },
+            { text: "Nhiễm toan ceton – hạ đường huyết", correct: true }
+        ]
+    },
+    {
+        question: "Tỷ lệ năng lượng hợp lý trong khẩu phần ăn cho NB đái tháo đường là?",
+        options: [
+            { text: "Glucid 60% – Lipid 20% – Protid 20%", correct: false },
+            { text: "Glucid 40% – Lipid 40% – Protid 20%", correct: false },
+            { text: "Glucid 70% – Lipid 20% – Protid 10%", correct: false },
+            { text: "Glucid 50% – Lipid 33% – Protid 17%", correct: true }
+        ]
+    },
+    {
+        question: "Thuốc nhóm Sulfonylurea có tác dụng gì?",
+        options: [
+            { text: "Giảm hấp thu glucose", correct: false },
+            { text: "Tăng nhạy cảm insulin", correct: false },
+            { text: "Ức chế gan tạo glucose", correct: false },
+            { text: "Tăng tiết insulin từ tế bào β tụy", correct: true }
+        ]
+    },
+    {
+        question: "Khi NB hạ đường huyết < 50 mg/dl và mất ý thức, điều dưỡng cần làm gì?",
+        options: [
+            { text: "Cho uống đường", correct: false },
+            { text: "Tiêm insulin", correct: false },
+            { text: "Cho ăn ngay", correct: false },
+            { text: "Truyền Glucose 10–30% theo y lệnh", correct: true }
+        ]
+    },
+    {
+        question: "NB đái tháo đường type I cần phải như thế nào?",
+        options: [
+            { text: "Chỉ uống thuốc", correct: false },
+            { text: "Điều trị theo đợt", correct: false },
+            { text: "Không cần thuốc", correct: false },
+            { text: "Tiêm insulin suốt đời", correct: true }
+        ]
+    },
+    {
+        question: "Chế độ ăn uống cho NB đái tháo đường cần lưu ý điều gì?",
+        options: [
+            { text: "Ăn nhiều đường", correct: false },
+            { text: "Ăn nhiều mỡ động vật", correct: false },
+            { text: "Không cần kiêng", correct: false },
+            { text: "Hạn chế chất béo bão hòa, đường đơn", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng điển hình của bệnh đái tháo đường là?",
+        options: [
+            { text: "Ho, khó thở", correct: false },
+            { text: "Phù chi", correct: false },
+            { text: "Sốt cao", correct: false },
+            { text: "Khát nước, tiểu nhiều, giảm cân", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng thần kinh nổi bật của người bệnh Basedow là?",
+        options: [
+            { text: "Buồn ngủ", correct: false },
+            { text: "Trầm cảm", correct: false },
+            { text: "Lơ mơ", correct: false },
+            { text: "Run tay, dễ nóng giận", correct: true }
+        ]
+    },
+    {
+        question: "Biểu hiện tiêu hóa thường gặp của bệnh Basedow là?",
+        options: [
+            { text: "Chán ăn", correct: false },
+            { text: "Táo bón", correct: false },
+            { text: "Đầy bụng", correct: false },
+            { text: "Ăn nhiều, tiêu chảy", correct: true }
+        ]
+    },
+    {
+        question: "Biến chứng nguy hiểm của Basedow là?",
+        options: [
+            { text: "Suy giáp", correct: false },
+            { text: "Hạ đường huyết", correct: false },
+            { text: "Hôn mê gan", correct: false },
+            { text: "Cơn bão giáp", correct: true }
+        ]
+    },
+    {
+        question: "Tác dụng chính của iod phóng xạ (I-131) là?",
+        options: [
+            { text: "Kích thích tuyến giáp", correct: false },
+            { text: "Tăng tiết hormon", correct: false },
+            { text: "Bảo tồn mô giáp", correct: false },
+            { text: "Phá hủy tế bào tuyến giáp", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng thần kinh thường gặp trong cường giáp là?",
+        options: [
+            { text: "Lơ mơ", correct: false },
+            { text: "Trầm cảm", correct: false },
+            { text: "Co giật", correct: false },
+            { text: "Dễ xúc cảm, run tay, mất ngủ", correct: true }
+        ]
+    },
+    {
+        question: "Can thiệp điều dưỡng đúng với NB Basedow là?",
+        options: [
+            { text: "Tự ý ngưng thuốc", correct: false },
+            { text: "Uống thuốc không đều", correct: false },
+            { text: "Tăng liều thuốc", correct: false },
+            { text: "Hướng dẫn dùng thuốc kháng giáp đúng liều", correct: true }
+        ]
+    },
+    {
+        question: "Dinh dưỡng phù hợp cho NB Basedow là?",
+        options: [
+            { text: "Ăn ít năng lượng", correct: false },
+            { text: "Ăn nhạt", correct: false },
+            { text: "Ăn ít đạm", correct: false },
+            { text: "Ăn giàu calo, đạm, vitamin", correct: true }
+        ]
+    },
+    {
+        question: "Khi dùng dung dịch Lugol, NB nên?",
+        options: [
+            { text: "Uống lúc đói", correct: false },
+            { text: "Uống trực tiếp", correct: false },
+            { text: "Ngậm trong miệng", correct: false },
+            { text: "Uống sau bữa ăn, bằng ống hút", correct: true }
+        ]
+    },
+    {
+        question: "Thành phần chiếm tỷ lệ lớn nhất trong máu là?",
+        options: [
+            { text: "Hồng cầu", correct: false },
+            { text: "Bạch cầu", correct: false },
+            { text: "Tiểu cầu", correct: false },
+            { text: "Huyết tương", correct: true }
+        ]
+    },
+    {
+        question: "Tan máu bẩm sinh có thể do nguyên nhân nào?",
+        options: [
+            { text: "Thiếu sắt", correct: false },
+            { text: "Thiếu vitamin B12", correct: false },
+            { text: "Thiếu acid folic", correct: false },
+            { text: "Thiếu men G6PD", correct: true }
+        ]
+    },
+    {
+        question: "Biểu hiện thiếu máu mạn tính ở móng tay là?",
+        options: [
+            { text: "Móng tím", correct: false },
+            { text: "Móng vàng", correct: false },
+            { text: "Móng giòn", correct: false },
+            { text: "Móng tay bẹt, mềm", correct: true }
+        ]
+    },
+    {
+        question: "Ở nữ giới, thiếu máu có thể gây hậu quả nào?",
+        options: [
+            { text: "Tăng cân", correct: false },
+            { text: "Rong kinh", correct: false },
+            { text: "Đau bụng", correct: false },
+            { text: "Vô kinh hoặc kinh ít", correct: true }
+        ]
+    },
+    {
+        question: "Biến chứng tim mạch thường gặp nhất của thiếu máu là?",
+        options: [
+            { text: "Tăng huyết áp", correct: false },
+            { text: "Rối loạn nhịp", correct: false },
+            { text: "Nhồi máu cơ tim", correct: false },
+            { text: "Suy tim", correct: true }
+        ]
+    },
+    {
+        question: "Khi NB thiếu máu có chóng mặt, mệt mỏi, điều dưỡng cần làm gì?",
+        options: [
+            { text: "Cho vận động", correct: false },
+            { text: "Cho ăn nhiều", correct: false },
+            { text: "Cho ngồi dậy", correct: false },
+            { text: "Cho NB nghỉ ngơi, nằm yên", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng thuộc hội chứng thiếu máu trong bạch cầu cấp là?",
+        options: [
+            { text: "Sốt cao", correct: false },
+            { text: "Xuất huyết", correct: false },
+            { text: "Nhiễm trùng", correct: false },
+            { text: "Hồi hộp, đánh trống ngực, hoa mắt, chóng mặt, tim đập nhanh", correct: true }
+        ]
+    },
+    {
+        question: "Tế bào tăng sinh bất thường trong tủy đồ của bạch cầu cấp là?",
+        options: [
+            { text: "Hồng cầu trưởng thành", correct: false },
+            { text: "Tiểu cầu", correct: false },
+            { text: "Bạch cầu đa nhân", correct: false },
+            { text: "Bạch cầu non chưa chuyển hóa", correct: true }
+        ]
+    },
+    {
+        question: "Khi NB truyền máu, điều dưỡng cần theo dõi sát chỉ số nào?",
+        options: [
+            { text: "Cân nặng", correct: false },
+            { text: "Lượng nước tiểu", correct: false },
+            { text: "Đường huyết", correct: false },
+            { text: "Mạch, huyết áp, tinh thần", correct: true }
+        ]
+    },
+    {
+        question: "Thuốc hỗ trợ tạo hồng cầu là?",
+        options: [
+            { text: "Kháng sinh", correct: false },
+            { text: "Corticoid", correct: false },
+            { text: "Thuốc lợi tiểu", correct: false },
+            { text: "Vitamin C, B6, Canxi", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng thường gặp trong bạch cầu mạn là?",
+        options: [
+            { text: "Sốt cao", correct: false },
+            { text: "Nhiễm trùng nặng", correct: false },
+            { text: "Đau bụng", correct: false },
+            { text: "Gầy sút cân, xuất huyết, thiếu máu nhẹ", correct: true }
+        ]
+    },
+    {
+        question: "Biến chứng nặng của bạch cầu mạn là?",
+        options: [
+            { text: "Suy gan", correct: false },
+            { text: "Suy thận", correct: false },
+            { text: "Nhiễm trùng", correct: false },
+            { text: "Tắc mạch nhiều nơi", correct: true }
+        ]
+    },
+    {
+        question: "Trong chăm sóc NB có nguy cơ xuất huyết, điều dưỡng cần chú ý điều gì?",
+        options: [
+            { text: "Chải răng cứng", correct: false },
+            { text: "Tiêm bắp thường xuyên", correct: false },
+            { text: "Vận động mạnh", correct: false },
+            { text: "Vệ sinh răng miệng bằng vải mềm, tránh các thủ thuật tiêm gây xuất huyết", correct: true }
+        ]
+    }
+
+];
+
+
+
+
+        // Biến lưu trữ trạng thái
+        let userAnswers = Array(questionsData.length).fill(null);
+        let answeredCount = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        // Hàm tạo câu hỏi
+        function createQuestions() {
+            const container = document.getElementById('questions-container');
+            
+            questionsData.forEach((questionData, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question';
+                questionElement.dataset.index = index;
+                
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = `Câu ${index + 1}:`;
+                
+                const questionText = document.createElement('div');
+                questionText.className = 'question-text';
+                questionText.textContent = questionData.question;
+                
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'options';
+                
+               shuffle(questionData.options); // RANDOM ĐÁP ÁN
+
+const letters = ['A', 'B', 'C', 'D'];
+
+questionData.options.forEach((option, optionIndex) => {
+
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.dataset.optionIndex = optionIndex;
+                    
+                    const optionLetter = document.createElement('div');
+                    optionLetter.className = 'option-letter';
+                    optionLetter.textContent = letters[optionIndex];
+                    
+                    const optionText = document.createElement('span');
+                    optionText.textContent = option.text;
+                    
+                    // Tạo indicator nhưng ẩn đi cho đến khi người dùng chọn
+                    const indicator = document.createElement('span');
+                    indicator.className = 'result-indicator';
+                    indicator.style.visibility = 'hidden';
+                    
+                    optionElement.appendChild(optionLetter);
+                    optionElement.appendChild(optionText);
+                    optionElement.appendChild(indicator);
+                    
+                    // Thêm sự kiện click
+                    optionElement.addEventListener('click', () => {
+                        selectOption(index, optionIndex);
+                    });
+                    
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                questionElement.appendChild(questionNumber);
+                questionElement.appendChild(questionText);
+                questionElement.appendChild(optionsContainer);
+                container.appendChild(questionElement);
+            });
+            
+            // Cập nhật tổng số câu hỏi
+            document.getElementById('total-questions').textContent = questionsData.length;
+            updateProgressBar();
+        }
+
+        // Hàm chọn đáp án
+        function selectOption(questionIndex, optionIndex) {
+            const questionElement = document.querySelector(`.question[data-index="${questionIndex}"]`);
+            const options = questionElement.querySelectorAll('.option');
+            const questionData = questionsData[questionIndex];
+            
+            // Kiểm tra xem câu hỏi này đã được trả lời chưa
+            const wasAnswered = userAnswers[questionIndex] !== null;
+            
+            // Xóa lớp selected từ tất cả các đáp án trong câu hỏi này
+            options.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Thêm lớp selected cho đáp án được chọn
+            options[optionIndex].classList.add('selected');
+            
+            // Hiển thị kết quả cho tất cả các đáp án trong câu hỏi này
+            options.forEach((option, idx) => {
+                const indicator = option.querySelector('.result-indicator');
+                const isCorrect = questionData.options[idx].correct;
+                
+                // Hiển thị indicator
+                indicator.style.visibility = 'visible';
+                
+                // Đặt nội dung và lớp cho indicator
+                if (isCorrect) {
+                    option.classList.add('correct');
+                    indicator.textContent = ' ✓';
+                } else if (idx === optionIndex) {
+                    option.classList.add('incorrect');
+                    indicator.textContent = ' ✗';
+                }
+                
+                // Nếu là đáp án đúng, hiển thị màu xanh
+                if (isCorrect) {
+                    option.classList.add('correct');
+                }
+            });
+            
+            // Lưu đáp án người dùng chọn
+            userAnswers[questionIndex] = optionIndex;
+            
+            // Cập nhật số lượng câu đã trả lời
+            if (!wasAnswered) {
+                answeredCount++;
+                
+                // Cập nhật số câu đúng/sai
+                if (questionData.options[optionIndex].correct) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+                
+                // Cập nhật thanh tiến độ và số liệu
+                updateProgressBar();
+            }
+        }
+
+        // Hàm cập nhật thanh tiến độ
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progress-fill');
+            const answeredCountElement = document.getElementById('answered-count');
+            const correctProgressElement = document.getElementById('correct-progress');
+            const incorrectProgressElement = document.getElementById('incorrect-progress');
+            
+            // Tính phần trăm
+            const percentage = (answeredCount / questionsData.length) * 100;
+            
+            // Cập nhật thanh tiến độ
+            progressFill.style.width = `${percentage}%`;
+            
+            // Cập nhật số liệu
+            answeredCountElement.textContent = answeredCount;
+            correctProgressElement.textContent = correctCount;
+            incorrectProgressElement.textContent = incorrectCount;
+        }
+
+        // Hàm hiển thị kết quả tổng
+        function showScore() {
+            const scoreContainer = document.getElementById('score-container');
+            const scoreElement = document.getElementById('score');
+            const correctCountElement = document.getElementById('correct-count');
+            const incorrectCountElement = document.getElementById('incorrect-count');
+            
+            scoreElement.textContent = `${correctCount}/${questionsData.length}`;
+            correctCountElement.textContent = correctCount;
+            incorrectCountElement.textContent = incorrectCount;
+            
+            scoreContainer.classList.add('show');
+            
+            // Cuộn đến phần kết quả
+            scoreContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Hàm làm lại bài
+        function resetQuiz() {
+            // Reset tất cả biến
+            userAnswers = Array(questionsData.length).fill(null);
+            answeredCount = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            
+            // Xóa tất cả các lớp và indicator
+            const questions = document.querySelectorAll('.question');
+            questions.forEach(question => {
+                const options = question.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.classList.remove('selected', 'correct', 'incorrect');
+                    
+                    const indicator = option.querySelector('.result-indicator');
+                    if (indicator) {
+                        indicator.style.visibility = 'hidden';
+                        indicator.textContent = '';
+                    }
+                });
+            });
+            
+            // Ẩn kết quả
+            const scoreContainer = document.getElementById('score-container');
+            scoreContainer.classList.remove('show');
+            
+            // Cập nhật thanh tiến độ
+            updateProgressBar();
+        }
+
+        // Khởi tạo bài kiểm tra
+       document.addEventListener('DOMContentLoaded', () => {
+    shuffle(questionsData);   // RANDOM THỨ TỰ CÂU HỎI
+    createQuestions();
+
+
+            
+            // Gán sự kiện cho nút xem kết quả
+            document.getElementById('show-score-btn').addEventListener('click', showScore);
+            
+            // Gán sự kiện cho nút làm lại
+            document.getElementById('reset-btn').addEventListener('click', resetQuiz);
+        });
+    </script>
+</body>
+</html>
