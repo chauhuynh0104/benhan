@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chauhuynh0104</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .question-container {
+            margin-bottom: 25px;
+        }
+        
+        .question {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #eaeaea;
+            transition: all 0.3s;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .question-text {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .option {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .option:hover:not(.correct):not(.incorrect) {
+            background-color: #f0f0f0;
+        }
+        
+        .option.selected {
+            border-width: 2px;
+        }
+        
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .option-letter {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .correct .option-letter {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .incorrect .option-letter {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .result-indicator {
+            margin-left: auto;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .correct .result-indicator {
+            color: #28a745;
+        }
+        
+        .incorrect .result-indicator {
+            color: #dc3545;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        #reset-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #show-score-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        #show-score-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .score-container {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .score-container.show {
+            display: block;
+        }
+        
+        .score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .correct-count {
+            color: #28a745;
+        }
+        
+        .incorrect-count {
+            color: #e74c3c;
+        }
+        
+        .progress-bar-container {
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #28a745;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+   
+   
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span>Tiến độ: <span id="answered-count">0</span>/<span id="total-questions">0</span> câu</span>
+                <span>Đúng: <span id="correct-progress">0</span> | Sai: <span id="incorrect-progress">0</span></span>
+            </div>
+        </div>
+        
+        <div class="question-container" id="questions-container">
+            <!-- Các câu hỏi sẽ được thêm tự động bằng JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button id="show-score-btn">Xem kết quả</button>
+            <button id="reset-btn">Làm lại</button>
+        </div>
+        
+        <div class="score-container" id="score-container">
+            <h3>Kết quả của bạn:</h3>
+            <div class="score" id="score">0/80</div>
+            <p>Đúng: <span class="correct-count" id="correct-count">0</span> | 
+               Sai: <span class="incorrect-count" id="incorrect-count">0</span></p>
+        </div>
+    </div>
+
+    <script>
+	function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+       // Dữ liệu câu hỏi - chỉ lấy 80 câu đầu tiên
+        const questionsData = [
+ 
+
+    {
+        question: "Bệnh truyền nhiễm là:",
+        options: [
+            { text: "Bệnh do rối loạn chuyển hóa", correct: false },
+            { text: "Bệnh di truyền bẩm sinh", correct: false },
+            { text: "Bệnh nhiễm khuẩn có khả năng lây truyền từ người bệnh hoặc người lành mang trùng sang người khác", correct: true },
+            { text: "Bệnh không có khả năng lây", correct: false }
+        ]
+    },
+    {
+        question: "Thời kỳ nung bệnh là:",
+        options: [
+            { text: "Thời gian điều trị bệnh", correct: false },
+            { text: "Thời gian hồi phục", correct: false },
+            { text: "Thời gian từ lúc mầm bệnh xâm nhập đến khi xuất hiện triệu chứng đầu tiên", correct: true },
+            { text: "Thời gian bệnh nặng nhất", correct: false }
+        ]
+    },
+    {
+        question: "Đặc điểm giai đoạn khởi phát của bệnh truyền nhiễm là:",
+        options: [
+            { text: "Không có triệu chứng", correct: false },
+            { text: "Triệu chứng khu trú", correct: false },
+            { text: "Hội chứng nhiễm trùng, nhiễm độc toàn thân", correct: true },
+            { text: "Biến chứng nặng", correct: false }
+        ]
+    },
+    {
+        question: "Trong giai đoạn toàn phát, dấu hiệu quan trọng nhất giúp chẩn đoán là:",
+        options: [
+            { text: "Hết sốt", correct: false },
+            { text: "Không còn lây", correct: false },
+            { text: "Hội chứng nhiễm trùng, nhiễm độc nặng và triệu chứng đặc hiệu của từng bệnh", correct: true },
+            { text: "Triệu chứng giảm dần", correct: false }
+        ]
+    },
+    {
+        question: "Khoa truyền nhiễm cần bố trí phòng riêng cho từng bệnh nhằm:",
+        options: [
+            { text: "Dễ quản lý bệnh nhân", correct: false },
+            { text: "Tiện chăm sóc", correct: false },
+            { text: "Đảm bảo tránh lây chéo", correct: true },
+            { text: "Giảm chi phí", correct: false }
+        ]
+    },
+    {
+        question: "Các đường lây chính của bệnh truyền nhiễm gồm:",
+        options: [
+            { text: "Hô hấp, tiết niệu", correct: false },
+            { text: "Tiêu hóa, sinh dục", correct: false },
+            { text: "Máu, nước tiểu", correct: false },
+            { text: "Hô hấp, máu, tiêu hóa, da – niêm mạc", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng lâm sàng điển hình của nhiễm khuẩn huyết là:",
+        options: [
+            { text: "Ho, khạc đờm", correct: false },
+            { text: "Đau đầu, chóng mặt", correct: false },
+            { text: "Sốt cao hoặc hạ thân nhiệt, thở nhanh, tiểu ít, rối loạn tri giác", correct: true },
+            { text: "Tiêu chảy đơn thuần", correct: false }
+        ]
+    },
+    {
+        question: "Trước khi điều trị kháng sinh nhiễm khuẩn huyết cần:",
+        options: [
+            { text: "Chụp X-quang phổi", correct: false },
+            { text: "Đo huyết áp", correct: false },
+            { text: "Cấy máu làm kháng sinh đồ", correct: true },
+            { text: "Siêu âm ổ bụng", correct: false }
+        ]
+    },
+    {
+        question: "Theo dõi quan trọng trong nhiễm khuẩn huyết là:",
+        options: [
+            { text: "Cân nặng", correct: false },
+            { text: "Nhiệt độ phòng", correct: false },
+            { text: "Dấu hiệu sinh tồn và tri giác", correct: true },
+            { text: "Màu da", correct: false }
+        ]
+    },
+    {
+        question: "Yếu tố nguy cơ hàng đầu gây nhiễm khuẩn huyết ở bệnh nhân nằm viện lâu ngày là:",
+        options: [
+            { text: "Suy dinh dưỡng", correct: false },
+            { text: "Tuổi cao", correct: false },
+            { text: "Dùng thuốc giảm đau", correct: false },
+            { text: "Đặt catheter tĩnh mạch trung tâm kéo dài", correct: true }
+        ]
+    },
+    {
+        question: "Thời gian ủ bệnh thường gặp của thương hàn là:",
+        options: [
+            { text: "1–3 ngày", correct: false },
+            { text: "3–5 ngày", correct: false },
+            { text: "7–14 ngày", correct: true },
+            { text: ">30 ngày", correct: false }
+        ]
+    },
+    {
+        question: "Shigella gây bệnh chủ yếu bằng cơ chế:",
+        options: [
+            { text: "Tiết độc tố thần kinh", correct: false },
+            { text: "Gây nhiễm khuẩn huyết", correct: false },
+            { text: "Xâm nhập niêm mạc ruột, gây loét", correct: true },
+            { text: "Gây tắc ruột", correct: false }
+        ]
+    },
+    {
+        question: "Bụng chướng, gan lách to trong thương hàn là do:",
+        options: [
+            { text: "Ứ dịch ổ bụng", correct: false },
+            { text: "Táo bón kéo dài", correct: false },
+            { text: "Viêm hạch mạc treo và phì đại lách", correct: true },
+            { text: "Suy gan cấp", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân dịch tả vô niệu, tụt huyết áp cần xử trí:",
+        options: [
+            { text: "Theo dõi", correct: false },
+            { text: "Cho ăn uống", correct: false },
+            { text: "Truyền dịch tĩnh mạch nhanh", correct: true },
+            { text: "Chờ kết quả xét nghiệm", correct: false }
+        ]
+    },
+    {
+        question: "Trẻ bị lỵ trực trùng cần chú ý:",
+        options: [
+            { text: "Nhịn ăn", correct: false },
+            { text: "Ngưng bú", correct: false },
+            { text: "Tăng cường bú mẹ hoặc ăn uống đủ chất", correct: true },
+            { text: "Hạn chế dịch", correct: false }
+        ]
+    },
+    {
+        question: "Biến chứng nguy hiểm của dịch tả nếu không xử trí kịp thời là:",
+        options: [
+            { text: "Viêm ruột", correct: false },
+            { text: "Suy tim", correct: false },
+            { text: "Suy thận cấp", correct: true },
+            { text: "Xuất huyết", correct: false }
+        ]
+    },
+    {
+        question: "Đặc điểm phân biệt thương hàn và dịch tả là:",
+        options: [
+            { text: "Cả hai đều sốt cao", correct: false },
+            { text: "Cả hai đều tiêu chảy", correct: false },
+            { text: "Thương hàn sốt bậc thang, dịch tả tiêu chảy dữ dội", correct: true },
+            { text: "Không phân biệt được", correct: false }
+        ]
+    },
+    {
+        question: "Lỵ trực trùng đi ngoài nhiều lần, mất nước nặng cần ưu tiên:",
+        options: [
+            { text: "Kháng sinh", correct: false },
+            { text: "Nghỉ ngơi", correct: false },
+            { text: "Bù dịch – điện giải và dinh dưỡng hợp lý", correct: true },
+            { text: "Giảm đau", correct: false }
+        ]
+    },
+    {
+        question: "Tác nhân gây bệnh bạch hầu là:",
+        options: [
+            { text: "Virus", correct: false },
+            { text: "Nấm", correct: false },
+            { text: "Corynebacterium diphtheriae", correct: true },
+            { text: "Ký sinh trùng", correct: false }
+        ]
+    },
+    {
+        question: "Biến chứng nguy hiểm nhất của màng giả bạch hầu là:",
+        options: [
+            { text: "Viêm phổi", correct: false },
+            { text: "Xuất huyết", correct: false },
+            { text: "Tắc nghẽn đường hô hấp", correct: true },
+            { text: "Suy gan", correct: false }
+        ]
+    },
+    {
+        question: "Khi chăm sóc bạch hầu cần chú ý theo dõi:",
+        options: [
+            { text: "Tiêu hóa", correct: false },
+            { text: "Hô hấp", correct: false },
+            { text: "Biến chứng tim và thần kinh", correct: true },
+            { text: "Thận", correct: false }
+        ]
+    },
+    {
+        question: "Trẻ ho gà tím tái khi lên cơn ho, điều dưỡng cần:",
+        options: [
+            { text: "Cho uống nước", correct: false },
+            { text: "Vỗ rung", correct: false },
+            { text: "Đặt tư thế dẫn lưu, hút đờm, thở oxy", correct: true },
+            { text: "Tiêm kháng sinh ngay", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân bạch hầu đã mở khí quản cần theo dõi:",
+        options: [
+            { text: "Huyết áp", correct: false },
+            { text: "Nhiệt độ", correct: false },
+            { text: "Biến chứng tại vị trí mở khí quản", correct: true },
+            { text: "Tiêu hóa", correct: false }
+        ]
+    },
+    {
+        question: "Biến chứng vừa do độc tố vừa do màng giả bạch hầu gây nên là:",
+        options: [
+            { text: "Viêm phổi", correct: false },
+            { text: "Viêm gan", correct: false },
+            { text: "Viêm cơ tim và tắc đường thở", correct: true },
+            { text: "Viêm thận", correct: false }
+        ]
+    },
+    {
+        question: "Ho gà khác viêm phế quản ở đặc điểm:",
+        options: [
+            { text: "Ho ít", correct: false },
+            { text: "Không sốt", correct: false },
+            { text: "Ho liên tiếp, kéo dài, có nôn ói sau cơn", correct: true },
+            { text: "Ho khan nhẹ", correct: false }
+        ]
+    },
+    {
+        question: "Triệu chứng khởi phát điển hình của uốn ván là:",
+        options: [
+            { text: "Sốt cao", correct: false },
+            { text: "Đau đầu", correct: false },
+            { text: "Cứng hàm", correct: true },
+            { text: "Co giật", correct: false }
+        ]
+    },
+    {
+        question: "Thuốc trung hòa độc tố uốn ván là:",
+        options: [
+            { text: "Kháng sinh", correct: false },
+            { text: "Corticoid", correct: false },
+            { text: "SAT hoặc HTIG", correct: true },
+            { text: "Vitamin", correct: false }
+        ]
+    },
+    {
+        question: "Chế độ dinh dưỡng cho bệnh nhân uốn ván là:",
+        options: [
+            { text: "Ăn nhạt", correct: false },
+            { text: "Nhịn ăn", correct: false },
+            { text: "Thực phẩm cao năng lượng, tránh gia vị, nước có gas", correct: true },
+            { text: "Ăn lỏng kéo dài", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân uốn ván dễ viêm phổi do:",
+        options: [
+            { text: "Nhiễm lạnh", correct: false },
+            { text: "Suy miễn dịch", correct: false },
+            { text: "Sặc, mở khí quản, ứ đờm dãi", correct: true },
+            { text: "Dị ứng thuốc", correct: false }
+        ]
+    },
+    {
+        question: "Trẻ sơ sinh bỏ bú, khóc không ra tiếng, bụng gồng cứng nghĩ nhiều đến:",
+        options: [
+            { text: "Viêm phổi", correct: false },
+            { text: "Nhiễm trùng huyết", correct: false },
+            { text: "Uốn ván rốn", correct: true },
+            { text: "Viêm não", correct: false }
+        ]
+    },
+    {
+        question: "Dấu hiệu đặc trưng của giai đoạn toàn phát viêm gan siêu vi cấp là:",
+        options: [
+            { text: "Sốt cao kéo dài", correct: false },
+            { text: "Đau bụng dữ dội", correct: false },
+            { text: "Vàng da, vàng niêm mạc, triệu chứng toàn thân giảm, gan lách to, đau", correct: true },
+            { text: "Xuất huyết tiêu hóa", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân viêm gan cấp chán ăn, nôn ói chủ yếu do:",
+        options: [
+            { text: "Tổn thương dạ dày", correct: false },
+            { text: "Tắc mật hoàn toàn", correct: false },
+            { text: "Rối loạn thần kinh thực vật", correct: true },
+            { text: "Nhiễm trùng thứ phát", correct: false }
+        ]
+    },
+    {
+        question: "Người bệnh viêm gan B, C mạn tính cần:",
+        options: [
+            { text: "Nhập viện điều trị dài ngày", correct: false },
+            { text: "Điều trị nội khoa tích cực", correct: false },
+            { text: "Điều trị ngoại trú và tái khám định kỳ", correct: true },
+            { text: "Không cần theo dõi", correct: false }
+        ]
+    },
+    {
+        question: "Khi chăm sóc bệnh nhân viêm gan cấp, điều dưỡng cần chú ý:",
+        options: [
+            { text: "Vận động sớm", correct: false },
+            { text: "Ăn nhiều đạm", correct: false },
+            { text: "Nghỉ ngơi tuyệt đối, tránh gắng sức", correct: true },
+            { text: "Uống nhiều nước có gas", correct: false }
+        ]
+    },
+    {
+        question: "Nước tiểu sẫm màu trong viêm gan siêu vi phản ánh:",
+        options: [
+            { text: "Mất nước", correct: false },
+            { text: "Nhiễm trùng tiểu", correct: false },
+            { text: "Tăng bilirubin niệu", correct: true },
+            { text: "Suy thận", correct: false }
+        ]
+    },
+    {
+        question: "Viêm gan C mạn không điều trị có thể dẫn đến:",
+        options: [
+            { text: "Viêm gan tối cấp", correct: false },
+            { text: "Suy thận", correct: false },
+            { text: "Xơ gan", correct: true },
+            { text: "Viêm tụy", correct: false }
+        ]
+    },
+    {
+        question: "Triệu chứng đặc trưng của hội chứng màng não ở người lớn là:",
+        options: [
+            { text: "Sốt nhẹ, đau họng", correct: false },
+            { text: "Co giật đơn thuần", correct: false },
+            { text: "Nhức đầu, cổ cứng, Kernig (+), Brudzinski (+), ói vọt, bón", correct: true },
+            { text: "Tiêu chảy kéo dài", correct: false }
+        ]
+    },
+    {
+        question: "Viêm màng não mủ cần điều trị sớm vì:",
+        options: [
+            { text: "Khó chẩn đoán", correct: false },
+            { text: "Lây nhanh", correct: false },
+            { text: "Dễ gây biến chứng và tử vong cao", correct: true },
+            { text: "Không có thuốc đặc hiệu", correct: false }
+        ]
+    },
+    {
+        question: "Dấu hiệu gợi ý viêm màng não mủ ở trẻ sơ sinh là:",
+        options: [
+            { text: "Ho, khò khè", correct: false },
+            { text: "Sốt cao liên tục", correct: false },
+            { text: "Thóp phồng, bỏ bú, co giật, vàng da, tiêu chảy, hạ thân nhiệt", correct: true },
+            { text: "Táo bón", correct: false }
+        ]
+    },
+    {
+        question: "Viêm màng não mủ có mạch nhanh, sốt cao, vã mồ hôi, HA dao động là biểu hiện của:",
+        options: [
+            { text: "Sốc nhiễm khuẩn", correct: false },
+            { text: "Suy hô hấp", correct: false },
+            { text: "Rối loạn thần kinh thực vật", correct: true },
+            { text: "Viêm cơ tim", correct: false }
+        ]
+    },
+    {
+        question: "Dấu hiệu cổ cứng trong viêm màng não là:",
+        options: [
+            { text: "Đau vai gáy", correct: false },
+            { text: "Không xoay cổ được", correct: false },
+            { text: "Không cúi sát được đầu về phía ngực khi nằm", correct: true },
+            { text: "Cứng toàn thân", correct: false }
+        ]
+    },
+    {
+        question: "Muỗi truyền bệnh sốt xuất huyết Dengue chủ yếu là:",
+        options: [
+            { text: "Anopheles", correct: false },
+            { text: "Culex", correct: false },
+            { text: "Aedes aegypti", correct: true },
+            { text: "Mansonia", correct: false }
+        ]
+    },
+    {
+        question: "Xét nghiệm máu trong sốt xuất huyết Dengue thường thấy:",
+        options: [
+            { text: "Tăng bạch cầu", correct: false },
+            { text: "Tăng tiểu cầu", correct: false },
+            { text: "Giảm bạch cầu, giảm tiểu cầu, dung tích hồng cầu tăng", correct: true },
+            { text: "Thiếu máu nặng", correct: false }
+        ]
+    },
+    {
+        question: "Dấu hiệu cảnh báo sốt xuất huyết Dengue là:",
+        options: [
+            { text: "Sốt nhẹ", correct: false },
+            { text: "Ho khan", correct: false },
+            { text: "Vật vã, lừ đừ, tiểu ít, nôn nhiều, xuất huyết niêm mạc", correct: true },
+            { text: "Phát ban", correct: false }
+        ]
+    },
+    {
+        question: "Biện pháp điều trị quan trọng nhất trong sốt xuất huyết Dengue là:",
+        options: [
+            { text: "Kháng sinh", correct: false },
+            { text: "Hạ sốt tích cực", correct: false },
+            { text: "Truyền dịch đúng tốc độ để bù nước và điện giải", correct: true },
+            { text: "Truyền máu", correct: false }
+        ]
+    },
+    {
+        question: "Trẻ ngày thứ 4 SXH, mạch nhanh nhỏ, da lạnh, tiểu ít là biểu hiện:",
+        options: [
+            { text: "SXH nhẹ", correct: false },
+            { text: "SXH có xuất huyết", correct: false },
+            { text: "SXH Dengue nặng – sốc", correct: true },
+            { text: "Giai đoạn hồi phục", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân SXH không dùng aspirin hoặc ibuprofen vì:",
+        options: [
+            { text: "Gây sốt cao", correct: false },
+            { text: "Gây đau dạ dày", correct: false },
+            { text: "Dễ gây xuất huyết, toan máu", correct: true },
+            { text: "Gây dị ứng", correct: false }
+        ]
+    },
+    {
+        question: "Tác nhân gây bệnh sốt rét ở người là:",
+        options: [
+            { text: "Virus", correct: false },
+            { text: "Vi khuẩn", correct: false },
+            { text: "Nấm", correct: false },
+            { text: "Ký sinh trùng Plasmodium", correct: true }
+        ]
+    },
+    {
+        question: "Thời gian ủ bệnh trung bình của Plasmodium falciparum là:",
+        options: [
+            { text: "5 ngày", correct: false },
+            { text: "7 ngày", correct: false },
+            { text: "12 ngày", correct: true },
+            { text: "30 ngày", correct: false }
+        ]
+    },
+    {
+        question: "Biểu hiện lâm sàng của sốt rét ác tính thể não là:",
+        options: [
+            { text: "Sốt nhẹ", correct: false },
+            { text: "Thiếu máu đơn thuần", correct: false },
+            { text: "Rối loạn tri giác, co giật, hôn mê", correct: true },
+            { text: "Tiêu chảy kéo dài", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân sốt rét vàng da, thiếu máu nặng, tiểu ít, ure/creatinin tăng là:",
+        options: [
+            { text: "Sốt rét thông thường", correct: false },
+            { text: "Sốt rét tái phát", correct: false },
+            { text: "Sốt rét thể suy thận cấp và vàng da", correct: true },
+            { text: "Sốt rét nhẹ", correct: false }
+        ]
+    },
+    {
+        question: "Trẻ sơ sinh có mẹ nhiễm sốt rét khi mang thai có thể:",
+        options: [
+            { text: "Không ảnh hưởng", correct: false },
+            { text: "Chậm phát triển", correct: false },
+            { text: "Bị sốt rét bẩm sinh", correct: true },
+            { text: "Bị viêm phổi", correct: false }
+        ]
+    },
+    {
+        question: "Tác nhân gây bệnh thủy đậu là:",
+        options: [
+            { text: "Virus sởi", correct: false },
+            { text: "Virus cúm", correct: false },
+            { text: "Varicella zoster virus", correct: true },
+            { text: "Adenovirus", correct: false }
+        ]
+    },
+    {
+        question: "Thời gian ủ bệnh trung bình của quai bị là:",
+        options: [
+            { text: "7–10 ngày", correct: false },
+            { text: "10–14 ngày", correct: false },
+            { text: "18–21 ngày", correct: true },
+            { text: "30 ngày", correct: false }
+        ]
+    },
+    {
+        question: "Đặc điểm lâm sàng điển hình của quai bị là:",
+        options: [
+            { text: "Ho, sốt cao", correct: false },
+            { text: "Phát ban toàn thân", correct: false },
+            { text: "Sưng đau tuyến mang tai, há miệng khó, lỗ Stenon sưng đỏ", correct: true },
+            { text: "Tiêu chảy", correct: false }
+        ]
+    },
+    {
+        question: "Thời gian lây truyền mạnh nhất của thủy đậu là:",
+        options: [
+            { text: "Sau khi khỏi", correct: false },
+            { text: "Khi đóng mày", correct: false },
+            { text: "24 giờ trước phát ban đến khi đóng mày", correct: true },
+            { text: "Chỉ khi nổi bóng nước", correct: false }
+        ]
+    },
+    {
+        question: "Biến chứng thường gặp nhất của thủy đậu khi gãi nhiều là:",
+        options: [
+            { text: "Viêm phổi", correct: false },
+            { text: "Viêm não", correct: false },
+            { text: "Bội nhiễm da", correct: true },
+            { text: "Viêm gan", correct: false }
+        ]
+    },
+    {
+        question: "Thai phụ mắc quai bị trong 3 tháng đầu có nguy cơ:",
+        options: [
+            { text: "Sinh non", correct: false },
+            { text: "Thai chết lưu", correct: false },
+            { text: "Sảy thai, dị tật bẩm sinh", correct: true },
+            { text: "Không ảnh hưởng", correct: false }
+        ]
+    },
+    {
+        question: "Trẻ phát ban dạng bóng nước, mọc nhiều đợt, ngứa, có bóng nước trong và đục là:",
+        options: [
+            { text: "Sởi", correct: false },
+            { text: "Tay chân miệng", correct: false },
+            { text: "Thủy đậu", correct: true },
+            { text: "Rubella", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân quai bị sưng tuyến mang tai, khó thở, phù hầu họng cần nghĩ đến:",
+        options: [
+            { text: "Viêm phổi", correct: false },
+            { text: "Dị ứng", correct: false },
+            { text: "Tắc nghẽn đường thở", correct: true },
+            { text: "Viêm thanh quản", correct: false }
+        ]
+    },
+    {
+        question: "HIV thuộc họ virus:",
+        options: [
+            { text: "Adenoviridae", correct: false },
+            { text: "Herpesviridae", correct: false },
+            { text: "Retroviridae", correct: true },
+            { text: "Flaviviridae", correct: false }
+        ]
+    },
+    {
+        question: "Xét nghiệm sàng lọc HIV thường dùng là:",
+        options: [
+            { text: "Western Blot", correct: false },
+            { text: "PCR", correct: false },
+            { text: "ELISA", correct: true },
+            { text: "Test nhanh kháng nguyên", correct: false }
+        ]
+    },
+    {
+        question: "Khi CD4 < 200 tế bào/mm³, người bệnh dễ mắc:",
+        options: [
+            { text: "Bệnh dị ứng", correct: false },
+            { text: "Ung thư da", correct: false },
+            { text: "Các bệnh nhiễm trùng cơ hội nặng", correct: true },
+            { text: "Bệnh tim mạch", correct: false }
+        ]
+    },
+    {
+        question: "HIV có sốt kéo dài, gầy sút cân, tiêu chảy >1 tháng, CD4 <200 là:",
+        options: [
+            { text: "Giai đoạn cấp", correct: false },
+            { text: "Giai đoạn tiềm ẩn", correct: false },
+            { text: "Giai đoạn AIDS", correct: true },
+            { text: "Giai đoạn hồi phục", correct: false }
+        ]
+    },
+    {
+        question: "Hội chứng Reye thường xảy ra khi:",
+        options: [
+            { text: "Người lớn dùng paracetamol", correct: false },
+            { text: "Trẻ dùng kháng sinh", correct: false },
+            { text: "Trẻ em dùng aspirin khi mắc cúm", correct: true },
+            { text: "Người già sốt cao", correct: false }
+        ]
+    },
+    {
+        question: "Nguyên tắc dùng kháng sinh trong cúm là:",
+        options: [
+            { text: "Dùng sớm", correct: false },
+            { text: "Dùng dự phòng", correct: false },
+            { text: "Chỉ dùng khi có bội nhiễm vi khuẩn", correct: true },
+            { text: "Dùng kéo dài", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân cúm nặng, SpO₂ giảm, X-quang phổi mờ lan tỏa cần ưu tiên:",
+        options: [
+            { text: "Hạ sốt", correct: false },
+            { text: "Truyền dịch", correct: false },
+            { text: "Hỗ trợ hô hấp", correct: true },
+            { text: "Kháng sinh liều cao", correct: false }
+        ]
+    },
+    {
+        question: "Dấu hiệu cảnh báo cúm tiến triển nặng cần nhập viện là:",
+        options: [
+            { text: "Sốt nhẹ", correct: false },
+            { text: "Ho khan", correct: false },
+            { text: "SpO₂ < 92%, rối loạn tri giác", correct: true },
+            { text: "Đau họng", correct: false }
+        ]
+    },
+    {
+        question: "Virus gây bệnh cúm thuộc họ:",
+        options: [
+            { text: "Paramyxoviridae", correct: false },
+            { text: "Coronaviridae", correct: false },
+            { text: "Orthomyxoviridae", correct: true },
+            { text: "Picornaviridae", correct: false }
+        ]
+    },
+    {
+        question: "Tác nhân gây bệnh lỵ amip là:",
+        options: [
+            { text: "Giardia lamblia", correct: false },
+            { text: "Balantidium coli", correct: false },
+            { text: "Entamoeba histolytica", correct: true },
+            { text: "Trichomonas", correct: false }
+        ]
+    },
+    {
+        question: "Đặc điểm phân trong lỵ amip là:",
+        options: [
+            { text: "Phân nước toàn bộ", correct: false },
+            { text: "Phân vàng", correct: false },
+            { text: "Phân nhầy máu lẫn nhau như “mủ máu”", correct: true },
+            { text: "Phân mỡ", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân lỵ amip thiếu máu là do:",
+        options: [
+            { text: "Ăn uống kém", correct: false },
+            { text: "Suy tủy", correct: false },
+            { text: "Mất máu kéo dài qua phân", correct: true },
+            { text: "Nhiễm trùng", correct: false }
+        ]
+    },
+    {
+        question: "Vị trí áp-xe gan amip thường gặp nhất là:",
+        options: [
+            { text: "Gan trái", correct: false },
+            { text: "Gan giữa", correct: false },
+            { text: "Gan phải", correct: true },
+            { text: "Cả hai bên", correct: false }
+        ]
+    },
+    {
+        question: "Thuốc đặc hiệu điều trị lỵ amip là:",
+        options: [
+            { text: "Ciprofloxacin", correct: false },
+            { text: "Ceftriaxone", correct: false },
+            { text: "Metronidazol", correct: true },
+            { text: "Amoxicillin", correct: false }
+        ]
+    },
+    {
+        question: "Áp-xe gan amip vỡ vào phổi gây:",
+        options: [
+            { text: "Tràn khí màng phổi", correct: false },
+            { text: "Viêm phổi", correct: false },
+            { text: "Áp-xe phổi", correct: true },
+            { text: "Lao phổi", correct: false }
+        ]
+    },
+    {
+        question: "Soi phân thấy E. histolytica dạng magna ăn hồng cầu kết luận:",
+        options: [
+            { text: "Lỵ amip mạn", correct: false },
+            { text: "Viêm ruột", correct: false },
+            { text: "Lỵ amip cấp", correct: true },
+            { text: "Kiết lỵ", correct: false }
+        ]
+    },
+    {
+        question: "Thời gian ủ bệnh dại ở người thường là:",
+        options: [
+            { text: "5–10 ngày", correct: false },
+            { text: "10–15 ngày", correct: false },
+            { text: "20–60 ngày", correct: true },
+            { text: ">1 năm", correct: false }
+        ]
+    },
+    {
+        question: "Thể bại liệt của bệnh dại thường gặp ở:",
+        options: [
+            { text: "Trẻ em", correct: false },
+            { text: "Người không tiêm phòng", correct: false },
+            { text: "Người đã tiêm ngừa sau khi bị súc vật cắn", correct: true },
+            { text: "Người cao tuổi", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh dại gần như luôn tử vong vì:",
+        options: [
+            { text: "Lây nhanh", correct: false },
+            { text: "Không chẩn đoán được", correct: false },
+            { text: "Chưa có thuốc điều trị đặc hiệu", correct: true },
+            { text: "Biến chứng hô hấp", correct: false }
+        ]
+    },
+    {
+        question: "Biện pháp phòng ngừa đặc hiệu bệnh dại là:",
+        options: [
+            { text: "Kháng sinh", correct: false },
+            { text: "Huyết thanh", correct: false },
+            { text: "Tiêm vaccine phòng dại", correct: true },
+            { text: "Nghỉ ngơi", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh dại thể bại liệt biểu hiện:",
+        options: [
+            { text: "Co giật dữ dội", correct: false },
+            { text: "Kích thích mạnh", correct: false },
+            { text: "Liệt lan tỏa, đau cột sống, tử vong chậm", correct: true },
+            { text: "Hôn mê sớm", correct: false }
+        ]
+    }
+
+];
+
+
+
+
+        // Biến lưu trữ trạng thái
+        let userAnswers = Array(questionsData.length).fill(null);
+        let answeredCount = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        // Hàm tạo câu hỏi
+        function createQuestions() {
+            const container = document.getElementById('questions-container');
+            
+            questionsData.forEach((questionData, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question';
+                questionElement.dataset.index = index;
+                
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = `Câu ${index + 1}:`;
+                
+                const questionText = document.createElement('div');
+                questionText.className = 'question-text';
+                questionText.textContent = questionData.question;
+                
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'options';
+                
+               shuffle(questionData.options); // RANDOM ĐÁP ÁN
+
+const letters = ['A', 'B', 'C', 'D'];
+
+questionData.options.forEach((option, optionIndex) => {
+
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.dataset.optionIndex = optionIndex;
+                    
+                    const optionLetter = document.createElement('div');
+                    optionLetter.className = 'option-letter';
+                    optionLetter.textContent = letters[optionIndex];
+                    
+                    const optionText = document.createElement('span');
+                    optionText.textContent = option.text;
+                    
+                    // Tạo indicator nhưng ẩn đi cho đến khi người dùng chọn
+                    const indicator = document.createElement('span');
+                    indicator.className = 'result-indicator';
+                    indicator.style.visibility = 'hidden';
+                    
+                    optionElement.appendChild(optionLetter);
+                    optionElement.appendChild(optionText);
+                    optionElement.appendChild(indicator);
+                    
+                    // Thêm sự kiện click
+                    optionElement.addEventListener('click', () => {
+                        selectOption(index, optionIndex);
+                    });
+                    
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                questionElement.appendChild(questionNumber);
+                questionElement.appendChild(questionText);
+                questionElement.appendChild(optionsContainer);
+                container.appendChild(questionElement);
+            });
+            
+            // Cập nhật tổng số câu hỏi
+            document.getElementById('total-questions').textContent = questionsData.length;
+            updateProgressBar();
+        }
+
+        // Hàm chọn đáp án
+        function selectOption(questionIndex, optionIndex) {
+            const questionElement = document.querySelector(`.question[data-index="${questionIndex}"]`);
+            const options = questionElement.querySelectorAll('.option');
+            const questionData = questionsData[questionIndex];
+            
+            // Kiểm tra xem câu hỏi này đã được trả lời chưa
+            const wasAnswered = userAnswers[questionIndex] !== null;
+            
+            // Xóa lớp selected từ tất cả các đáp án trong câu hỏi này
+            options.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Thêm lớp selected cho đáp án được chọn
+            options[optionIndex].classList.add('selected');
+            
+            // Hiển thị kết quả cho tất cả các đáp án trong câu hỏi này
+            options.forEach((option, idx) => {
+                const indicator = option.querySelector('.result-indicator');
+                const isCorrect = questionData.options[idx].correct;
+                
+                // Hiển thị indicator
+                indicator.style.visibility = 'visible';
+                
+                // Đặt nội dung và lớp cho indicator
+                if (isCorrect) {
+                    option.classList.add('correct');
+                    indicator.textContent = ' ✓';
+                } else if (idx === optionIndex) {
+                    option.classList.add('incorrect');
+                    indicator.textContent = ' ✗';
+                }
+                
+                // Nếu là đáp án đúng, hiển thị màu xanh
+                if (isCorrect) {
+                    option.classList.add('correct');
+                }
+            });
+            
+            // Lưu đáp án người dùng chọn
+            userAnswers[questionIndex] = optionIndex;
+            
+            // Cập nhật số lượng câu đã trả lời
+            if (!wasAnswered) {
+                answeredCount++;
+                
+                // Cập nhật số câu đúng/sai
+                if (questionData.options[optionIndex].correct) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+                
+                // Cập nhật thanh tiến độ và số liệu
+                updateProgressBar();
+            }
+        }
+
+        // Hàm cập nhật thanh tiến độ
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progress-fill');
+            const answeredCountElement = document.getElementById('answered-count');
+            const correctProgressElement = document.getElementById('correct-progress');
+            const incorrectProgressElement = document.getElementById('incorrect-progress');
+            
+            // Tính phần trăm
+            const percentage = (answeredCount / questionsData.length) * 100;
+            
+            // Cập nhật thanh tiến độ
+            progressFill.style.width = `${percentage}%`;
+            
+            // Cập nhật số liệu
+            answeredCountElement.textContent = answeredCount;
+            correctProgressElement.textContent = correctCount;
+            incorrectProgressElement.textContent = incorrectCount;
+        }
+
+        // Hàm hiển thị kết quả tổng
+        function showScore() {
+            const scoreContainer = document.getElementById('score-container');
+            const scoreElement = document.getElementById('score');
+            const correctCountElement = document.getElementById('correct-count');
+            const incorrectCountElement = document.getElementById('incorrect-count');
+            
+            scoreElement.textContent = `${correctCount}/${questionsData.length}`;
+            correctCountElement.textContent = correctCount;
+            incorrectCountElement.textContent = incorrectCount;
+            
+            scoreContainer.classList.add('show');
+            
+            // Cuộn đến phần kết quả
+            scoreContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Hàm làm lại bài
+        function resetQuiz() {
+            // Reset tất cả biến
+            userAnswers = Array(questionsData.length).fill(null);
+            answeredCount = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            
+            // Xóa tất cả các lớp và indicator
+            const questions = document.querySelectorAll('.question');
+            questions.forEach(question => {
+                const options = question.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.classList.remove('selected', 'correct', 'incorrect');
+                    
+                    const indicator = option.querySelector('.result-indicator');
+                    if (indicator) {
+                        indicator.style.visibility = 'hidden';
+                        indicator.textContent = '';
+                    }
+                });
+            });
+            
+            // Ẩn kết quả
+            const scoreContainer = document.getElementById('score-container');
+            scoreContainer.classList.remove('show');
+            
+            // Cập nhật thanh tiến độ
+            updateProgressBar();
+        }
+
+        // Khởi tạo bài kiểm tra
+       document.addEventListener('DOMContentLoaded', () => {
+    shuffle(questionsData);   // RANDOM THỨ TỰ CÂU HỎI
+    createQuestions();
+
+
+            
+            // Gán sự kiện cho nút xem kết quả
+            document.getElementById('show-score-btn').addEventListener('click', showScore);
+            
+            // Gán sự kiện cho nút làm lại
+            document.getElementById('reset-btn').addEventListener('click', resetQuiz);
+        });
+    </script>
+</body>
+</html>
