@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chauhuynh0104</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .question-container {
+            margin-bottom: 25px;
+        }
+        
+        .question {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #eaeaea;
+            transition: all 0.3s;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .question-text {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .option {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .option:hover:not(.correct):not(.incorrect) {
+            background-color: #f0f0f0;
+        }
+        
+        .option.selected {
+            border-width: 2px;
+        }
+        
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .option-letter {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .correct .option-letter {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .incorrect .option-letter {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .result-indicator {
+            margin-left: auto;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .correct .result-indicator {
+            color: #28a745;
+        }
+        
+        .incorrect .result-indicator {
+            color: #dc3545;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        #reset-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #show-score-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        #show-score-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .score-container {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .score-container.show {
+            display: block;
+        }
+        
+        .score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .correct-count {
+            color: #28a745;
+        }
+        
+        .incorrect-count {
+            color: #e74c3c;
+        }
+        
+        .progress-bar-container {
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #28a745;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+   
+   
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span>Tiến độ: <span id="answered-count">0</span>/<span id="total-questions">0</span> câu</span>
+                <span>Đúng: <span id="correct-progress">0</span> | Sai: <span id="incorrect-progress">0</span></span>
+            </div>
+        </div>
+        
+        <div class="question-container" id="questions-container">
+            <!-- Các câu hỏi sẽ được thêm tự động bằng JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button id="show-score-btn">Xem kết quả</button>
+            <button id="reset-btn">Làm lại</button>
+        </div>
+        
+        <div class="score-container" id="score-container">
+            <h3>Kết quả của bạn:</h3>
+            <div class="score" id="score">0/80</div>
+            <p>Đúng: <span class="correct-count" id="correct-count">0</span> | 
+               Sai: <span class="incorrect-count" id="incorrect-count">0</span></p>
+        </div>
+    </div>
+
+    <script>
+	function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+       // Dữ liệu câu hỏi - chỉ lấy 80 câu đầu tiên
+        const questionsData = [
+
+    {
+        question: "Lông chuyển là cấu trúc đặc trưng của biểu mô:",
+        options: [
+            { text: "Ống góp thận", correct: false },
+            { text: "Ống dẫn tinh", correct: false },
+            { text: "Khí quản", correct: true },
+            { text: "Ruột già", correct: false }
+        ]
+    },
+    {
+        question: "Collagen type I gặp nhiều nhất ở:",
+        options: [
+            { text: "Sụn trong", correct: false },
+            { text: "Gân", correct: true },
+            { text: "Sụn chun", correct: false },
+            { text: "Mô liên kết nhầy", correct: false }
+        ]
+    },
+    {
+        question: "Tế bào chính tạo sợi:",
+        options: [
+            { text: "Dưỡng bào", correct: false },
+            { text: "Tương bào", correct: false },
+            { text: "Nguyên bào sợi", correct: true },
+            { text: "Đại thực bào", correct: false }
+        ]
+    },
+    {
+        question: "Cơ tim có đặc điểm đặc trưng:",
+        options: [
+            { text: "Đa nhân", correct: false },
+            { text: "Tế bào dài không phân nhánh", correct: false },
+            { text: "Vân ngang rõ", correct: false },
+            { text: "Đĩa xen", correct: true }
+        ]
+    },
+    {
+        question: "Cơ trơn thuộc loại:",
+        options: [
+            { text: "Vân ngang", correct: false },
+            { text: "Tự ý", correct: false },
+            { text: "Không vân", correct: true },
+            { text: "Vân không đều", correct: false }
+        ]
+    },
+    {
+        question: "Lớp chứa nhiều tế bào hắc tố:",
+        options: [
+            { text: "Sừng", correct: false },
+            { text: "Hạt", correct: false },
+            { text: "Gai", correct: false },
+            { text: "Đáy", correct: true }
+        ]
+    },
+    {
+        question: "Tuyến bã thuộc loại tuyến:",
+        options: [
+            { text: "Merocrine", correct: false },
+            { text: "Holocrine", correct: true },
+            { text: "Apocrine", correct: false },
+            { text: "Tubuloacinar", correct: false }
+        ]
+    },
+    {
+        question: "Đặc điểm điển hình của động mạch đàn hồi:",
+        options: [
+            { text: "Lớp áo giữa nhiều cơ trơn", correct: false },
+            { text: "Thành mỏng", correct: false },
+            { text: "Nhiều lá sợi đàn hồi", correct: true },
+            { text: "Không có nội mô", correct: false }
+        ]
+    },
+    {
+        question: "Mao mạch liên tục có đặc điểm:",
+        options: [
+            { text: "Nội mô gián đoạn", correct: false },
+            { text: "Màng đáy liên tục", correct: true },
+            { text: "Có cửa sổ", correct: false },
+            { text: "Lỗ thủng lớn", correct: false }
+        ]
+    },
+    {
+        question: "Đại thực bào phế nang xuất phát từ:",
+        options: [
+            { text: "Phế bào I", correct: false },
+            { text: "Phế bào II", correct: false },
+            { text: "Mono bào", correct: true },
+            { text: "Tế bào Clara", correct: false }
+        ]
+    },
+    {
+        question: "Biểu mô trụ đơn có vi nhung mao giúp tăng chức năng:",
+        options: [
+            { text: "Hấp thu", correct: true },
+            { text: "Bảo vệ cơ học", correct: false },
+            { text: "Lọc", correct: false },
+            { text: "Chế tiết hormon", correct: false }
+        ]
+    },
+    {
+        question: "Liên kết chặt (tight junction) tồn tại để:",
+        options: [
+            { text: "Ngăn khuếch tán", correct: true },
+            { text: "Truyền tín hiệu", correct: false },
+            { text: "Tăng bề mặt hấp thu", correct: false },
+            { text: "Kết dính với mô liên kết", correct: false }
+        ]
+    },
+    {
+        question: "Sụn trong chịu lực nén tốt nhờ thành phần giàu:",
+        options: [
+            { text: "Collagen I", correct: false },
+            { text: "Elastin", correct: false },
+            { text: "Collagen II", correct: true },
+            { text: "Keratin", correct: false }
+        ]
+    },
+    {
+        question: "Sợi chun khác sợi collagen ở:",
+        options: [
+            { text: "Độ bền cao hơn", correct: false },
+            { text: "Khả năng đàn hồi", correct: true },
+            { text: "Nhuộm xanh PAS", correct: false },
+            { text: "Gốc amino acid", correct: false }
+        ]
+    },
+    {
+        question: "Cơ tim hoạt động không mệt do:",
+        options: [
+            { text: "Nhiều glycogen", correct: false },
+            { text: "Nhiều ty thể", correct: true },
+            { text: "Không có vân", correct: false },
+            { text: "Lưới nội bào phát triển", correct: false }
+        ]
+    },
+    {
+        question: "Cơ vân co nhanh nhờ:",
+        options: [
+            { text: "Nhiều tơ cơ dày", correct: false },
+            { text: "Ít myoglobin", correct: false },
+            { text: "Phối hợp canxi ngoại bào", correct: false },
+            { text: "Lưới nội bào phát triển", correct: true }
+        ]
+    },
+    {
+        question: "Lớp hạt có đặc điểm:",
+        options: [
+            { text: "Tế bào chứa keratohyalin", correct: true },
+            { text: "Phân chia mạnh", correct: false },
+            { text: "Nhiều melanocyte", correct: false },
+            { text: "Không nhân", correct: false }
+        ]
+    },
+    {
+        question: "Tuyến mồ hôi eccrine giúp điều hòa thân nhiệt nhờ:",
+        options: [
+            { text: "Tiết chất nhầy", correct: false },
+            { text: "Tiết nước và ion", correct: true },
+            { text: "Tiết lipid", correct: false },
+            { text: "Co giãn lông", correct: false }
+        ]
+    },
+    {
+        question: "Phế bào II quan trọng vì:",
+        options: [
+            { text: "Tạo nên hàng rào khí – máu", correct: false },
+            { text: "Tiết surfactant giảm sức căng", correct: true },
+            { text: "Có lông chuyển đẩy bụi", correct: false },
+            { text: "Tạo đại thực bào", correct: false }
+        ]
+    },
+    {
+        question: "Sụn trong khí quản giúp:",
+        options: [
+            { text: "Mở rộng lòng khí quản", correct: false },
+            { text: "Giữ khí quản không xẹp", correct: true },
+            { text: "Tăng trao đổi khí", correct: false },
+            { text: "Tạo chất nhầy", correct: false }
+        ]
+    },
+    {
+        question: "Ống lượn gần hấp thu vì có:",
+        options: [
+            { text: "Thành ống rộng", correct: false },
+            { text: "Vi nhung mao dày đặc", correct: true },
+            { text: "Thành mỏng", correct: false },
+            { text: "Ít ti thể", correct: false }
+        ]
+    },
+    {
+        question: "Quai Henle phần lên không thấm nước giúp:",
+        options: [
+            { text: "Tăng hấp thu nước", correct: false },
+            { text: "Tạo áp lực thẩm thấu cao", correct: true },
+            { text: "Điều hòa pH", correct: false },
+            { text: "Bài tiết ion H⁺", correct: false }
+        ]
+    },
+    {
+        question: "Tế bào tạo myelin ở hệ thần kinh trung ương là:",
+        options: [
+            { text: "Schwann", correct: false },
+            { text: "Oligodendrocytes", correct: true },
+            { text: "Astrocytes", correct: false },
+            { text: "Microglia", correct: false }
+        ]
+    },
+    {
+        question: "Mô biểu mô có nguồn gốc phôi chủ yếu từ:",
+        options: [
+            { text: "Nội bì", correct: false },
+            { text: "Trung bì", correct: false },
+            { text: "Ngoại bì", correct: false },
+            { text: "Tất cả đúng", correct: true }
+        ]
+    },
+    {
+        question: "Sợi collagen bắt màu:",
+        options: [
+            { text: "Xanh", correct: false },
+            { text: "Đen", correct: false },
+            { text: "Hồng với eosin", correct: true },
+            { text: "Tím", correct: false }
+        ]
+    },
+    {
+        question: "Biểu mô lát đơn gặp ở:",
+        options: [
+            { text: "Phế nang", correct: true },
+            { text: "Tử cung", correct: false },
+            { text: "Khí quản", correct: false },
+            { text: "Ruột non", correct: false }
+        ]
+    },
+    {
+        question: "Lớp nào có ở da dày mà da mỏng không có?",
+        options: [
+            { text: "Lớp gai", correct: false },
+            { text: "Lớp bóng", correct: true },
+            { text: "Lớp hạt", correct: false },
+            { text: "Lớp đáy", correct: false }
+        ]
+    },
+    {
+        question: "Sụn của khí quản thuộc loại:",
+        options: [
+            { text: "Sụn chun", correct: false },
+            { text: "Sụn trong", correct: true },
+            { text: "Sụn xơ", correct: false },
+            { text: "Không có sụn", correct: false }
+        ]
+    },
+    {
+        question: "Mô cơ nào có nhiều nhân ngoại vi?",
+        options: [
+            { text: "Cơ trơn", correct: false },
+            { text: "Cơ tim", correct: false },
+            { text: "Cơ vân", correct: true },
+            { text: "Cơ hỗn hợp", correct: false }
+        ]
+    },
+    {
+        question: "Phế bào I có chức năng:",
+        options: [
+            { text: "Tiết surfactant", correct: false },
+            { text: "Tham gia trao đổi khí", correct: true },
+            { text: "Đại thực bào", correct: false },
+            { text: "Tiết nhầy", correct: false }
+        ]
+    },
+    {
+        question: "Tuyến mồ hôi eccrine phân bố nhiều nhất ở:",
+        options: [
+            { text: "Da đầu", correct: false },
+            { text: "Lòng bàn tay, lòng bàn chân", correct: true },
+            { text: "Cánh tay", correct: false },
+            { text: "Mí mắt", correct: false }
+        ]
+    },
+    {
+        question: "Ống lượn gần có:",
+        options: [
+            { text: "Không bờ bàn chải", correct: false },
+            { text: "Bờ bàn chải rõ", correct: true },
+            { text: "Lòng rộng", correct: false },
+            { text: "Tế bào thấp", correct: false }
+        ]
+    },
+    {
+        question: "Tinh trùng hoàn thiện chức năng ở:",
+        options: [
+            { text: "Ống sinh tinh", correct: false },
+            { text: "Mào tinh", correct: true },
+            { text: "Ống dẫn tinh", correct: false },
+            { text: "Niệu đạo", correct: false }
+        ]
+    },
+    {
+        question: "Vì sao mô liên kết có khả năng tái tạo tốt?",
+        options: [
+            { text: "Tế bào mô phân chia mạnh", correct: false },
+            { text: "Nguyên bào sợi hoạt động mạnh", correct: true },
+            { text: "Có nhiều collagen", correct: false },
+            { text: "Nhiều nước", correct: false }
+        ]
+    },
+    {
+        question: "Lông chuyển của biểu mô khí quản giúp:",
+        options: [
+            { text: "Tăng trao đổi khí", correct: false },
+            { text: "Tăng áp suất", correct: false },
+            { text: "Đẩy bụi và chất nhầy ra ngoài", correct: true },
+            { text: "Tiết dịch", correct: false }
+        ]
+    },
+    {
+        question: "Cơ tim có đĩa xen (vạch bậc thang) để:",
+        options: [
+            { text: "Tăng sự đàn hồi", correct: false },
+            { text: "Giúp dẫn truyền và liên kết", correct: true },
+            { text: "Tăng sức co", correct: false },
+            { text: "Giảm va chạm", correct: false }
+        ]
+    },
+    {
+        question: "Lớp trung bì da có nhú để:",
+        options: [
+            { text: "Tăng diện tích tiếp xúc với biểu bì", correct: true },
+            { text: "Tăng độ dày", correct: false },
+            { text: "Giảm mất nước", correct: false },
+            { text: "Tạo lông", correct: false }
+        ]
+    },
+    {
+        question: "Động mạch chun đàn hồi tốt vì chứa nhiều:",
+        options: [
+            { text: "Collagen", correct: false },
+            { text: "Elastin", correct: true },
+            { text: "Reticulin", correct: false },
+            { text: "Keratin", correct: false }
+        ]
+    },
+    {
+        question: "Tuyến mồ hôi apocrine tạo mùi cơ thể vì:",
+        options: [
+            { text: "Tiết nước tinh khiết", correct: false },
+            { text: "Tiết nhiều muối", correct: false },
+            { text: "Tiết dịch nhầy bị vi khuẩn phân hủy", correct: true },
+            { text: "Không hoạt động sau dậy thì", correct: false }
+        ]
+    },
+    {
+        question: "Podocyte hỗ trợ lọc cầu thận nhờ:",
+        options: [
+            { text: "Nhánh bám nhau tạo khe lọc", correct: true },
+            { text: "Không có bào quan", correct: false },
+            { text: "Bề mặt trơn", correct: false },
+            { text: "Tính thấm cao", correct: false }
+        ]
+    },
+    {
+        question: "Tế bào Sertoli có vai trò:",
+        options: [
+            { text: "Sinh tinh trùng trực tiếp", correct: false },
+            { text: "Nuôi dưỡng và nâng đỡ tế bào mầm", correct: true },
+            { text: "Tiết testosterone", correct: false },
+            { text: "Tạo noãn", correct: false }
+        ]
+    },
+    {
+        question: "Phế bào typ II quan trọng vì:",
+        options: [
+            { text: "Giữ cho phổi không xẹp", correct: true },
+            { text: "Tăng trao đổi khí", correct: false },
+            { text: "Tạo mao mạch", correct: false },
+            { text: "Tạo RBC", correct: false }
+        ]
+    },
+    {
+        question: "Vì sao tĩnh mạch dễ bị xẹp thành?",
+        options: [
+            { text: "Không có nội mô", correct: false },
+            { text: "Thành mỏng, áp lực thấp", correct: true },
+            { text: "Có nhiều cơ", correct: false },
+            { text: "Có van", correct: false }
+        ]
+    },
+    {
+        question: "Mô liên kết nhầy có nhiều chất nền vì:",
+        options: [
+            { text: "Collagen nhiều", correct: false },
+            { text: "Hyaluronic acid nhiều", correct: true },
+            { text: "Trùng hợp cơ học", correct: false },
+            { text: "Có nhiều elastin", correct: false }
+        ]
+    },
+    {
+        question: "Tinh hoàn có khu vực sinh tinh nằm trong:",
+        options: [
+            { text: "Mào tinh", correct: false },
+            { text: "Trung thất tinh hoàn", correct: false },
+            { text: "Ống dẫn tinh", correct: false },
+            { text: "Ống sinh tinh", correct: true }
+        ]
+    },
+    {
+        question: "Một tuyến hình ống xoắn sâu xuống hạ bì, tế bào sáng – tối xen kẽ → là tuyến:",
+        options: [
+            { text: "Bã", correct: false },
+            { text: "Apocrine", correct: false },
+            { text: "Eccrine", correct: true },
+            { text: "Hỗn hợp", correct: false }
+        ]
+    },
+    {
+        question: "Một đoạn mô có tế bào hình trụ, nhân không cùng hàng, nhiều tế bào hình đài → đây là:",
+        options: [
+            { text: "Giả tầng có lông chuyển", correct: true },
+            { text: "Trụ đơn", correct: false },
+            { text: "Vuông đơn", correct: false },
+            { text: "Lát tầng", correct: false }
+        ]
+    },
+    {
+        question: "Thành mạch thấy lớp giữa rất dày, nhiều elastin → đó là:",
+        options: [
+            { text: "Tĩnh mạch lớn", correct: false },
+            { text: "Động mạch cơ", correct: false },
+            { text: "Mao mạch", correct: false },
+            { text: "Động mạch chun", correct: true }
+        ]
+    },
+    {
+        question: "Quan sát phổi thấy các túi nhỏ ngăn bởi vách mỏng chứa mao mạch → đó là:",
+        options: [
+            { text: "Tiểu phế quản", correct: false },
+            { text: "Túi khí", correct: false },
+            { text: "Phế nang", correct: true },
+            { text: "Xoang khí quản", correct: false }
+        ]
+    },
+    {
+        question: "Một cấu trúc ống lót bởi biểu mô hình dù, khi căng dẹt → là:",
+        options: [
+            { text: "Ống góp", correct: false },
+            { text: "Niệu đạo", correct: false },
+            { text: "Ống lượn gần", correct: false },
+            { text: "Bể thận/niệu quản", correct: true }
+        ]
+    },
+    {
+        question: "Quan sát thấy nhiều dây thần kinh không myelin, xen giữa là mô liên kết → là:",
+        options: [
+            { text: "Thần kinh trung ương", correct: false },
+            { text: "Thần kinh ngoại biên", correct: true },
+            { text: "Hạch cảm giác", correct: false },
+            { text: "Đám rối Auerbach", correct: false }
+        ]
+    },
+    {
+        question: "Mô da quan sát thấy tuyến bã lớn, sợi collagen nhiều → đây là:",
+        options: [
+            { text: "Da dày", correct: false },
+            { text: "Da mỏng", correct: true },
+            { text: "Da lòng bàn tay", correct: false },
+            { text: "Da bệnh lý", correct: false }
+        ]
+    },
+    {
+        question: "Trong thận, lòng ống nhỏ, tế bào vuông thấp, vùng vỏ → là:",
+        options: [
+            { text: "Ống lượn gần", correct: false },
+            { text: "Tiểu cầu thận", correct: false },
+            { text: "Ống lượn xa", correct: true },
+            { text: "Ống góp", correct: false }
+        ]
+    },
+    {
+        question: "Mô sinh dục thấy nhiều tầng tế bào bao gồm tinh nguyên bào → là:",
+        options: [
+            { text: "Ống sinh tinh", correct: true },
+            { text: "Mào tinh", correct: false },
+            { text: "Ống dẫn tinh", correct: false },
+            { text: "Niệu đạo", correct: false }
+        ]
+    },
+    {
+        question: "Đường hô hấp thấy sụn C, tuyến nhầy, biểu mô giả tầng → xác định là:",
+        options: [
+            { text: "Phế quản trung gian", correct: false },
+            { text: "Tiểu phế quản", correct: false },
+            { text: "Phế nang", correct: false },
+            { text: "Khí quản", correct: true }
+        ]
+    },
+    {
+        question: "Mô liên kết thấy nhiều tế bào hình sao, chất căn bản nhiều → là:",
+        options: [
+            { text: "Nhầy", correct: true },
+            { text: "Sợi", correct: false },
+            { text: "Mỡ", correct: false },
+            { text: "Xơ", correct: false }
+        ]
+    },
+    {
+        question: "Viền bàn chải mất trong bệnh lý ống gần → giảm:",
+        options: [
+            { text: "Bài tiết nước", correct: false },
+            { text: "Hấp thu nước và ion", correct: true },
+            { text: "Bài tiết H⁺", correct: false },
+            { text: "Tạo erythropoietin", correct: false }
+        ]
+    },
+    {
+        question: "Khi phá huỷ lớp đáy hoàn toàn → da bị:",
+        options: [
+            { text: "Mất khả năng tái tạo biểu bì", correct: true },
+            { text: "Tăng sắc tố", correct: false },
+            { text: "Tạo mô hôi quá mức", correct: false },
+            { text: "Tăng collagen", correct: false }
+        ]
+    },
+    {
+        question: "Khi tổn thương tế bào Schwann ở ngoại biên, hậu quả trực tiếp:",
+        options: [
+            { text: "Giảm sức cơ", correct: true },
+            { text: "Ngừng sinh tinh", correct: false },
+            { text: "Xẹp phổi", correct: false },
+            { text: "Giảm nhịp tim", correct: false }
+        ]
+    },
+    {
+        question: "Nếu type II pneumocyte giảm mạnh → điều gì xảy ra?",
+        options: [
+            { text: "Tăng trao đổi khí", correct: false },
+            { text: "Giảm CO₂", correct: false },
+            { text: "Phế nang to hơn", correct: false },
+            { text: "Phế nang dễ xẹp", correct: true }
+        ]
+    },
+    {
+        question: "Tổn thương lớp áo giữa làm mạch máu dễ:",
+        options: [
+            { text: "Co lại", correct: false },
+            { text: "Phình mạch", correct: true },
+            { text: "Tắc mạch", correct: false },
+            { text: "Giảm áp lực", correct: false }
+        ]
+    },
+    {
+        question: "Viêm thận làm tổn thương podocyte → hậu quả:",
+        options: [
+            { text: "Tăng lọc mạnh", correct: false },
+            { text: "Không tiểu được", correct: false },
+            { text: "Protein niệu", correct: true },
+            { text: "Tăng hấp thu", correct: false }
+        ]
+    },
+    {
+        question: "Nếu da mất lớp lipid của tuyến bã → kết quả:",
+        options: [
+            { text: "Da khô và dễ kích ứng", correct: true },
+            { text: "Da tăng đàn hồi", correct: false },
+            { text: "Da dày hơn", correct: false },
+            { text: "Giảm tiết mồ hôi", correct: false }
+        ]
+    },
+    {
+        question: "Khi tuyến nhầy khí quản tăng hoạt động → dẫn đến:",
+        options: [
+            { text: "Giảm oxy máu", correct: false },
+            { text: "Tắc chất nhầy", correct: true },
+            { text: "Tăng sức co", correct: false },
+            { text: "Elastin", correct: false }
+        ]
+    },
+    {
+        question: "Phế quản bị thay bằng biểu mô lát tầng do kích thích khói → gọi là:",
+        options: [
+            { text: "Thoái hoá", correct: false },
+            { text: "Loạn sản", correct: false },
+            { text: "Chuyển sản", correct: true },
+            { text: "Tăng sản", correct: false }
+        ]
+    },
+    {
+        question: "Tổn thương myelin CNS nặng nhất ảnh hưởng:",
+        options: [
+            { text: "Tốc độ dẫn truyền", correct: true },
+            { text: "Trao đổi chất", correct: false },
+            { text: "Sinh sản", correct: false },
+            { text: "Hoạt động tuyến giáp", correct: false }
+        ]
+    },
+    {
+        question: "Một bệnh nhân bị tắc nghẽn đường dẫn khí nhỏ (COPD). Đánh giá hợp lý nhất:",
+        options: [
+            { text: "Giảm thể tích khí cặn (RV)", correct: false },
+            { text: "Tăng độ giãn nở phổi nhưng giảm hiệu quả trao đổi khí", correct: true },
+            { text: "Tăng thông khí phế nang", correct: false },
+            { text: "Giảm thể tích toàn phổi (TLC) đáng kể", correct: false }
+        ]
+    },
+    {
+        question: "Nếu nang lông bị xơ hóa → hậu quả:",
+        options: [
+            { text: "Lông mọc dài hơn", correct: false },
+            { text: "Tuyến bã tăng tiết", correct: false },
+            { text: "Da không sừng hóa", correct: false },
+            { text: "Lông không mọc lại", correct: true }
+        ]
+    },
+    {
+        question: "Tinh hoàn bị xơ hóa mô kẽ → điều gì giảm?",
+        options: [
+            { text: "Testosterone", correct: true },
+            { text: "LH", correct: false },
+            { text: "FSH", correct: false },
+            { text: "Surfactant", correct: false }
+        ]
+    },
+    {
+        question: "Quan sát tiêu bản: nhiều hàng nhân, tất cả tế bào chạm màng đáy, có lông chuyển → đó là:",
+        options: [
+            { text: "Biểu mô giả tầng có lông chuyển", correct: true },
+            { text: "Biểu mô trụ đơn", correct: false },
+            { text: "Biểu mô lát tầng", correct: false },
+            { text: "Biểu mô vuông", correct: false }
+        ]
+    },
+    {
+        question: "Tế bào hình đài tăng số lượng trong bệnh lý hô hấp mạn vì:",
+        options: [
+            { text: "Tăng hấp thu", correct: false },
+            { text: "Tăng tiết nhầy bảo vệ", correct: true },
+            { text: "Tăng phân bào", correct: false },
+            { text: "Tăng lưu lượng máu", correct: false }
+        ]
+    },
+    {
+        question: "Nếu tổn thương gân → loại collagen bị ảnh hưởng chủ yếu:",
+        options: [
+            { text: "Type II", correct: false },
+            { text: "Type III", correct: false },
+            { text: "Type I", correct: true },
+            { text: "Elastin", correct: false }
+        ]
+    },
+    {
+        question: "Phù mô mềm liên quan đến:",
+        options: [
+            { text: "Tăng collagen", correct: false },
+            { text: "Tăng proteoglycan giữ nước", correct: true },
+            { text: "Giảm nước mô", correct: false },
+            { text: "Giảm elastin", correct: false }
+        ]
+    },
+    {
+        question: "Nếu tế bào cơ tim bị hoại tử, vùng này được thay thế bởi:",
+        options: [
+            { text: "Cơ vân", correct: false },
+            { text: "Mô mỡ", correct: false },
+            { text: "Sợi collagen", correct: true },
+            { text: "Cơ trơn", correct: false }
+        ]
+    },
+    {
+        question: "Sự co cơ trơn chậm và kéo dài vì:",
+        options: [
+            { text: "Thiếu ATP", correct: false },
+            { text: "Filament mỏng không trượt", correct: false },
+            { text: "Tương tác actin–myosin bền vững", correct: true },
+            { text: "Nhiều ti thể", correct: false }
+        ]
+    },
+    {
+        question: "Một vết thương sâu tới lớp gai biểu bì sẽ hồi phục nhờ:",
+        options: [
+            { text: "Melanocyte", correct: false },
+            { text: "Tế bào lớp đáy", correct: true },
+            { text: "Tuyến mồ hôi", correct: false },
+            { text: "Tuyến bã", correct: false }
+        ]
+    },
+    {
+        question: "Rối loạn tuyến bã gây mụn vì:",
+        options: [
+            { text: "Thiếu melanin", correct: false },
+            { text: "Tăng tiết lipid bít lỗ chân lông", correct: true },
+            { text: "Giảm miễn dịch da", correct: false },
+            { text: "Giảm collagen", correct: false }
+        ]
+    },
+    {
+        question: "Tắc động mạch đàn hồi gây ảnh hưởng lớn vì:",
+        options: [
+            { text: "Thành mỏng", correct: false },
+            { text: "Chức năng tống máu thụ động giảm", correct: true },
+            { text: "Nhiều cơ trơn bị hủy", correct: false },
+            { text: "Không có màng đáy", correct: false }
+        ]
+    },
+    {
+        question: "Phân biệt động mạch và tĩnh mạch dựa vào đặc điểm:",
+        options: [
+            { text: "Độ đàn hồi của áo giữa", correct: true },
+            { text: "Độ dày lớp nội mô", correct: false },
+            { text: "Kích thước lòng mạch", correct: false },
+            { text: "Sự hiện diện của van", correct: false }
+        ]
+    },
+    {
+        question: "Hít nhiều khí độc gây tổn thương phế bào loại I → hậu quả:",
+        options: [
+            { text: "Giảm tiết surfactant", correct: false },
+            { text: "Giảm trao đổi khí", correct: true },
+            { text: "Giảm vận chuyển nhầy", correct: false },
+            { text: "Tăng đàn hồi phổi", correct: false }
+        ]
+    },
+    {
+        question: "Đường dẫn khí từ mũi đến phế nang tăng diện tích bề mặt chủ yếu nhờ:",
+        options: [
+            { text: "Sụn trong thành khí quản", correct: false },
+            { text: "Sự phân nhánh của tiểu phế quản", correct: true },
+            { text: "Lông chuyển dài", correct: false },
+            { text: "Lòng ống dẫn khí dài", correct: false }
+        ]
+    },
+    {
+        question: "Tổn thương ống góp thận ảnh hưởng trực tiếp đến:",
+        options: [
+            { text: "Hấp thu Na⁺ mạnh", correct: false },
+            { text: "Điều hòa nước dưới tác dụng của ADH", correct: true },
+            { text: "Bài tiết H⁺", correct: false },
+            { text: "Tạo erythropoietin", correct: false }
+        ]
+    },
+    {
+        question: "Tế bào Sertoli bị tổn thương dẫn đến:",
+        options: [
+            { text: "Giảm testosterone", correct: false },
+            { text: "Giảm nuôi dưỡng tinh trùng", correct: true },
+            { text: "Giảm phóng noãn", correct: false },
+            { text: "Giảm màng đáy", correct: false }
+        ]
+    },
+    {
+        question: "Biểu mô vòi trứng bị viêm làm giảm khả năng:",
+        options: [
+            { text: "Co bóp tử cung", correct: false },
+            { text: "Di chuyển trứng", correct: true },
+            { text: "Phóng noãn", correct: false },
+            { text: "Tạo nội mạc", correct: false }
+        ]
+    },
+    {
+        question: "Bao myelin làm tăng tốc độ dẫn truyền nhờ:",
+        options: [
+            { text: "Giảm đường kính sợi trục", correct: false },
+            { text: "Tăng mật độ synapse", correct: false },
+            { text: "Dẫn truyền nhảy cóc", correct: true },
+            { text: "Giảm nồng độ Na⁺", correct: false }
+        ]
+    },
+    {
+        question: "Tổn thương tế bào Schwann ảnh hưởng chủ yếu đến:",
+        options: [
+            { text: "Neuron vận động", correct: false },
+            { text: "Myelin ngoại biên", correct: true },
+            { text: "Synapse hóa học", correct: false },
+            { text: "Tủy sống", correct: false }
+        ]
+    },
+    {
+        question: "Nhận định biểu mô chuyển tiếp, tiêu chí quan trọng nhất:",
+        options: [
+            { text: "Lớp tế bào dày", correct: false },
+            { text: "Nhiều lông chuyển", correct: false },
+            { text: "Tế bào bề mặt hình vòm", correct: true },
+            { text: "Nhiều tuyến nhầy", correct: false }
+        ]
+    },
+    {
+        question: "Khí quản ít tế bào hình đài, nhiều tế bào đáy → phù hợp với:",
+        options: [
+            { text: "Viêm cấp", correct: false },
+            { text: "Tái tạo sau tổn thương", correct: true },
+            { text: "Hen phế quản", correct: false },
+            { text: "Dị dạng bẩm sinh", correct: false }
+        ]
+    },
+    {
+        question: "Phù mô xảy ra khi dịch ngoại bào tăng, cần kiểm tra:",
+        options: [
+            { text: "Collagen", correct: false },
+            { text: "Proteoglycan", correct: true },
+            { text: "Nguyên bào sợi", correct: false },
+            { text: "Elastin", correct: false }
+        ]
+    },
+    {
+        question: "Mô sẹo giàu collagen type I phản ánh:",
+        options: [
+            { text: "Sẹo mới", correct: false },
+            { text: "Sẹo trưởng thành", correct: true },
+            { text: "Viêm cấp", correct: false },
+            { text: "Phù nề", correct: false }
+        ]
+    },
+    {
+        question: "Mất vân ngang khi đánh giá bệnh cơ → nghĩ đến:",
+        options: [
+            { text: "Cơ tim bình thường", correct: false },
+            { text: "Cơ trơn", correct: true },
+            { text: "Thoái hóa cơ vân", correct: false },
+            { text: "Tăng glycogen", correct: false }
+        ]
+    },
+    {
+        question: "Bỏng độ II tổn thương lớp gai, hồi phục chủ yếu nhờ:",
+        options: [
+            { text: "Tuyến bã", correct: false },
+            { text: "Tế bào đáy và phần phụ da", correct: true },
+            { text: "Melanocyte", correct: false },
+            { text: "Sợi collagen", correct: false }
+        ]
+    },
+    {
+        question: "Viêm bao myelin gây giảm tốc độ dẫn truyền là bệnh:",
+        options: [
+            { text: "Viêm tủy xám", correct: false },
+            { text: "Bệnh lý sợi trục", correct: false },
+            { text: "Bệnh hủy myelin", correct: true },
+            { text: "Tổn thương synapse", correct: false }
+        ]
+    }
+
+];
+
+
+
+
+        // Biến lưu trữ trạng thái
+        let userAnswers = Array(questionsData.length).fill(null);
+        let answeredCount = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        // Hàm tạo câu hỏi
+        function createQuestions() {
+            const container = document.getElementById('questions-container');
+            
+            questionsData.forEach((questionData, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question';
+                questionElement.dataset.index = index;
+                
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = `Câu ${index + 1}:`;
+                
+                const questionText = document.createElement('div');
+                questionText.className = 'question-text';
+                questionText.textContent = questionData.question;
+                
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'options';
+                
+               shuffle(questionData.options); // RANDOM ĐÁP ÁN
+
+const letters = ['A', 'B', 'C', 'D'];
+
+questionData.options.forEach((option, optionIndex) => {
+
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.dataset.optionIndex = optionIndex;
+                    
+                    const optionLetter = document.createElement('div');
+                    optionLetter.className = 'option-letter';
+                    optionLetter.textContent = letters[optionIndex];
+                    
+                    const optionText = document.createElement('span');
+                    optionText.textContent = option.text;
+                    
+                    // Tạo indicator nhưng ẩn đi cho đến khi người dùng chọn
+                    const indicator = document.createElement('span');
+                    indicator.className = 'result-indicator';
+                    indicator.style.visibility = 'hidden';
+                    
+                    optionElement.appendChild(optionLetter);
+                    optionElement.appendChild(optionText);
+                    optionElement.appendChild(indicator);
+                    
+                    // Thêm sự kiện click
+                    optionElement.addEventListener('click', () => {
+                        selectOption(index, optionIndex);
+                    });
+                    
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                questionElement.appendChild(questionNumber);
+                questionElement.appendChild(questionText);
+                questionElement.appendChild(optionsContainer);
+                container.appendChild(questionElement);
+            });
+            
+            // Cập nhật tổng số câu hỏi
+            document.getElementById('total-questions').textContent = questionsData.length;
+            updateProgressBar();
+        }
+
+        // Hàm chọn đáp án
+        function selectOption(questionIndex, optionIndex) {
+            const questionElement = document.querySelector(`.question[data-index="${questionIndex}"]`);
+            const options = questionElement.querySelectorAll('.option');
+            const questionData = questionsData[questionIndex];
+            
+            // Kiểm tra xem câu hỏi này đã được trả lời chưa
+            const wasAnswered = userAnswers[questionIndex] !== null;
+            
+            // Xóa lớp selected từ tất cả các đáp án trong câu hỏi này
+            options.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Thêm lớp selected cho đáp án được chọn
+            options[optionIndex].classList.add('selected');
+            
+            // Hiển thị kết quả cho tất cả các đáp án trong câu hỏi này
+            options.forEach((option, idx) => {
+                const indicator = option.querySelector('.result-indicator');
+                const isCorrect = questionData.options[idx].correct;
+                
+                // Hiển thị indicator
+                indicator.style.visibility = 'visible';
+                
+                // Đặt nội dung và lớp cho indicator
+                if (isCorrect) {
+                    option.classList.add('correct');
+                    indicator.textContent = ' ✓';
+                } else if (idx === optionIndex) {
+                    option.classList.add('incorrect');
+                    indicator.textContent = ' ✗';
+                }
+                
+                // Nếu là đáp án đúng, hiển thị màu xanh
+                if (isCorrect) {
+                    option.classList.add('correct');
+                }
+            });
+            
+            // Lưu đáp án người dùng chọn
+            userAnswers[questionIndex] = optionIndex;
+            
+            // Cập nhật số lượng câu đã trả lời
+            if (!wasAnswered) {
+                answeredCount++;
+                
+                // Cập nhật số câu đúng/sai
+                if (questionData.options[optionIndex].correct) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+                
+                // Cập nhật thanh tiến độ và số liệu
+                updateProgressBar();
+            }
+        }
+
+        // Hàm cập nhật thanh tiến độ
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progress-fill');
+            const answeredCountElement = document.getElementById('answered-count');
+            const correctProgressElement = document.getElementById('correct-progress');
+            const incorrectProgressElement = document.getElementById('incorrect-progress');
+            
+            // Tính phần trăm
+            const percentage = (answeredCount / questionsData.length) * 100;
+            
+            // Cập nhật thanh tiến độ
+            progressFill.style.width = `${percentage}%`;
+            
+            // Cập nhật số liệu
+            answeredCountElement.textContent = answeredCount;
+            correctProgressElement.textContent = correctCount;
+            incorrectProgressElement.textContent = incorrectCount;
+        }
+
+        // Hàm hiển thị kết quả tổng
+        function showScore() {
+            const scoreContainer = document.getElementById('score-container');
+            const scoreElement = document.getElementById('score');
+            const correctCountElement = document.getElementById('correct-count');
+            const incorrectCountElement = document.getElementById('incorrect-count');
+            
+            scoreElement.textContent = `${correctCount}/${questionsData.length}`;
+            correctCountElement.textContent = correctCount;
+            incorrectCountElement.textContent = incorrectCount;
+            
+            scoreContainer.classList.add('show');
+            
+            // Cuộn đến phần kết quả
+            scoreContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Hàm làm lại bài
+        function resetQuiz() {
+            // Reset tất cả biến
+            userAnswers = Array(questionsData.length).fill(null);
+            answeredCount = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            
+            // Xóa tất cả các lớp và indicator
+            const questions = document.querySelectorAll('.question');
+            questions.forEach(question => {
+                const options = question.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.classList.remove('selected', 'correct', 'incorrect');
+                    
+                    const indicator = option.querySelector('.result-indicator');
+                    if (indicator) {
+                        indicator.style.visibility = 'hidden';
+                        indicator.textContent = '';
+                    }
+                });
+            });
+            
+            // Ẩn kết quả
+            const scoreContainer = document.getElementById('score-container');
+            scoreContainer.classList.remove('show');
+            
+            // Cập nhật thanh tiến độ
+            updateProgressBar();
+        }
+
+        // Khởi tạo bài kiểm tra
+       document.addEventListener('DOMContentLoaded', () => {
+    shuffle(questionsData);   // RANDOM THỨ TỰ CÂU HỎI
+    createQuestions();
+
+
+            
+            // Gán sự kiện cho nút xem kết quả
+            document.getElementById('show-score-btn').addEventListener('click', showScore);
+            
+            // Gán sự kiện cho nút làm lại
+            document.getElementById('reset-btn').addEventListener('click', resetQuiz);
+        });
+    </script>
+</body>
+</html>
