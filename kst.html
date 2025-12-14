@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chauhuynh0104</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .question-container {
+            margin-bottom: 25px;
+        }
+        
+        .question {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #eaeaea;
+            transition: all 0.3s;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .question-text {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .option {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .option:hover:not(.correct):not(.incorrect) {
+            background-color: #f0f0f0;
+        }
+        
+        .option.selected {
+            border-width: 2px;
+        }
+        
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .option-letter {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .correct .option-letter {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .incorrect .option-letter {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .result-indicator {
+            margin-left: auto;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .correct .result-indicator {
+            color: #28a745;
+        }
+        
+        .incorrect .result-indicator {
+            color: #dc3545;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        #reset-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #show-score-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        #show-score-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .score-container {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .score-container.show {
+            display: block;
+        }
+        
+        .score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .correct-count {
+            color: #28a745;
+        }
+        
+        .incorrect-count {
+            color: #e74c3c;
+        }
+        
+        .progress-bar-container {
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #28a745;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+   
+   
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span>Tiến độ: <span id="answered-count">0</span>/<span id="total-questions">0</span> câu</span>
+                <span>Đúng: <span id="correct-progress">0</span> | Sai: <span id="incorrect-progress">0</span></span>
+            </div>
+        </div>
+        
+        <div class="question-container" id="questions-container">
+            <!-- Các câu hỏi sẽ được thêm tự động bằng JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button id="show-score-btn">Xem kết quả</button>
+            <button id="reset-btn">Làm lại</button>
+        </div>
+        
+        <div class="score-container" id="score-container">
+            <h3>Kết quả của bạn:</h3>
+            <div class="score" id="score">0/80</div>
+            <p>Đúng: <span class="correct-count" id="correct-count">0</span> | 
+               Sai: <span class="incorrect-count" id="incorrect-count">0</span></p>
+        </div>
+    </div>
+
+    <script>
+	function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+       // Dữ liệu câu hỏi - chỉ lấy 80 câu đầu tiên
+        const questionsData = [
+    {
+        question: "Loại nhiễm khuẩn bệnh viện thường gặp là:",
+        options: [
+            { text: "Nhiễm khuẩn huyết, nhiễm khuẩn hô hấp dưới, nhiễm khuẩn tiết niệu, nhiễm khuẩn vết mổ", correct: true },
+            { text: "Nhiễm khuẩn huyết, nhiễm khuẩn tiêu hoá, nhiễm khuẩn tiết niệu, nhiễm khuẩn vết mổ", correct: false },
+            { text: "Nhiễm khuẩn huyết, nhiễm khuẩn da niêm mạc, nhiễm khuẩn tiết niệu, nhiễm khuẩn vết mổ", correct: false },
+            { text: "Nhiễm khuẩn huyết, nhiễm khuẩn hô hấp dưới, nhiễm khuẩn do tiếp xúc, nhiễm khuẩn vết mổ", correct: false }
+        ]
+    },
+    {
+        question: "Hệ vi khuẩn trên da bàn tay gồm các hệ vi khuẩn nào sau đây:",
+        options: [
+            { text: "Vi khuẩn vãng lai", correct: false },
+            { text: "Vi khuẩn định cư", correct: false },
+            { text: "Vi khuẩn vãng lai và vi khuẩn định cư", correct: true },
+            { text: "Vi khuẩn vãng lai hoặc vi khuẩn định cư", correct: false }
+        ]
+    },
+    {
+        question: "Hướng dẫn nào dưới đây đúng khi thực hành chăm sóc người bệnh có đặt thông tiểu:",
+        options: [
+            { text: "Sử dụng kháng sinh toàn thân để phòng ngừa nhiễm khuẩn tiết niệu", correct: false },
+            { text: "Thay thông tiểu định kì mỗi 7 ngày", correct: false },
+            { text: "Đặt túi dẫn lưu nước tiểu luôn thấp hơn so với bàng quang", correct: true },
+            { text: "Làm sạch vùng xung quanh niệu đạo bằng dung dịch khử khuẩn", correct: false }
+        ]
+    },
+    {
+        question: "Phòng ngừa chuẩn được áp dụng cho các nhóm người bệnh nào?",
+        options: [
+            { text: "Chỉ những người bệnh vào viện để phẫu thuật", correct: false },
+            { text: "Những người bệnh HIV/AIDS hoặc viêm gan B", correct: false },
+            { text: "Mọi người bệnh, không phụ thuộc vào người đó có mắc bệnh nhiễm trùng hay không", correct: false },
+            { text: "Người bệnh vào viện để phẫu thuật, người bệnh HIV/AIDS và viêm gan B", correct: false }
+        ]
+    },
+    {
+        question: "Thời điểm nào sau đây KHÔNG nằm trong “5 thời điểm rửa tay” khi chăm sóc bệnh nhân?",
+        options: [
+            { text: "Trước khi tiếp xúc bệnh nhân", correct: false },
+            { text: "Sau khi tiếp xúc với dịch tiết bệnh nhân", correct: false },
+            { text: "Trước khi tiếp xúc vật dụng xung quanh bệnh nhân", correct: true },
+            { text: "Trước khi thực hiện các thủ thuật chăm sóc vô khuẩn", correct: false }
+        ]
+    },
+    {
+        question: "Thời gian hiệu quả nhất để uống thuốc dự phòng sau phơi nhiễm HIV?",
+        options: [
+            { text: "Trong vòng 2 giờ sau khi bị phơi nhiễm.", correct: false },
+            { text: "Không quá 72 giờ kể từ sau phơi nhiễm và càng sớm càng tốt.", correct: true },
+            { text: "Sau 1 tuần.", correct: false },
+            { text: "Không cần quan tâm đến thời gian.", correct: false }
+        ]
+    },
+    {
+        question: "Phân loại dụng cụ theo Spaulding bao gồm bao nhiêu nhóm?",
+        options: [
+            { text: "04 nhóm: rất thiết yếu, thiết yếu, bán thiết yếu, không thiết yếu", correct: false },
+            { text: "03 nhóm: thiết yếu, bán thiết yếu, không thiết yếu", correct: true },
+            { text: "03 nhóm: thiết yếu, bán thiết yếu, thiết yếu vừa", correct: false },
+            { text: "02 nhóm: thiết yếu, bán thiết yếu", correct: false }
+        ]
+    },
+    {
+        question: "Loại khử khuẩn/tiệt khuẩn nào sau đây diệt được bào tử?",
+        options: [
+            { text: "Khử khuẩn mức độ trung bình", correct: false },
+            { text: "Khử khuẩn mức độ cao", correct: false },
+            { text: "Tiệt khuẩn nhiệt độ cao/thấp", correct: true },
+            { text: "Khử khuẩn mức độ thấp", correct: false }
+        ]
+    },
+    {
+        question: "Dụng cụ hỗ trợ hô hấp phải được tái xử lý tối thiểu bằng phương pháp nào?",
+        options: [
+            { text: "Khử khuẩn mức độ trung bình", correct: false },
+            { text: "Khử khuẩn mức độ cao", correct: true },
+            { text: "Khử khuẩn mức độ thấp", correct: false },
+            { text: "Làm sạch", correct: false }
+        ]
+    },
+    {
+        question: "Tiêu chuẩn vật liệu đóng gói?",
+        options: [
+            { text: "Cho phép chất tiệt khuẩn đi vào, không chứa thành phần độc hại, vi sinh vật xâm nhập, bảo vệ tính toàn vẹn dụng cụ, đồ vải", correct: false },
+            { text: "Cho phép chất tiệt khuẩn đi vào, không chứa thành phần độc hại, là rào cản vi sinh vật xâm nhập.", correct: false },
+            { text: "Cho phép chất tiệt khuẩn đi vào, không chứa thành phần độc hại, là rào cản vi sinh vật xâm nhập, bảo vệ tính toàn vẹn dụng cụ, đồ vải.", correct: true },
+            { text: "Không cho phép chất tiệt khuẩn đi vào, không chứa thành phần độc hại, là rào cản vi sinh vật xâm nhập, bảo vệ tính toàn vẹn dụng cụ, đồ vải.", correct: false }
+        ]
+    },
+    {
+        question: "Chất thải y tế là?",
+        options: [
+            { text: "Chất thải phát sinh từ hoạt động của các cơ sở y tế, bao gồm chất thải y tế nguy hại, chất thải rắn thông thường, khí thải, chất thải lỏng không nguy hại và nước thải y tế.", correct: true },
+            { text: "Chất thải phát sinh trong quá trình hoạt động của các cơ sở y tế, bao gồm chất thải y tế nguy hại, chất thải rắn thông thường, khí thải và nước thải y tế.", correct: false },
+            { text: "Chất thải phát sinh trong quá trình hoạt động của các cơ sở y tế, bao gồm chất thải y tế thông thường và nước thải y tế.", correct: false },
+            { text: "Chất thải phát sinh trong quá trình hoạt động của các cơ sở y tế, bao gồm chất thải y tế nguy hại, chất thải lỏng không nguy hại và chất thải y tế thông thường.", correct: false }
+        ]
+    },
+    {
+        question: "Kháng sinh dự phòng dùng trong phẫu thuật cần phải?",
+        options: [
+            { text: "Thực hiện trong vòng 180 phút trước mổ, chú ý thời gian bán huỷ của KS sử dụng", correct: false },
+            { text: "Thực hiện 30 phút – 60 phút trước khi rạch da (không được quá 120 phút, tùy thuộc vào thời gian bán hủy, dược lý của từng loại kháng sinh sử dụng)", correct: true },
+            { text: "Thực hiện ngay tại lúc rạch da", correct: false },
+            { text: "Thực hiện Trong vòng 120 phút trước mổ", correct: false }
+        ]
+    },
+    {
+        question: "Đường lây nhiễm thường gặp liên quan đến đặt catheter mạch máu?",
+        options: [
+            { text: "Kỹ thuật đặt; Kỹ thuật sát khuẩn nơi đặt catheter; Loại catheter sử dụng", correct: true },
+            { text: "Kỹ thuật sát khuẩn nơi đặt catheter", correct: false },
+            { text: "Loại catheter sử dụng", correct: false },
+            { text: "Nhân viên vệ sinh tay không đúng", correct: false }
+        ]
+    },
+    {
+        question: "Kháng sinh dự phòng chỉ áp dụng cho phẫu thuật?",
+        options: [
+            { text: "Sạch", correct: false },
+            { text: "Sạch nhiễm", correct: false },
+            { text: "Nhiễm", correct: false },
+            { text: "Sạch; sạch nhiễm", correct: true }
+        ]
+    },
+    {
+        question: "Các biện pháp sau được áp dụng để dự phòng nhiễm khuẩn vết mổ sau phẫu thuật, trừ?",
+        options: [
+            { text: "Băng vết mổ bằng gạc vô khuẩn liên tục từ 24-48 giờ", correct: false },
+            { text: "Thay băng theo đúng quy trình vô khuẩn", correct: false },
+            { text: "Tiếp tục sử dụng kháng sinh dự phòng", correct: true },
+            { text: "Chăm sóc chân ống dẫn lưu đúng kỹ thuật và rút dẫn lưu sớm nhất có thể.", correct: false }
+        ]
+    },
+    {
+        question: "Chuẩn bị người bệnh trước mổ tốt cần phải thực hiện?",
+        options: [
+            { text: "Điều trị người bệnh bị nhiễm khuẩn trước mổ", correct: false },
+            { text: "Hướng dẫn bệnh nhân vệ sinh sạch trước khi phẫu thuật", correct: false },
+            { text: "Cắt lông khi cần thiết", correct: false },
+            { text: "Điều trị người bệnh bị nhiễm khuẩn trước mổ; Tắm bệnh nhân vào đêm và sáng ngày hôm sau trước mổ; Cắt lông khi cần thiết", correct: true }
+        ]
+    },
+    {
+        question: "Nhằm phòng ngừa viêm phổi bệnh viện, nếu không có chống chỉ định, bệnh nhân nên được nằm ở tư thế?",
+        options: [
+            { text: "Nằm ngửa", correct: false },
+            { text: "Nằm nghiêng", correct: false },
+            { text: "Nằm nghiêng, đầu cao 30-45 độ", correct: true },
+            { text: "Đầu cao 10 độ", correct: false }
+        ]
+    },
+    {
+        question: "Các đường vào của vi khuẩn gây Viêm phổi bệnh viện có thể gặp là từ?",
+        options: [
+            { text: "Hít chất tiết từ vùng hầu họng; Vi khuẩn trực tiếp đi vào đường hô hấp dưới qua các dụng cụ hỗ trợ hô hấp bị nhiễm khuẩn, hoặc bàn tay nhân viên y tế; Vi khuẩn qua niêm mạc ruột vào hạch bạch huyết sau đó đi vào phổi", correct: true },
+            { text: "Hít chất tiết từ vùng hầu họng", correct: false },
+            { text: "Nhiễm khuẩn tiêu điểm từ đường tiêu hoá", correct: false },
+            { text: "Dụng cụ xử lý không đúng quy trình", correct: false }
+        ]
+    },
+    {
+        question: "Để đánh giá tần suất phải vệ sinh môi trường bệnh viện cần dựa vào?",
+        options: [
+            { text: "Mức độ nguy cơ", correct: false },
+            { text: "Tần suất tiếp xúc", correct: false },
+            { text: "Mức độ nhạy cảm", correct: false },
+            { text: "Mức độ nguy cơ; Tần suất tiếp xúc", correct: true }
+        ]
+    },
+    {
+        question: "Các đường lây truyền tác nhân gây bệnh chính trong bệnh viện?",
+        options: [
+            { text: "Đường không khí và tiếp xúc", correct: false },
+            { text: "Đường tiếp xúc trực tiếp và gián tiếp", correct: false },
+            { text: "Đường giọt bắn", correct: false },
+            { text: "Đường không khí; Đường tiếp xúc; Đường giọt bắn", correct: true }
+        ]
+    },
+    {
+        question: "Biện pháp nào sau đây KHÔNG nằm trong nội dung của phòng ngừa chuẩn?",
+        options: [
+            { text: "Vệ sinh tay", correct: false },
+            { text: "Sử dụng đúng phương tiện phòng hộ cá nhân", correct: false },
+            { text: "Phòng ngừa tai nạn do vật sắc nhọn đâm", correct: false },
+            { text: "Sử dụng kháng sinh dự phòng lây nhiễm", correct: true }
+        ]
+    },
+    {
+        question: "Khẩu trang có hiệu lực lọc cao cần được nhân viên y tế sử dụng?",
+        options: [
+            { text: "Trong khi nội soi phế quản", correct: false },
+            { text: "Trong khi nội soi phế quản và trong khi lấy bệnh phẩm đờm", correct: false },
+            { text: "Trong khi nội soi phế quản, trong khi lấy bệnh phẩm đờm các bệnh có khả năng lây truyền qua đường không khí và trong buồng dự phòng lây truyền theo đường không khí", correct: true },
+            { text: "Trong các phòng xét nghiệm", correct: false }
+        ]
+    },
+    {
+        question: "Kim tiêm đã sử dụng được phân loại trong nhóm?",
+        options: [
+            { text: "Chất thải nguy hại lây nhiễm sắc nhọn", correct: true },
+            { text: "Chất thải lây nhiễm không sắc nhọn", correct: false },
+            { text: "Chất thải sắc nhọn", correct: false },
+            { text: "Chất thải lây nhiễm", correct: false }
+        ]
+    },
+    {
+        question: "Dụng cụ sau khi sử dụng cần phải?",
+        options: [
+            { text: "Xử lý ban đầu tại các khoa trước khi gửi Đơn vị Tiệt khuẩn Trung tâm để xử lý tiếp tục", correct: true },
+            { text: "Xử lý ban đầu tại khoa là đã đủ cho các dụng cụ thiết yếu", correct: false },
+            { text: "Bỏ dụng cụ vào trong dung dịch khử khuẩn, chuyển xuống đơn vị Đơn vị Tiệt khuẩn Trung tâm", correct: false },
+            { text: "Không cần xử lý tại khoa, gửi ngay xuống Đơn vị Tiệt khuẩn Trung tâm xử lý", correct: false }
+        ]
+    },
+    {
+        question: "Phòng ngừa chuẩn được áp dụng cho các nhóm người bệnh nào?",
+        options: [
+            { text: "Chỉ những người bệnh vào viện để phẫu thuật", correct: false },
+            { text: "Những người bệnh HIV/AIDS hoặc viêm gan B", correct: false },
+            { text: "Mọi người bệnh, không phụ thuộc vào người đó có mắc bệnh nhiễm trùng hay không", correct: true },
+            { text: "Người bệnh vào viện để phẫu thuật, người bệnh HIV/AIDS và viêm gan B", correct: false }
+        ]
+    },
+    {
+        question: "Đường lây truyền chính của vi sinh vật gây nhiễm khuẩn bệnh viện trong các cơ sở y tế là?",
+        options: [
+            { text: "Bàn tay nhân viên y tế ô nhiễm", correct: true },
+            { text: "Thông khí không đạt tiêu chuẩn", correct: false },
+            { text: "Người bệnh phơi nhiễm với các bề mặt ô nhiễm trong buồng bệnh", correct: false },
+            { text: "Sử dụng thiết bị xâm nhập ô nhiễm cho người bệnh", correct: false }
+        ]
+    },
+    {
+        question: "Khi ho, hắt hơi, động tác được khuyến cáo để phòng ngừa lây nhiễm là?",
+        options: [
+            { text: "Che mũi miệng bằng khăn giấy hoặc khuỷu tay, rửa tay ngay sau đó", correct: true },
+            { text: "Che mũi miệng bằng bàn tay và rửa tay ngay sau đó", correct: false },
+            { text: "Che mũi miệng bằng khăn giấy hoặc bàn tay, không cần rửa tay", correct: false },
+            { text: "Che mũi miệng bằng khăn giấy hoặc khuỷu tay, không cần rửa tay", correct: false }
+        ]
+    },
+    {
+        question: "Thời gian để sát khuẩn tay tối thiểu với cồn theo khuyến cáo của BYT?",
+        options: [
+            { text: "10 – 15 giây", correct: true },
+            { text: "15 - 20 giây", correct: false },
+            { text: "30 – 40 giây", correct: false },
+            { text: "50 – 60 giây", correct: false }
+        ]
+    },
+    {
+        question: "Biện pháp quan trọng nhất để phòng ngừa nhiễm khuẩn do tiếp xúc là?",
+        options: [
+            { text: "Thay găng và rửa tay mỗi khi đụng chạm vào người bệnh hoặc đồ vật trong buồng cách ly", correct: true },
+            { text: "Đeo khẩu trang khi vào buồng cách ly", correct: false },
+            { text: "Nghiêm cấm người bệnh không ra khỏi phòng cách ly", correct: false },
+            { text: "Người bệnh ra khỏi phòng cách ly phải đeo khẩu trang", correct: false }
+        ]
+    },
+    {
+        question: "Thời gian rửa tay tối thiểu với xà phòng và nước?",
+        options: [
+            { text: "10 – 15 giây", correct: false },
+            { text: "30 – 40 giây", correct: true },
+            { text: "40 – 50 giây", correct: false },
+            { text: "50 – 60 giây", correct: false }
+        ]
+    },
+    {
+        question: "Câu nào sau đây không đúng khi thực hành vệ sinh tay?",
+        options: [
+            { text: "Trước khi khám bệnh, làm thủ thuật.", correct: false },
+            { text: "Sau khi khám bệnh, làm thủ thuật", correct: false },
+            { text: "Sau bất kỳ tình huống nào mà tay có thể bị nhiễm bẩn", correct: false },
+            { text: "Đi găng vô khuẩn thì không cần rửa tay trước khi làm thủ thuật", correct: true }
+        ]
+    },
+    {
+        question: "Thời điểm nào sau đây KHÔNG nằm trong “5 thời điểm rửa tay” khi chăm sóc bệnh nhân?",
+        options: [
+            { text: "Trước khi tiếp xúc bệnh nhân", correct: false },
+            { text: "Sau khi tiếp xúc với dịch tiết bệnh nhân", correct: false },
+            { text: "Trước khi tiếp xúc vật dụng xung quanh bệnh nhân", correct: true },
+            { text: "Trước khi thực hiện các thủ thuật chăm sóc vô khuẩn", correct: false }
+        ]
+    },
+    {
+        question: "Chất thải lây nhiễm bao gồm?",
+        options: [
+            { text: "Chất thải lây nhiễm sắc nhọn", correct: false },
+            { text: "Chất thải lây nhiễm không sắc nhọn", correct: false },
+            { text: "Chất thải giải phẫu", correct: false },
+            { text: "Chất thải lây nhiễm sắc nhọn; Chất thải lây nhiễm không sắc nhọn; Chất thải có nguy cơ lây nhiễm cao; Chất thải giải phẫu", correct: true }
+        ]
+    },
+    {
+        question: "Sau khi xảy ra phơi nhiễm với máu do kim đâm, người bị phơi nhiễm không nên thực hiện biện pháp nào sau đây để xử lý vết thương tại chỗ?",
+        options: [
+            { text: "Rửa ngay vết thương dưới vòi nước.", correct: false },
+            { text: "Để vết thương tự chảy máu trong một thời gian ngắn,", correct: false },
+            { text: "Nặn bóp vết thương cho máu chảy ra", correct: true },
+            { text: "Rửa kỹ bằng xà phòng và nước sạch", correct: false }
+        ]
+    },
+    {
+        question: "Khi bị bắn máu vào mắt nhân viên y tế cần phải tránh?",
+        options: [
+            { text: "Rửa mắt bằng nước muối NaCl 0,9%", correct: false },
+            { text: "Dùng vòi rửa mắt khẩn cấp nếu có", correct: false },
+            { text: "Dụi mắt", correct: true },
+            { text: "Xả nước nhẹ nhưng thật kỹ dưới dòng nước chảy", correct: false }
+        ]
+    },
+    {
+        question: "Chất thải y tế nguy hại và chất thải y tế thông thường được phân loại ở đâu?",
+        options: [
+            { text: "Tại các khoa, phòng", correct: false },
+            { text: "Tại nơi phát sinh và tại thời điểm phát sinh", correct: true },
+            { text: "Tại nơi lưu giữ tạm thời", correct: false },
+            { text: "Tại khu vực lưu giữ chất thải", correct: false }
+        ]
+    },
+    {
+        question: "Các nhiễm khuẩn bệnh viện thường gặp là?",
+        options: [
+            { text: "Nhiễm khuẩn phổi; nhiễm khuẩn da mô mềm", correct: false },
+            { text: "Nhiễm khuẩn huyết", correct: false },
+            { text: "Nhiễm khuẩn tiết niệu; Nhiễm khuẩn vết mổ", correct: false },
+            { text: "Nhiễm khuẩn phổi; Nhiễm khuẩn huyết; Nhiễm khuẩn tiết niệu; Nhiễm khuẩn vết mổ", correct: true }
+        ]
+    },
+    {
+        question: "Trong quy chế quản lý chất thải ytế, hành vi nào dưới đây bị nghiêm cấm?",
+        options: [
+            { text: "Phân loại chất thải không đúng theo quy định, túi thùng đựng chất thải không đúng quy định", correct: false },
+            { text: "Xử lý và tiêu hủy chất thải y tế không đúng quy trình kỹ thuật", correct: false },
+            { text: "Tái chế chất thải y tế nguy hại", correct: false },
+            { text: "Thải các chất thải y tế nguy hại chưa được xử lý ra môi trường; Xử lý và tiêu hủy chất thải y tế không đúng quy trình kỹ thuật; Tái chế chất thải y tế nguy hại", correct: true }
+        ]
+    },
+    {
+        question: "Quản lý chất thải là quá trình",
+        options: [
+            { text: "Giảm thiểu, Phân định, Phân loại, thu gom, lưu trữ, vận chuyển, tái chế, xử lý chất thải và giám sát quá trình thực hiện.", correct: false },
+            { text: "Giảm thiểu, Phân loại, thu gom, vận chuyển xử lý chất thải và giám sát quá trình thực hiện", correct: false },
+            { text: "Giảm thiểu, thu gom, lưu trữ, vận chuyển xử lý chất thải và giám sát quá trình thực hiện.", correct: false },
+            { text: "Giảm thiểu, thu gom, lưu trữ, xử lý chất thải và giám sát quá trình thực hiện", correct: false }
+        ]
+    },
+    {
+        question: "Nhiệt kế thủy ngân đã bị vỡ được thu gom vào thùng hoặc túi màu gì?",
+        options: [
+            { text: "Màu xanh", correct: false },
+            { text: "Màu vàng", correct: true },
+            { text: "Màu đen", correct: false },
+            { text: "Màu trắng", correct: false }
+        ]
+    },
+    {
+        question: "Vệ sinh hô hấp được yêu cầu thực hiện?",
+        options: [
+            { text: "Chỉ trong các vụ dịch SARS hoặc cúm", correct: false },
+            { text: "Chỉ trong các cơ sở có người bệnh lao kháng thuốc", correct: false },
+            { text: "Chỉ ở buồng chờ khám của các cở sở y tế", correct: false },
+            { text: "Cho bất kỳ người nào đang có ho và hắt hơi", correct: true }
+        ]
+    },
+    {
+        question: "Khi ho, hắt hơi, động tác nào sau đây được khuyến cáo để phòng ngừa lây nhiễm?",
+        options: [
+            { text: "Che mũi miệng bằng khăn giấy hoặc khuỷu tay, rửa tay ngay sau đó", correct: true },
+            { text: "Che mũi miệng bằng khăn giấy hoặc bàn tay, rửa tay ngay sau đó", correct: false },
+            { text: "Che mũi miệng bằng khăn giấy, không cần rửa tay", correct: false },
+            { text: "Không bắt buộc phải che khi ho, hắt hơi.", correct: false }
+        ]
+    },
+    {
+        question: "Biện pháp quan trọng để phòng ngừa tổn thương do kim tiêm đâm là?",
+        options: [
+            { text: "Luôn đóng lại nắp kim tiêm cẩn thận trước khi bỏ vào thùng đựng vật sắc nhọn", correct: false },
+            { text: "Dùng pince tháo kim tiêm khỏi bơm tiêm rồi bỏ vào thùng đựng vật sắc nhọn", correct: false },
+            { text: "Bỏ ngay kim tiêm vào thùng đựng vật sắc nhọn", correct: true },
+            { text: "Bẻ cong đầu kim tiêm.", correct: false }
+        ]
+    },
+    {
+        question: "Biện pháp quan trọng nhất để phòng ngừa lây truyền qua đường giọt bắn là?",
+        options: [
+            { text: "Phòng cách ly có xử lý thông khí thích hợp hoặc thông khí tốt", correct: false },
+            { text: "Giữ bệnh nhân cách nhau tối thiểu một mét", correct: true },
+            { text: "Mang áo choáng, bao giày, găng tay trước khi vào phòng và tháo ngay ra trước khi ra khỏi phòng, rửa tay", correct: false },
+            { text: "Mang găng tay trước khi vào phòng và tháo ngay ra trước khi ra khỏi phòng, rửa tay", correct: false }
+        ]
+    },
+    {
+        question: "Biện pháp quan trọng nhất để phòng ngừa lây truyền qua đường tiếp xúc là?",
+        options: [
+            { text: "Phòng cách ly có xử lý thông khí thích hợp hoặc thông khí tốt", correct: false },
+            { text: "Giữ bệnh nhân cách nhau tối thiểu một mét", correct: false },
+            { text: "Vệ sinh tay đúng 5 thời điểm", correct: true },
+            { text: "Giữ bệnh nhân cách nhau tối thiểu một mét; thông khí tốt", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân bị bạch hầu áp dụng biện pháp cách ly nào?",
+        options: [
+            { text: "Phòng ngừa chuẩn", correct: false },
+            { text: "Phòng ngừa chuẩn và phòng ngừa qua đường không khí", correct: false },
+            { text: "Phòng ngừa chuẩn và phòng ngừa qua đường tiếp xúc", correct: false },
+            { text: "Phòng ngừa chuẩn và phòng ngừa qua đường giọt bắn", correct: true }
+        ]
+    },
+    {
+        question: "Bệnh nhân bị viêm phổi bệnh viện do nhiễm vi khuẩn đa kháng đang thở máy áp dụng biện pháp cách ly nào?",
+        options: [
+            { text: "Phòng ngừa chuẩn", correct: false },
+            { text: "Phòng ngừa chuẩn và phòng ngừa qua đường không khí", correct: false },
+            { text: "Phòng ngừa chuẩn và phòng ngừa qua đường tiếp xúc", correct: true },
+            { text: "Phòng ngừa chuẩn và phòng ngừa qua đường giọt bắn", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân bị HIV/AIDS áp dụng biện pháp cách ly nào?",
+        options: [
+            { text: "Phòng ngừa chuẩn", correct: true },
+            { text: "Phòng ngừa chuẩn và phòng ngừa qua đường không khí", correct: false },
+            { text: "Phòng ngừa chuẩn và phòng ngừa qua đường tiếp xúc", correct: false },
+            { text: "Phòng ngừa chuẩn và phòng ngừa qua đường giọt bắn", correct: false }
+        ]
+    },
+    {
+        question: "Điều quan trọng nhất cần chú ý khi rửa tay thường quy bằng nước và xà phòng là?",
+        options: [
+            { text: "Tráng tay thường xuyên", correct: false },
+            { text: "Chà bàn tay đủ 6 bước, mỗi bước chà 5 lần.", correct: true },
+            { text: "Làm sạch cả cẳng tay và khuỷu tay", correct: false },
+            { text: "Rửa tay bằng nước nóng", correct: false }
+        ]
+    },
+    {
+        question: "Lượng hóa chất vệ sinh tay cần thiết cho 1 lần sử dụng là?",
+        options: [
+            { text: "1 – 2 ml", correct: false },
+            { text: "3 – 5 ml", correct: true },
+            { text: "6 – 10 ml", correct: false },
+            { text: "≥ 10 ml", correct: false }
+        ]
+    },
+    {
+        question: "Chỉ định sử dụng găng ở tình huống nào là đúng?",
+        options: [
+            { text: "Trước khi tiếp xúc với người bệnh", correct: false },
+            { text: "Sau khi tiếp xúc với người bệnh", correct: false },
+            { text: "Khi có tiếp xúc với máu/dịch cơ thể của người bệnh", correct: true },
+            { text: "Cả 3 trường hợp trên", correct: false }
+        ]
+    },
+    {
+        question: "Hành động nào dưới đây không được làm?",
+        options: [
+            { text: "Mang găng khi chăm sóc NB trong buồng cách ly", correct: false },
+            { text: "Sát khuẩn găng trước khi thực hành trên NB", correct: true },
+            { text: "Mang găng khi đặt dẫn lưu nước tiểu", correct: false },
+            { text: "Mang găng khi thay băng, truyền dịch.", correct: false }
+        ]
+    },
+    {
+        question: "Khi nào thì không cần mang găng vô khuẩn?",
+        options: [
+            { text: "Khi thực hiện phẫu thuật", correct: false },
+            { text: "Chăm sóc trẻ sơ sinh non tháng", correct: false },
+            { text: "Khi thực hành thủ thuật chọc hút, sinh thiết", correct: false },
+            { text: "Khi khám bệnh thông thường", correct: true }
+        ]
+    },
+    {
+        question: "Điều nào sau đây là không đúng?",
+        options: [
+            { text: "Mang găng thay thế được rửa tay", correct: true },
+            { text: "Rửa tay trước khi mang găng là thực hành bắt buộc.", correct: false },
+            { text: "Thải bỏ găng sau sử dụng vào thùng thu gom chất thải lây nhiễm.", correct: false },
+            { text: "Khi mang và tháo găng không được để tay chạm vào mặt", correct: false }
+        ]
+    },
+    {
+        question: "Khẩu trang N95 bắt buộc dùng trong tình huống nào?",
+        options: [
+            { text: "Khi tiêm bắp, thử phản ứng thuốc, truyền dịch", correct: false },
+            { text: "Khi nội soi phế quản người bệnh lao phổi BK (+)", correct: true },
+            { text: "Khi làm việc ở khu vực đông người", correct: false },
+            { text: "Khi có nguy cơ tiếp xúc với máu dịch của người bệnh.", correct: false }
+        ]
+    },
+    {
+        question: "Khẩu trang ngoại khoa có tác dụng gì?",
+        options: [
+            { text: "Ngăn cản các giọt bắn có kích thước >5 micromet xâm nhập vào niêm mạc mũi, miệng.", correct: true },
+            { text: "Ngăn cản được vi khuẩn xâm nhập vào cơ thể.", correct: false },
+            { text: "Ngăn cản các giọt hô hấp có kích thước < 5 micromet xâm nhập vào cơ thể.", correct: false },
+            { text: "Không ngăn cản virus, vi khuẩn xâm nhập vào cơ thể.", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích mang khẩu trang ngoại khoa là gì?",
+        options: [
+            { text: "Ngăn chặn tác nhân lây truyền qua đường không khí", correct: false },
+            { text: "Ngăn chặn tác nhân lây truyền qua đường giọt bắn.", correct: true },
+            { text: "Không ngăn chặn tác nhân lây truyền qua đường giọt bắn.", correct: false },
+            { text: "Ngăn chặn tác nhân lây truyền qua đường tiếp xúc và đường hô hấp.", correct: false }
+        ]
+    },
+    {
+        question: "Thay găng khi nào là không đúng chỉ định?",
+        options: [
+            { text: "Ngay sau khi chăm sóc người bệnh", correct: false },
+            { text: "Chuyển từ vùng sạch sang vùng bẩn trên cùng NB", correct: true },
+            { text: "Khi nghi ngờ găng thủng hoặc rách", correct: false },
+            { text: "Trước khi chuyển sang chăm sóc người bệnh khác", correct: false }
+        ]
+    },
+    {
+        question: "Dụng cụ nội soi dạ dày cần áp dụng phương pháp xử lý nào?",
+        options: [
+            { text: "Làm sạch, khử khuẩn thông thường", correct: false },
+            { text: "Khử khuẩn mức độ cao hoặc tiệt khuẩn", correct: true },
+            { text: "Tiệt khuẩn", correct: false },
+            { text: "Khử khuẩn mức độ cao", correct: false }
+        ]
+    },
+    {
+        question: "Dụng cụ phẫu thuật cần áp dụng phương pháp xử lý nào?",
+        options: [
+            { text: "Làm sạch, khử khuẩn thông thường", correct: false },
+            { text: "Khử khuẩn mức độ cao hoặc tiệt khuẩn", correct: false },
+            { text: "Tiệt khuẩn", correct: true },
+            { text: "Khử khuẩn mức độ cao", correct: false }
+        ]
+    },
+    {
+        question: "Sắp xếp NB trong khoa cần dựa vào yếu tố nào?",
+        options: [
+            { text: "Dựa vào nguy cơ lây truyền bệnh", correct: false },
+            { text: "Dựa vào đường lây truyền bệnh, nguy cơ lây truyền bệnh và khả năng mắc NKBV", correct: true },
+            { text: "Chỉ cần quan tâm đến mức độ nguy kịch của người bệnh", correct: false },
+            { text: "Tùy vào điều kiện giường bệnh của khoa", correct: false }
+        ]
+    },
+    {
+        question: "Con đường lan truyền vi khuẩn kháng kháng sinh từ người bệnh này sang người bệnh khác trong cơ sở y tế thường gặp nhất là:",
+        options: [
+            { text: "Lan truyền qua không khí do người bệnh hắt hơi hoặc ho", correct: false },
+            { text: "Người bệnh tiếp xúc với dụng cụ y tế bị nhiễm", correct: false },
+            { text: "Lan truyền qua bàn tay của nhân viên y tế", correct: true },
+            { text: "Lan truyền qua bàn tay bị nhiễm của nhân viên y tế", correct: false }
+        ]
+    },
+    {
+        question: "Câu nào dưới đây thể hiện đúng nhất qui trình rửa tay ngoại khoa?",
+        options: [
+            { text: "Làm ướt bàn tay, chà bàn tay với xà phòng, loại bỏ xà phòng dưới vòi nước, lau khô tay bằng khăn sạch.", correct: false },
+            { text: "Làm ướt bàn tay tới khủy tay, chà bàn tay tới khủy tay với xà phòng, loại bỏ xà phòng dưới vòi nước, lau khô tay bằng khăn sạch", correct: false },
+            { text: "Làm ướt bàn tay tới khủy tay, chà bàn tay tới khủy tay với xà phòng diệt khuẩn, loại bỏ xà phòng dưới vòi nước, lau khô tay bằng khăn vô khuẩn.", correct: true },
+            { text: "Làm ướt bàn tay tới khủy tay, chà bàn tay tới khủy tay với xà phòng diệt khuẩn, loại bỏ xà phòng dưới vòi nước, làm khô tay bằng máy sấy tay.", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích chuẩn bị vùng dự kiến rạch da trước phẫu thuật?",
+        options: [
+            { text: "Nhằm diệt và ức chế sự phát triển của vi khuẩn trên da", correct: true },
+            { text: "Nhằm diệt và ức chế sự phát triển của virus trên da.", correct: false },
+            { text: "Nhằm diệt và ức chế sự phát triển của nấm trên da.", correct: false },
+            { text: "Nhằm loại bỏ chất bẩn và tế bào da chết trên da.", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích tắm cho người bệnh trước phẫu thuật?",
+        options: [
+            { text: "Loại bỏ toàn bộ lượng vị khuẩn định cư ở da", correct: false },
+            { text: "Làm giảm lượng vi khuẩn định cư ở da.", correct: true },
+            { text: "Giúp người bệnh thỏa mái trước phẫu thuật.", correct: false },
+            { text: "Phòng ngừa sự phát triển vi khuẩn trên da.", correct: false }
+        ]
+    },
+    {
+        question: "Thở máy trong thời gian tối thiểu bao lâu thì được chẩn đoán viêm phổi thở máy?",
+        options: [
+            { text: "Thở máy trên 1 giờ", correct: false },
+            { text: "Thở máy trên 1 ngày", correct: false },
+            { text: "Thở máy trên 2 ngày", correct: true },
+            { text: "Thở máy trên 3 ngày", correct: false }
+        ]
+    },
+    {
+        question: "Nhiễm khuẩn bệnh viện là nhiễm khuẩn xảy ra sau nhập viện:",
+        options: [
+            { text: "12 giờ", correct: false },
+            { text: "24 giờ", correct: false },
+            { text: "48 giờ", correct: true },
+            { text: "96 giờ", correct: false }
+        ]
+    },
+    {
+        question: "Khi xảy ra nhiễm khuẩn bệnh viện tại đơn vị, những nội dung cần thực hiện:",
+        options: [
+            { text: "Xác định xem có đúng là nhiễm khuẩn bệnh viện không và báo cáo với người có trách nhiệm, giám sát và theo dõi có xuất hiện ca khác không, xác định nguyên nhân và can thiệp ngay", correct: true },
+            { text: "Giám sát xem có những ca khác không", correct: false },
+            { text: "Xác định nguyên nhân và can thiệp ngay", correct: false },
+            { text: "Theo dõi và báo cáo trưởng khoa", correct: false }
+        ]
+    },
+    {
+        question: "Phạm vi tiến hành giám sát nhiễm khuẩn bệnh viện:",
+        options: [
+            { text: "Tại một số khoa trọng điểm", correct: false },
+            { text: "Trên một số nhóm bệnh có nguy cơ cao", correct: false },
+            { text: "Tại một số khoa trọng điểm hoặc trong toàn bệnh viện", correct: false },
+            { text: "Trên một số nhóm bệnh có nguy cơ cao, hoặc tại một số khoa trọng điểm hoặc trong toàn bệnh viện", correct: true }
+        ]
+    },
+    {
+        question: "Biện pháp cách ly đối với người bệnh bị sởi:",
+        options: [
+            { text: "Phòng ngừa chuẩn", correct: false },
+            { text: "Phòng ngừa chuẩn và phòng ngừa lây truyền qua đường không khí", correct: true },
+            { text: "Phòng ngừa chuẩn và phòng ngừa lây qua đường tiếp xúc", correct: false },
+            { text: "Phòng ngừa chuẩn và phòng ngừa lây qua đường giọt bắn và không khí", correct: false }
+        ]
+    },
+    {
+        question: "Các bệnh lây truyền chủ yếu qua không khí:",
+        options: [
+            { text: "Tiêu chảy, bệnh về da", correct: false },
+            { text: "Lao, sởi, thủy đậu, khi làm thủ thuật tạo khí dung trên người bệnh SARS, cúm", correct: true },
+            { text: "Viêm phổi do Mycoplasma, cúm, quai bị", correct: false },
+            { text: "Nấm phổi, lao, cúm mùa", correct: false }
+        ]
+    }
+];
+
+
+
+        // Biến lưu trữ trạng thái
+        let userAnswers = Array(questionsData.length).fill(null);
+        let answeredCount = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        // Hàm tạo câu hỏi
+        function createQuestions() {
+            const container = document.getElementById('questions-container');
+            
+            questionsData.forEach((questionData, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question';
+                questionElement.dataset.index = index;
+                
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = `Câu ${index + 1}:`;
+                
+                const questionText = document.createElement('div');
+                questionText.className = 'question-text';
+                questionText.textContent = questionData.question;
+                
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'options';
+                
+               shuffle(questionData.options); // RANDOM ĐÁP ÁN
+
+const letters = ['A', 'B', 'C', 'D'];
+
+questionData.options.forEach((option, optionIndex) => {
+
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.dataset.optionIndex = optionIndex;
+                    
+                    const optionLetter = document.createElement('div');
+                    optionLetter.className = 'option-letter';
+                    optionLetter.textContent = letters[optionIndex];
+                    
+                    const optionText = document.createElement('span');
+                    optionText.textContent = option.text;
+                    
+                    // Tạo indicator nhưng ẩn đi cho đến khi người dùng chọn
+                    const indicator = document.createElement('span');
+                    indicator.className = 'result-indicator';
+                    indicator.style.visibility = 'hidden';
+                    
+                    optionElement.appendChild(optionLetter);
+                    optionElement.appendChild(optionText);
+                    optionElement.appendChild(indicator);
+                    
+                    // Thêm sự kiện click
+                    optionElement.addEventListener('click', () => {
+                        selectOption(index, optionIndex);
+                    });
+                    
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                questionElement.appendChild(questionNumber);
+                questionElement.appendChild(questionText);
+                questionElement.appendChild(optionsContainer);
+                container.appendChild(questionElement);
+            });
+            
+            // Cập nhật tổng số câu hỏi
+            document.getElementById('total-questions').textContent = questionsData.length;
+            updateProgressBar();
+        }
+
+        // Hàm chọn đáp án
+        function selectOption(questionIndex, optionIndex) {
+            const questionElement = document.querySelector(`.question[data-index="${questionIndex}"]`);
+            const options = questionElement.querySelectorAll('.option');
+            const questionData = questionsData[questionIndex];
+            
+            // Kiểm tra xem câu hỏi này đã được trả lời chưa
+            const wasAnswered = userAnswers[questionIndex] !== null;
+            
+            // Xóa lớp selected từ tất cả các đáp án trong câu hỏi này
+            options.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Thêm lớp selected cho đáp án được chọn
+            options[optionIndex].classList.add('selected');
+            
+            // Hiển thị kết quả cho tất cả các đáp án trong câu hỏi này
+            options.forEach((option, idx) => {
+                const indicator = option.querySelector('.result-indicator');
+                const isCorrect = questionData.options[idx].correct;
+                
+                // Hiển thị indicator
+                indicator.style.visibility = 'visible';
+                
+                // Đặt nội dung và lớp cho indicator
+                if (isCorrect) {
+                    option.classList.add('correct');
+                    indicator.textContent = ' ✓';
+                } else if (idx === optionIndex) {
+                    option.classList.add('incorrect');
+                    indicator.textContent = ' ✗';
+                }
+                
+                // Nếu là đáp án đúng, hiển thị màu xanh
+                if (isCorrect) {
+                    option.classList.add('correct');
+                }
+            });
+            
+            // Lưu đáp án người dùng chọn
+            userAnswers[questionIndex] = optionIndex;
+            
+            // Cập nhật số lượng câu đã trả lời
+            if (!wasAnswered) {
+                answeredCount++;
+                
+                // Cập nhật số câu đúng/sai
+                if (questionData.options[optionIndex].correct) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+                
+                // Cập nhật thanh tiến độ và số liệu
+                updateProgressBar();
+            }
+        }
+
+        // Hàm cập nhật thanh tiến độ
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progress-fill');
+            const answeredCountElement = document.getElementById('answered-count');
+            const correctProgressElement = document.getElementById('correct-progress');
+            const incorrectProgressElement = document.getElementById('incorrect-progress');
+            
+            // Tính phần trăm
+            const percentage = (answeredCount / questionsData.length) * 100;
+            
+            // Cập nhật thanh tiến độ
+            progressFill.style.width = `${percentage}%`;
+            
+            // Cập nhật số liệu
+            answeredCountElement.textContent = answeredCount;
+            correctProgressElement.textContent = correctCount;
+            incorrectProgressElement.textContent = incorrectCount;
+        }
+
+        // Hàm hiển thị kết quả tổng
+        function showScore() {
+            const scoreContainer = document.getElementById('score-container');
+            const scoreElement = document.getElementById('score');
+            const correctCountElement = document.getElementById('correct-count');
+            const incorrectCountElement = document.getElementById('incorrect-count');
+            
+            scoreElement.textContent = `${correctCount}/${questionsData.length}`;
+            correctCountElement.textContent = correctCount;
+            incorrectCountElement.textContent = incorrectCount;
+            
+            scoreContainer.classList.add('show');
+            
+            // Cuộn đến phần kết quả
+            scoreContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Hàm làm lại bài
+        function resetQuiz() {
+            // Reset tất cả biến
+            userAnswers = Array(questionsData.length).fill(null);
+            answeredCount = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            
+            // Xóa tất cả các lớp và indicator
+            const questions = document.querySelectorAll('.question');
+            questions.forEach(question => {
+                const options = question.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.classList.remove('selected', 'correct', 'incorrect');
+                    
+                    const indicator = option.querySelector('.result-indicator');
+                    if (indicator) {
+                        indicator.style.visibility = 'hidden';
+                        indicator.textContent = '';
+                    }
+                });
+            });
+            
+            // Ẩn kết quả
+            const scoreContainer = document.getElementById('score-container');
+            scoreContainer.classList.remove('show');
+            
+            // Cập nhật thanh tiến độ
+            updateProgressBar();
+        }
+
+        // Khởi tạo bài kiểm tra
+       document.addEventListener('DOMContentLoaded', () => {
+    shuffle(questionsData);   // RANDOM THỨ TỰ CÂU HỎI
+    createQuestions();
+
+
+            
+            // Gán sự kiện cho nút xem kết quả
+            document.getElementById('show-score-btn').addEventListener('click', showScore);
+            
+            // Gán sự kiện cho nút làm lại
+            document.getElementById('reset-btn').addEventListener('click', resetQuiz);
+        });
+    </script>
+</body>
+</html>
