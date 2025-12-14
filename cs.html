@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chauhuynh0104</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .question-container {
+            margin-bottom: 25px;
+        }
+        
+        .question {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #eaeaea;
+            transition: all 0.3s;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .question-text {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .option {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .option:hover:not(.correct):not(.incorrect) {
+            background-color: #f0f0f0;
+        }
+        
+        .option.selected {
+            border-width: 2px;
+        }
+        
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .option-letter {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .correct .option-letter {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .incorrect .option-letter {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .result-indicator {
+            margin-left: auto;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .correct .result-indicator {
+            color: #28a745;
+        }
+        
+        .incorrect .result-indicator {
+            color: #dc3545;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        #reset-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #show-score-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        #show-score-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .score-container {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .score-container.show {
+            display: block;
+        }
+        
+        .score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .correct-count {
+            color: #28a745;
+        }
+        
+        .incorrect-count {
+            color: #e74c3c;
+        }
+        
+        .progress-bar-container {
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #28a745;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+   
+   
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span>Tiến độ: <span id="answered-count">0</span>/<span id="total-questions">0</span> câu</span>
+                <span>Đúng: <span id="correct-progress">0</span> | Sai: <span id="incorrect-progress">0</span></span>
+            </div>
+        </div>
+        
+        <div class="question-container" id="questions-container">
+            <!-- Các câu hỏi sẽ được thêm tự động bằng JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button id="show-score-btn">Xem kết quả</button>
+            <button id="reset-btn">Làm lại</button>
+        </div>
+        
+        <div class="score-container" id="score-container">
+            <h3>Kết quả của bạn:</h3>
+            <div class="score" id="score">0/80</div>
+            <p>Đúng: <span class="correct-count" id="correct-count">0</span> | 
+               Sai: <span class="incorrect-count" id="incorrect-count">0</span></p>
+        </div>
+    </div>
+
+    <script>
+	function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+       // Dữ liệu câu hỏi - chỉ lấy 80 câu đầu tiên
+        const questionsData = [
+ 
+    {
+        question: "Thời điểm tốt nhất để lấy nước tiểu xét nghiệm tổng phân tích là phù hợp nhất",
+        options: [
+            { text: "Buổi chiều", correct: false },
+            { text: "Sau ăn", correct: false },
+            { text: "Buổi sáng sớm", correct: true },
+            { text: "Trước khi đi ngủ", correct: false }
+        ]
+    },
+    {
+        question: "Nguyên tắc quan trọng khi lấy bệnh phẩm vi sinh là:",
+        options: [
+            { text: "Lấy sau khi dùng kháng sinh", correct: false },
+            { text: "Lấy sau khi dùng kháng sinh", correct: false },
+            { text: "Lấy trước khi dùng kháng sinh", correct: true },
+            { text: "Lấy sau 24h điều trị", correct: false }
+        ]
+    },
+    {
+        question: "Dịch nào sau đây tính là dịch vào:",
+        options: [
+            { text: "Cháo", correct: false },
+            { text: "Dịch truyền", correct: false },
+            { text: "Sữa", correct: false },
+            { text: "Tất cả đều đúng", correct: true }
+        ]
+    },
+    {
+        question: "Sau bao lâu không được cung cấp máu, não sẽ tổn thương không hồi phục?",
+        options: [
+            { text: "2 phút", correct: false },
+            { text: "4 phút", correct: true },
+            { text: "6 phút", correct: false },
+            { text: "10 phút", correct: false }
+        ]
+    },
+    {
+        question: "Nhiệt độ của dung dịch rửa dạ dày lý tưởng là:",
+        options: [
+            { text: "37–40°C", correct: true },
+            { text: "34–36°C", correct: false },
+            { text: "30–33°C", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Sau khi lấy mẫu máu, điều dưỡng cần:",
+        options: [
+            { text: "Gửi ngay đến phòng xét nghiệm càng sớm càng tốt", correct: false },
+            { text: "Gửi  đến xét nghiệm trong phòng 3 giờ", correct: false },
+            { text: "Gửi  đến xét nghiệm trong phòng 2 giờ", correct: true },
+            { text: "Gửi  đến xét nghiệm trong phòng 4 giờ", correct: false }
+        ]
+    },
+    {
+        question: "Khi lấy bệnh phẩm máu để xét nghiệm sinh hóa, cần dùng ống nghiệm có chứa?",
+        options: [
+            { text: "Heparin", correct: true },
+            { text: "Edta", correct: false },
+            { text: "Natri citrate", correct: false },
+            { text: "Không có chất chống đông", correct: false }
+        ]
+    },
+    {
+        question: "Chỉ định thực hiện trong rửa dạ dày là",
+        options: [
+            { text: "Ngộ độc thức ăn, thuốc, hoá chất trước 6 giờ.", correct: true },
+            { text: "Ngộ độc axít, kiềm, xăng dầu trước 6 giờ.", correct: false },
+            { text: "Xuất huyết nặng có truy mạch .", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Chỉ định của liệu pháp oxy bao gồm tất cả ngoại trừ",
+        options: [
+            { text: "Suy hô hấp cấp", correct: false },
+            { text: "Giảm oxy máu", correct: false },
+            { text: "Tăng CO2 máu không có triệu chứng", correct: true },
+            { text: "Ngừng tim hồi phục", correct: false }
+        ]
+    },
+    {
+        question: "Trong hồi sinh tim phổi, tần số ép tim hiệu quả là bao nhiêu lần/phút?",
+        options: [
+            { text: "100 lần /phút", correct: false },
+            { text: "> 100 lần /phút", correct: false },
+            { text: "100 – 120 lần/phút", correct: true },
+            { text: "Điều trị nguyên nhân gây bệnh", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh phẩm vi sinh cần được gửi đến phòng  xét nghiệm trong vòng bao nhiêu giờ",
+        options: [
+            { text: "2 giờ", correct: true },
+            { text: "1 giờ", correct: false },
+            { text: "3 giờ", correct: false },
+            { text: "4 giờ", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích của lấy phân làm xét nghiệm là?",
+        options: [
+            { text: "Kiểm tra hàm lượng Protein trong phân", correct: false },
+            { text: "Tìm vi khuẩn và ký sinh trùng", correct: true },
+            { text: "Tìm cholesterol trong phân", correct: false },
+            { text: "Tìm ure máu trong phân", correct: false }
+        ]
+    },
+    {
+        question: "Để giảm nguy cơ nhiễm trùng catether tĩnh mạch trung tâm, điều dưỡng phải thay băng vết mổ mỗi",
+        options: [
+            { text: "2 ngày", correct: false },
+            { text: "3 ngày", correct: false },
+            { text: "24–48 giờ", correct: true },
+            { text: "sau mỗi lần truyền dịch", correct: false }
+        ]
+    },
+    {
+        question: "Chất nào sau đây cung cấp nhiều năng lượng nhất cho cơ thể?",
+        options: [
+            { text: "Protein", correct: false },
+            { text: "Glucid", correct: false },
+            { text: "Lipid", correct: true },
+            { text: "Vitamin", correct: false }
+        ]
+    },
+    {
+        question: "Chỉ số SpO2 mục tiêu ở  người bệnh thông thường nên duy trì ở mức",
+        options: [
+            { text: "80–85%", correct: true },
+            { text: "85–90%", correct: false },
+            { text: "90–94%", correct: false },
+            { text: "≥ 95%", correct: true }
+        ]
+    },
+    {
+        question: "Vai trò chính của chất xơ trong tiêu hóa là gì?",
+        options: [
+            { text: "Cung cấp năng lượng", correct: false },
+            { text: "Hấp thu vitamin", correct: false },
+            { text: "Làm mềm phân và ngừa táo bón", correct: true },
+            { text: "Tạo kháng thể", correct: false }
+        ]
+    },
+    {
+        question: "Người bệnh sau phẫu thuật đường tiêu hóa:",
+        options: [
+            { text: "Ăn sau khi tỉnh lại", correct: false },
+            { text: "Ăn lại sau khi trung tiện", correct: true },
+            { text: "Ngay sau mổ, ăn bình thường bất kể loại phẫu thuật.", correct: false },
+            { text: "Chỉ được ăn khi đã rút tất cả các ống dẫn lưu.", correct: false }
+        ]
+    },
+    {
+        question: "Trong thông tiểu nam, ống thông được đưa vào khoảng bao nhiêu cm trước khi hạ dương vật xuống?",
+        options: [
+            { text: "10 cm – 12 cm", correct: true },
+            { text: "5 cm", correct: false },
+            { text: "8- 10 cm", correct: false },
+            { text: "15 cm", correct: false }
+        ]
+    },
+    {
+        question: "Trước khi bắt đầu liệu pháp oxy cho người bệnh, điều dưỡng cần lưu ý đánh giá tình trạng",
+        options: [
+            { text: "Tri giác của người bệnh", correct: false },
+            { text: "SpO2 và tình trạng hô hấp", correct: true },
+            { text: "Nhịp tim", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Các dấu hiệu của gãy xương là",
+        options: [
+            { text: "Đau, giảm hoặc mất vận động", correct: false },
+            { text: "Sưng nề, bầm tím.", correct: false },
+            { text: "Biến dạng, gập góc, lệch trục.", correct: false },
+            { text: "Tất cả đều đúng", correct: true }
+        ]
+    },
+    {
+        question: "Một trong những chỉ định của thông tiểu là bệnh nhân bị",
+        options: [
+            { text: "Liệt dây thần kinh số V", correct: false },
+            { text: "Trước thủ thuật", correct: false },
+            { text: "Liệt chi dưới", correct: true },
+            { text: "Trước nội soi", correct: false }
+        ]
+    },
+    {
+        question: "Gãy xương hở là:",
+        options: [
+            { text: "Gãy xương nhưng da và phần mềm còn nguyên vẹn, không thông với môi trường ngoài.", correct: false },
+            { text: "Gãy xương hở là: Có vết thương phần mềm tại vùng gãy, thông thương với ổ gãy", correct: true },
+            { text: "Gãy xương kèm trật khớp nhưng không có vết thương da.", correct: false },
+            { text: "Nứt xương do stress, không tổn thương phần mềm.", correct: false }
+        ]
+    },
+    {
+        question: "Nguyên nhân chính gây loét ép là do ........ kéo dài.",
+        options: [
+            { text: "Tăng áp lực thẩm thấu", correct: false },
+            { text: "Thiếu máu nuôi dưỡng", correct: false },
+            { text: "Áp lực tì đè", correct: true },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Khi lượng dịch vào > lượng dịch ra, người bệnh có thể gặp tình trạng",
+        options: [
+            { text: "Suy thận", correct: false },
+            { text: "Mất nước", correct: false },
+            { text: "Phù", correct: true },
+            { text: "Tràn dịch đa mang", correct: false }
+        ]
+    },
+    {
+        question: "Ở người bệnh bị bỏng nặng, nhu cầu năng lượng cần bao nhiêu?",
+        options: [
+            { text: "50 kcal/kg", correct: false },
+            { text: "70 kcal/kg", correct: true },
+            { text: "80 kcal/kg", correct: false },
+            { text: "100 kcal/kg", correct: false }
+        ]
+    },
+    {
+        question: "Một trong các chức năng của Natri là:",
+        options: [
+            { text: "Duy trì áp lực thẩm thấu", correct: true },
+            { text: "Tạo hồng cầu", correct: false },
+            { text: "Vận chuyển oxy", correct: false },
+            { text: "Tổng hợp protein", correct: false }
+        ]
+    },
+    {
+        question: "Thụt giữ được áp dụng để giữ thuốc trong ruột với mục đích",
+        options: [
+            { text: "Hấp thu tại chỗ", correct: true },
+            { text: "Thải độc", correct: false },
+            { text: "Điều trị táo bón", correct: false },
+            { text: "Kích thích nhu động ruột", correct: false }
+        ]
+    },
+    {
+        question: "Vị trí phổ biến bị loét ép khi bệnh nhân nằm ngửa là vùng",
+        options: [
+            { text: "trán", correct: false },
+            { text: "cùng cụt", correct: true },
+            { text: "lòng bàn tay", correct: false },
+            { text: "gáy", correct: false }
+        ]
+    },
+    {
+        question: "Trong gãy xương đùi, nguy cơ mất máu có thể lên đến",
+        options: [
+            { text: "100ml", correct: false },
+            { text: "250ml", correct: false },
+            { text: "500ml", correct: false },
+            { text: "1000ml trở lên", correct: true }
+        ]
+    },
+    {
+        question: "Gánh nặng của suy dinh dưỡng là",
+        options: [
+            { text: "Chậm lành vết thương", correct: false },
+            { text: "Tăng nguy cơ nhiễm trùng", correct: false },
+            { text: "Teo khối cơ và mất chức năng, tăng té ngã", correct: false },
+            { text: "Tất cả đều đúng", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng nào sau đây là của giai đoạn muộn thiếu oxy?",
+        options: [
+            { text: "Lo âu, vật vã", correct: false },
+            { text: "Tăng huyết áp", correct: false },
+            { text: "Tím tái, co kéo cơ hô hấp", correct: true },
+            { text: "Tăng tần số hô hấp", correct: false }
+        ]
+    },
+    {
+        question: "Tai biến có thể xảy ra do để túi nước tiểu quá đầy mà không xả thường xuyên?",
+        options: [
+            { text: "Nhiễm trùng niệu đạo", correct: false },
+            { text: "Hoại tử niệu đạo", correct: true },
+            { text: "Tổn thương thận", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Trong kỹ thuật đặt thông tiểu nữ, chiều dài đưa ông thông tiểu vào niệu đạo khoảng bao nhiêu",
+        options: [
+            { text: "2 – 3 cm hoặc đến khi thấy nước tiểu chảy ra", correct: false },
+            { text: "3 – 4 cm hoặc đến khi thấy nước tiểu chảy ra", correct: false },
+            { text: "4 – 5 cm hoặc đến khi thấy nước tiểu chảy ra", correct: true },
+            { text: "tùy vào thể trạng người bệnh", correct: false }
+        ]
+    },
+    {
+        question: "Khi người bệnh bị bi tiểu nhiều phải đặt thông tiểu, khi tiểu chảy qua ống thông phải cho chảy từ từ và không nên lấy quá",
+        options: [
+            { text: "600 ml", correct: false },
+            { text: "500 ml", correct: false },
+            { text: "550 ml", correct: false },
+            { text: "750 ml", correct: true }
+        ]
+    },
+    {
+        question: "Một trong những biện pháp phòng viêm phổi do thở máy là",
+        options: [
+            { text: "Hút đờm mỗi giờ", correct: false },
+            { text: "Nằm đầu thấp", correct: false },
+            { text: "Vệ sinh răng miệng hàng ngày", correct: true },
+            { text: "Giảm truyền dịch", correct: false }
+        ]
+    },
+    {
+        question: "Kích thước thông hút khi hút qua ống NKQ/MKQ đúng là:",
+        options: [
+            { text: "Đường kính ngoài thông hút bằng đường kính trong ống NKQ", correct: false },
+            { text: "Đường kính ngoài thông hút < 1/2 đường kính trong ống NKQ", correct: true },
+            { text: "Đường kính ngoài thông hút > đường kính trong ống NKQ để hút mạnh", correct: false },
+            { text: "Không cần quan tâm kích thước", correct: false }
+        ]
+    },
+    {
+        question: "Để giảm nguy cơ nhiễm trùng catether tĩnh mạch trung tâm, điều dưỡng phải thay băng vết mổ mỗi",
+        options: [
+            { text: "2 ngày", correct: false },
+            { text: "3 ngày", correct: false },
+            { text: "24–48 giờ", correct: true },
+            { text: "sau mỗi lần truyền dịch", correct: false }
+        ]
+    },
+    {
+        question: "Trước khi thực hiện đặt catether tĩnh mạch trung tâm, bệnh nhân cần được",
+        options: [
+            { text: "Giải thích cho người thân", correct: false },
+            { text: "Ký cam kết thủ thuật", correct: true },
+            { text: "Uống thuốc an thần", correct: false },
+            { text: "A, B đúng", correct: false }
+        ]
+    },
+    {
+        question: "Sau khi rút ống catether tĩnh mạch trung tâm, điều dưỡng cần ép chặt vị trí trong ít nhất",
+        options: [
+            { text: "Đến khi hết chảy máu", correct: false },
+            { text: "2 phút", correct: false },
+            { text: "5 phút hoặc cho hết khi hết chảy máu", correct: true },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Lượng dung dịch pha thêm thường dùng trong khí dung là:",
+        options: [
+            { text: "1 mL", correct: false },
+            { text: "2,5 mL", correct: true },
+            { text: "5 mL", correct: false },
+            { text: "vào độ tuổi của người bệnh", correct: false }
+        ]
+    },
+    {
+        question: "Một trong các  chỉ định của thở  khí dung là:",
+        options: [
+            { text: "Hen phế quản mạm tính", correct: false },
+            { text: "Viêm phế quản dạng hen", correct: false },
+            { text: "Co thắt phế quản cấp", correct: true },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Ưu điểm của liệu pháp khí dung là:",
+        options: [
+            { text: "Cần liều thuốc cao hơn", correct: false },
+            { text: "Tác dụng nhanh hơn đường uống", correct: true },
+            { text: "Không có tác dụng phụ", correct: false },
+            { text: "Nên ăn đều độ, đúng giờ, không  để  quá  đói  hoặc quá no.", correct: true }
+        ]
+    },
+    {
+        question: "Mục tiêu chính trong cấp cứu vết thương chảy máu là",
+        options: [
+            { text: "Làm sạch vết thương", correct: false },
+            { text: "Giảm đau cho bệnh nhân", correct: false },
+            { text: "Cầm máu nhanh chóng", correct: true },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Áp lực hút đờm thích hợp cho người lớn là khoảng",
+        options: [
+            { text: "50–70 mmHg", correct: false },
+            { text: "100–120 mmHg", correct: true },
+            { text: "150–200 mmHg", correct: false },
+            { text: "Tùy vào tình trạng người bệnh", correct: false }
+        ]
+    },
+    {
+        question: "Trong chăm sóc người bệnh  thở máy thông thường, tư thế bệnh nhân nên được nâng đầu giường lên một góc",
+        options: [
+            { text: "30–45 độ", correct: true },
+            { text: "60–90 độ", correct: false },
+            { text: "20–30 độ", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Sau khi rút ống catether tĩnh mạch trung tâm, điều dưỡng cần ép chặt vị trí trong ít nhất",
+        options: [
+            { text: "Đến khi hết chảy máu", correct: false },
+            { text: "2 phút", correct: false },
+            { text: "5 phút hoặc cho hết khi hết chảy máu", correct: true },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Dấu hiệu nhận biết sớm của ngừng tuần hoàn là:",
+        options: [
+            { text: "Thở nhanh nông", correct: true },
+            { text: "Hạ huyết áp", correct: false },
+            { text: "Mất ý thức đột ngột", correct: true },
+            { text: "Vã mồ hôi, tay chân lạnh", correct: false }
+        ]
+    },
+    {
+        question: "Dụng cụ quan trọng hỗ trợ cấp cứu ngừng tuần hoàn tại bệnh viện là",
+        options: [
+            { text: "Bóp bóng", correct: false },
+            { text: "Máy khử rung tim (AED)", correct: true },
+            { text: "Bộ đặt nội khó quản", correct: false },
+            { text: "Tất Cả Đều Đúng", correct: false }
+        ]
+    },
+    {
+        question: "Trong cấp cứu ngừng tuần hoàn sau 2 phút người cấp cứu cần phải làm gì",
+        options: [
+            { text: "Kiểm tra dấu hiệu tuần hoàn của người bệnh", correct: true },
+            { text: "Cho bệnh nhân thở oxy", correct: false },
+            { text: "Hút đờm cho người bệnh", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Mục tiêu chính trong cấp cứu vết thương chảy máu là",
+        options: [
+            { text: "Làm sạch vết thương", correct: false },
+            { text: "Giảm đau cho bệnh nhân", correct: false },
+            { text: "Cầm máu nhanh chóng", correct: true },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Biện pháp cầm máu hiệu quả đầu tiên trong cấp cứu vết thương chảy máu là",
+        options: [
+            { text: "Bưng vêt tương lại ngay", correct: false },
+            { text: "Khâu vết thương lại ngay", correct: false },
+            { text: "Ép trực tiếp vào vị trí chảy máu", correct: true },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Trong cấp cứu vết thương chảy máu, Thời gian tối đa đặt garo trên chi là",
+        options: [
+            { text: "10 phút", correct: false },
+            { text: "20 phút", correct: false },
+            { text: "30 phút", correct: false },
+            { text: "60 phút", correct: true }
+        ]
+    },
+    {
+        question: "Trong phối hợp ép tim và thổi ngạt với một người cấp cứu, tỉ lệ là:",
+        options: [
+            { text: "15:2", correct: false },
+            { text: "30:2", correct: true },
+            { text: "2:30", correct: false },
+            { text: "2:15", correct: false }
+        ]
+    },
+    {
+        question: "Sau bao lâu không được cung cấp máu, não sẽ tổn thương không hồi phục?",
+        options: [
+            { text: "2 phút", correct: false },
+            { text: "4 phút", correct: true },
+            { text: "6 phút", correct: false },
+            { text: "10 phút", correct: false }
+        ]
+    },
+    {
+        question: "Trong quá trình đặt sonde dạ dày, khi bệnh nhân ho dữ dội, khó thở và tím tái, điều nào sau đây là biện pháp xử trí đúng nhất?",
+        options: [
+            { text: "Tiếp tục đẩy sonde thêm để vượt qua chỗ tắc", correct: false },
+            { text: "Yêu cầu bệnh nhân hít sâu để giảm ho", correct: false },
+            { text: "Rút sonde ra ngay lập tức và theo dõi bệnh nhân", correct: true },
+            { text: "Dừng lại, bơm khí vào để kiểm tra vị trí sonde", correct: false }
+        ]
+    },
+    {
+        question: "Khi theo dõi lượng nước tiểu ở bệnh nhân có nguy cơ suy thận cấp, chỉ số nào sau đây là tiêu chuẩn quan trọng nhất để đánh giá thiểu niệu?",
+        options: [
+            { text: "Lượng nước tiểu dưới 800ml trong 24 giờ", correct: false },
+            { text: "Nước tiểu < 1ml/kg/giờ trong 4 giờ liên tục", correct: false },
+            { text: "Nước tiểu < 100ml trong 8 giờ", correct: false },
+            { text: "Nước tiểu < 0,5ml/kg/giờ trong ít nhất 6 giờ", correct: true }
+        ]
+    },
+    {
+        question: "Một gam lipid cung cấp bao nhiêu kcal năng lượng cho cơ thể.",
+        options: [
+            { text: "9 kcal/g", correct: true },
+            { text: "2 kcal/g", correct: false },
+            { text: "4 kcal/g", correct: false },
+            { text: "6 kcal/g", correct: false }
+        ]
+    },
+    {
+        question: "Thiếu vitamin B1 nghiêm trọng có thể gây ra bệnh gì?",
+        options: [
+            { text: "Còi xương", correct: false },
+            { text: "Beriberi", correct: true },
+            { text: "Scorbut", correct: false },
+            { text: "Thiếu máu ác tính", correct: false }
+        ]
+    },
+    {
+        question: "Chế độ ăn bệnh lý là chế độ ăn được áp dụng cho người",
+        options: [
+            { text: "Khỏe mạnh", correct: false },
+            { text: "Đang phát triển", correct: false },
+            { text: "Mắc bệnh", correct: true },
+            { text: "Thiếu cân", correct: false }
+        ]
+    },
+    {
+        question: "Trong giai đoạn hồi phục, nhu cầu năng lượng có thể lên đến bao nhiêu kcal/ngày?",
+        options: [
+            { text: "1000–1500", correct: false },
+            { text: "1500–2000", correct: false },
+            { text: "2000–2500", correct: false },
+            { text: "2600–3000", correct: true }
+        ]
+    },
+    {
+        question: "Trong chăm sóc người bệnh hôm mê, để phòng ngừa loét do tỳ đè. Điều dưỡng cần thay đổi tư thế người bệnh mỗi:",
+        options: [
+            { text: "Thay đổi tư thế bệnh nhân mỗi 1 giờ là biện pháp không phòng ngừa loét tỳ đè hiệu quả", correct: false },
+            { text: "Thay đổi tư thế bệnh nhân mỗi 2 giờ là biện pháp không phòng ngừa loét tỳ đè hiệu quả", correct: true },
+            { text: "Thay đổi tư thế bệnh nhân mỗi 3 giờ là biện pháp không phòng ngừa loét tỳ đè hiệu quả", correct: false },
+            { text: "Thay đổi tư thế bệnh nhân mỗi 4 giờ là biện pháp không phòng ngừa loét tỳ đè hiệu quả", correct: false }
+        ]
+    },
+    {
+        question: "Chuyển hóa hoàn toàn 1g Glucid tạo ra bao nhiêu kcal.",
+        options: [
+            { text: "9 kcal/g", correct: false },
+            { text: "4 kcal/g", correct: true },
+            { text: "6 kcal/g", correct: false },
+            { text: ". 5 kcal/g", correct: false }
+        ]
+    },
+    {
+        question: "Vitamin nào có vai trò trong chống oxy hóa và bảo vệ màng tế bào",
+        options: [
+            { text: "Vitamin D", correct: false },
+            { text: "Vitamin C", correct: false },
+            { text: "Vitamin E", correct: true },
+            { text: "Vitamin A", correct: false }
+        ]
+    },
+    {
+        question: "Nguyên nhân chính gây loét ép là do ........ kéo dài.",
+        options: [
+            { text: "Tăng áp lực thẩm thấu", correct: false },
+            { text: "Thiếu máu nuôi dưỡng", correct: false },
+            { text: "Áp lực tì đề", correct: true },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Dấu hiệu của loét Giai đoạn I là",
+        options: [
+            { text: "Có vết đỏ da", correct: false },
+            { text: "Đỏ da không mất đi khi ấn", correct: false },
+            { text: "Bầm tím", correct: false },
+            { text: "A. B đúng", correct: true }
+        ]
+    },
+    {
+        question: "Dấu hiệu của loét giai đoạn 2 là",
+        options: [
+            { text: "Trầy xước, phồng nước", correct: false },
+            { text: "Đau nhiều", correct: false },
+            { text: "Da phù nề xung huyết", correct: false },
+            { text: "Tất cả đều đúng", correct: true }
+        ]
+    },
+    {
+        question: "Một trong các dấu hiệu nhiễm trùng vết thương là",
+        options: [
+            { text: "Vết thương khô đỏ", correct: false },
+            { text: "Vết thương chảy dịch mủ", correct: true },
+            { text: "Vết thương chảy máu", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Trong gãy xương cẳng tay cần bao nhiêu dây buộc nẹp?",
+        options: [
+            { text: "2 dây buộc", correct: false },
+            { text: "3 dây buộc", correct: true },
+            { text: "4 dây buộc", correct: false },
+            { text: "Tùy vào tình trạng vết thương", correct: false }
+        ]
+    },
+    {
+        question: "Phương pháp vận chuyển nào phù hợp nhất cho bệnh nhân gãy cột sống?",
+        options: [
+            { text: "Nằm trên ván cứng và được cố định tốt", correct: true },
+            { text: "Nằm trên ván cứng có đệm", correct: false },
+            { text: "Chỉ cần nằm trên ván cứng", correct: false },
+            { text: "Nằm nghiêng bên lành", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích chính của việc băng bó vết thương là",
+        options: [
+            { text: "Làm sạch vết thương", correct: false },
+            { text: "Giảm đau tạm thời", correct: false },
+            { text: "Cố định và bảo vệ vùng tổn thương", correct: true },
+            { text: "Che giấu vùng tổn thương", correct: false }
+        ]
+    },
+    {
+        question: "Khi băng chi dưới, điều quan trọng nhất là",
+        options: [
+            { text: "Không cần cố định", correct: false },
+            { text: "Phải đảm bảo lưu thông máu", correct: true },
+            { text: "Dùng băng vải to bản", correct: false },
+            { text: "Luôn quấn từ trên xuống", correct: false }
+        ]
+    },
+    {
+        question: "Trong chăm sóc thở máy,  một trong các biến chứng thường gặp nhất ở bệnh nhân thở máy kéo dài là",
+        options: [
+            { text: "Xuất huyết dạ dày", correct: false },
+            { text: "Suy thận cấp", correct: false },
+            { text: "Viêm phổi liên quan thở máy", correct: true },
+            { text: "Tất cả điều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Trong tiêm tĩnh mạch ngoại biên, điều nào sau đây là đúng khi xảy ra hiện tượng chọc kim xuyên tĩnh mạch?",
+        options: [
+            { text: "Rút kim ra ngoài da rồi thử lại cùng chỗ cũ", correct: false },
+            { text: "Tiếp tục tiêm vì thuốc vẫn có thể ngấm vào mạch", correct: false },
+            { text: "Quan sát máu trào về rõ ràng để điều chỉnh vị trí kim", correct: false },
+            { text: "Dừng tiêm ngay, rút kim, chườm lạnh, chọn tĩnh mạch khác", correct: true }
+        ]
+    },
+    {
+        question: "Dấu hiệu nào sau đây cho thấy ống thông dạ dày có thể đã sai vị trí?",
+        options: [
+            { text: "Dịch hút ra có mùi acid", correct: false },
+            { text: "Không có dịch ra", correct: false },
+            { text: "Có tiếng sủi bọt nhẹ", correct: false },
+            { text: "Bệnh nhân ho sặc, khó thở", correct: true }
+        ]
+    },
+    {
+        question: "Một tai biến nguy hiểm khi rửa dạ dày là",
+        options: [
+            { text: "Đau bụng, tiêu chảy do kích thích nhu động ruột", correct: false },
+            { text: "Tăng thân nhiệt", correct: false },
+            { text: "Tất cả đều đúng", correct: false },
+            { text: "Glucose", correct: false }
+        ]
+    },
+    {
+        question: "Thông tiểu là thủ thuật sử dụng ống thông đưa vào .......... đến ....... để dẫn lưu nước tiểu.",
+        options: [
+            { text: "Niệu đạo", correct: false },
+            { text: "Niệu quản", correct: false },
+            { text: "Bàng quang", correct: false },
+            { text: "A, C đúng", correct: true }
+        ]
+    },
+    {
+        question: "Một trong những biến chứng thường gặp khi thông tiểu không đúng kỹ thuật là",
+        options: [
+            { text: "Sốc phản vệ", correct: false },
+            { text: "Nhiễm trùng tiểu", correct: true },
+            { text: "Rối loạn nhịp tim", correct: false },
+            { text: "Chảy máu bàng quang", correct: false }
+        ]
+    },
+    {
+        question: "Trong thở khí dung, người bệnh cần lưu ý:",
+        options: [
+            { text: "Hít vào chậm bằng miệng", correct: true },
+            { text: "Hít nhanh bằng mũi", correct: false },
+            { text: "Hít vào nhanh bằng miệng", correct: false },
+            { text: "Hít vào nhanh bằng miệng", correct: false }
+        ]
+    },
+    {
+        question: "Một trong những chỉ định của thông tiểu là người bệnh bị",
+        options: [
+            { text: "Liệt dây thần kinh số V", correct: false },
+            { text: "Trước thủ thuật", correct: false },
+            { text: "Liệt chi dưới", correct: true },
+            { text: "Trước nội soi", correct: false }
+        ]
+    },
+    {
+        question: "Biến chứng teo bàng quang thường trong đặt thông tiêu giữ lại lâu ngày. Để giảm nguy cơ người điều dưỡng cần làm gì",
+        options: [
+            { text: "Khoá dây dẫn nước tiểu và xả từ bàng quang ra túi chứa mỗi 3h/lần", correct: true },
+            { text: "Khoá dây dẫn nước tiểu và xả từ bàng quang ra túi chứa mỗi 2h/lần", correct: false },
+            { text: "Khoá dây dẫn nước tiểu và xả từ bàng quang ra túi chứa mỗi 4h/lần", correct: false },
+            { text: "Khoá dây dẫn nước tiểu và xả từ bàng quang ra túi chứa mỗi 1h/lần", correct: false }
+        ]
+    },
+    {
+        question: "Tai biến nguy hiểm nhất khi đặt ống thông dạ dày là:",
+        options: [
+            { text: "Đau họng", correct: false },
+            { text: "Buồn nôn", correct: false },
+            { text: "Đặt nhầm vào đường thở", correct: true },
+            { text: "Mệt mỏi, khó chịu", correct: false }
+        ]
+    },
+    {
+        question: "Nhu cầu năng lượng ở nữ giới trưởng thành là",
+        options: [
+            { text: "0,9 kcal/kg cân nặng/giờ", correct: false },
+            { text: "1 kcal/kg cân nặng/giờ", correct: true },
+            { text: "1,1 kcal/kg cân nặng/giờ", correct: false },
+            { text: "1,5 kcal/kg cân nặng/giờ", correct: false }
+        ]
+    },
+    {
+        question: "Nhu cầu nước ở trẻ em là ..... g/kg thể trọng.",
+        options: [
+            { text: "50–70 g/kg", correct: false },
+            { text: "100–150 g/kg", correct: false },
+            { text: "50–60 g/kg", correct: false },
+            { text: "Phục vụ chẩn đoán và điều trị", correct: true }
+        ]
+    },
+    {
+        question: "Khi lấy mẫu nước tiểu cần hướng dẫn người bệnh?",
+        options: [
+            { text: "Uống nhiều nước", correct: false },
+            { text: "Lấy vào sáng sớm và lấy nước tiểu giữa dòng", correct: true },
+            { text: "Nhịn tiểu 12 giờ", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Chỉ định đặt ống thông tiểu là gì?",
+        options: [
+            { text: "Bệnh nhân tiểu tự chủ", correct: false },
+            { text: "Làm sạch bàng quang", correct: false },
+            { text: "Thông tiêu trước phẫu thuật", correct: true },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Để đảm bảo an toàn sinh học và chất lượng xét nghiệm nhân viên vận chuyển mẫu cần ngoại trừ:",
+        options: [
+            { text: "Chuyển mẫu đến phòng xét nghiệm càng sớm càng tốt", correct: false },
+            { text: "Phải có hộp vận chuyển để đảm bảo an toàn", correct: false },
+            { text: "Đối với mẫu cấp cứu cần mang nhanh đến phòng xét nghiệm không cần phải bỏ vào hộp gây mất thời gian", correct: true },
+            { text: "Tất cả các ý trên", correct: false }
+        ]
+    },
+    {
+        question: "Dinh dưỡng có vai trò quan trọng trong công tác điều và chăm sóc người bệnh",
+        options: [
+            { text: "Phục hồi sức khỏe cho người bệnh", correct: false },
+            { text: "Rút ngắn thời gian điều trị", correct: false },
+            { text: "Giảm chi phí nằm viện", correct: false },
+            { text: "Tất cả các ý trên", correct: true }
+        ]
+    },
+    {
+        question: "Nguyên tắc chung khi thực hiện lấy mẫu",
+        options: [
+            { text: "Lấy càng nhiều mẫu càng tốt", correct: false },
+            { text: "Đảm bảo đúng kỹ thuật, đúng người bệnh, đúng thời điểm.", correct: true },
+            { text: "Chỉ cần lấy ở những vị trí cần thiết", correct: false },
+            { text: "Lấy mẫu sau khi người bệnh đã dùng thuốc", correct: false }
+        ]
+    },
+    {
+        question: "Rửa bàng quang thường được thực hiện với mục đích nào?",
+        options: [
+            { text: "Ngăn ngừa nhiễm trùng và giúp người bệnh yên tâm", correct: false },
+            { text: "Loại bỏ cặn lắng, máu đông trong bàng quang giúp ngăn ngừa nhiễm khuẩn và tắc nghẽn.", correct: true },
+            { text: "Giảm đau cho bệnh nhân", correct: false },
+            { text: "Kích thích chức năng thận", correct: false }
+        ]
+    },
+    {
+        question: "Khi dẫn lưu nước tiểu, túi đựng nước tiểu cần được đặt ở vị trí nào?",
+        options: [
+            { text: "Ngang với bàng quang", correct: false },
+            { text: "Cao hơn bàng quang", correct: false },
+            { text: "Thấp hơn bàng quang ít nhất 60 cm", correct: true },
+            { text: "Thấp hơn bàng quang ít nhất 30 40cm", correct: false }
+        ]
+    },
+    {
+        question: "Protein có vai trò quan trọng chính là gì",
+        options: [
+            { text: "Cung cấp năng lượng tức thì", correct: false },
+            { text: "Xây dựng và tái tạo tất cả các mô của cơ thể", correct: true },
+            { text: "Tăng hấp thu nước", correct: false },
+            { text: "Lưu trữ năng lượng", correct: false }
+        ]
+    },
+    {
+        question: "Chế độ ăn ít muối thường được áp dụng cho bệnh nhân mắc bệnh nà",
+        options: [
+            { text: "Bệnh mạch vành", correct: false },
+            { text: "Bệnh tăng huyết áp", correct: false },
+            { text: "Suy thận cấp", correct: false },
+            { text: "Tất cả đều đúng", correct: true }
+        ]
+    },
+    {
+        question: "Mục đích chính của việc theo dõi dịch vào ra là gì?",
+        options: [
+            { text: "Đánh giá chức năng tiêu hóa tại ruột non", correct: false },
+            { text: "Đánh giá cân bằng dịch trong cơ thể", correct: true },
+            { text: "Theo dõi lượng dinh dưỡng hấp thu", correct: false },
+            { text: "Đánh giá chức năng miễn dịch", correct: false }
+        ]
+    },
+    {
+        question: "Trong kỹ thuật tiến hành thông tiểu nữ?",
+        options: [
+            { text: "Đưa vào lỗ tiểu khoảng 4-5 cm hoặc đến khi thấy nước tiểu chảy ra", correct: true },
+            { text: "Đưa vào lỗ tiểu khoảng 5-6 cm hoặc đến khi thấy nước tiểu chảy ra.", correct: false },
+            { text: "Đưa vào lỗ tiểu khoảng 10-15cm hoặc đến khi thấy nước tiểu chảy ra.", correct: false },
+            { text: "Đưa vào lỗ tiểu khoảng 7- 10 cm hoặc đến khi thấy nước tiểu chảy ra.", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích của thụt tháo là gì?",
+        options: [
+            { text: "Làm mềm phân và làm thành ruột giãn ra", correct: true },
+            { text: "Là phương pháp làm sạch dạ dày.", correct: false },
+            { text: "Là phương pháp làm sạch đường hô hấp.", correct: false },
+            { text: "Là phương pháp làm sạch bàng quang.", correct: false }
+        ]
+    },
+    {
+        question: "Một trong những dấu hiệu của mất cân bằng dịch là:",
+        options: [
+            { text: "Cân nặng người bệnh thay đổi", correct: false },
+            { text: "Phù hoặc tiểu ít", correct: true },
+            { text: "Uống nhiều nước", correct: false },
+            { text: "Huyết áp không đổi", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân gout nên tăng cường thức ăn sau Ngoại trừ ?",
+        options: [
+            { text: "Thực phẩm chứa purine cao như nội tạng động vật", correct: true },
+            { text: "Thực phẩm giàu vitamin C", correct: false },
+            { text: "Thực phẩm chứa chất béo lành mạnh", correct: false },
+            { text: "Các loại hạt khô", correct: false }
+        ]
+    },
+    {
+        question: "Trong cấp cứu hồi sinh tim phổi. Khi nào ngừng cấp cứu người bện",
+        options: [
+            { text: "Thời gian cấp cứu > 30 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: false },
+            { text: "Thời gian cấp cứu > 50 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: false },
+            { text: "Thời gian cấp cứu > 60 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: true },
+            { text: "Thời gian cấp cứu > 90 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: false }
+        ]
+    },
+    {
+        question: "Nguyên nhân dẫn đến loét ép",
+        options: [
+            { text: "Do nhiễm trùng", correct: false },
+            { text: "Tổn thương da và mô dưới da do áp lực kéo dài.", correct: true },
+            { text: "Suy dinh dưỡng", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Trong chăm sóc người bệnh ở Giai đoạn toàn phát để đảm bảo lượng kcalo cung cấp cho các hoạt động chuyển hóa cơ thể chống lại bệnh, cần khoảng:",
+        options: [
+            { text: "Khoảng 1.200 — 1.500 kcal/ngày.", correct: false },
+            { text: "Khoảng 1.500 - 2.000 kcal/ngày.", correct: true },
+            { text: "Khoảng 1.700 - 2.000 kcal/ngày.", correct: false },
+            { text: "Khoảng 2.000 -2.500 kcal/ngày.", correct: false }
+        ]
+    },
+    {
+        question: "Số lượng dịch để thực hiện kỹ thuật thụt tháo ở người lớn?",
+        options: [
+            { text: "500 – l.000ml.", correct: false },
+            { text: "700 – l.000ml", correct: false },
+            { text: "500 – l.500ml", correct: true },
+            { text: "Tùy vào tình trạng người bệnh", correct: false }
+        ]
+    },
+    {
+        question: "Biến chứng có thể xảy ra khi thực hiện thụt tháo không đúng kỹ thuật là:",
+        options: [
+            { text: "Tổn thương trực tràng, thủng ruột, rối loạn điện giải", correct: true },
+            { text: "Nhiễm trùng đường tiểu.", correct: false },
+            { text: "Suy giảm miễn dịch.", correct: false },
+            { text: "Tất cả các ý trên.", correct: false }
+        ]
+    },
+    {
+        question: "Các yếu tố nguy cơ gây loét",
+        options: [
+            { text: "Sự chèn ép lên mô kéo dài", correct: true },
+            { text: "Da khô", correct: false },
+            { text: "Bệnh cấp tính", correct: false },
+            { text: "Tất cả các ý trên", correct: false }
+        ]
+    },
+    {
+        question: "Trong chăm sóc người bệnh hôm mê. Vị trí nào trên cơ thể dễ bị loét ép nhất?",
+        options: [
+            { text: "Bụng và ngực.", correct: false },
+            { text: "Các vùng xương nhô như xương cụt, gót chân, và hông.", correct: true },
+            { text: "Bàn tay và bàn chân.", correct: false },
+            { text: "Mặt và cổ.", correct: false }
+        ]
+    },
+    {
+        question: "Nhiệt độ nước khi thực hiện thụt giữ là?",
+        options: [
+            { text: "15-20°C.", correct: false },
+            { text: "20-25°C.", correct: false },
+            { text: "35-37°C.", correct: false },
+            { text: "37 - 40°C", correct: true }
+        ]
+    },
+    {
+        question: "Khi Điều dưỡng thực hiện chăm sóc người bệnh hôm mê cần lưu ý?",
+        options: [
+            { text: "Bất động chặt người bệnh phòng tránh té ngã  tránh té ngã", correct: false },
+            { text: "Giữ da sạch sẽ và khô ráo.", correct: true },
+            { text: "Thoa kem dưỡng ẩm liên tục cho người bệnh.", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích chính của thủ thuật chọc dò màng tim là gì?",
+        options: [
+            { text: "Lấy mẫu máu để xét nghiệm", correct: false },
+            { text: "Đo áp lực trong tim", correct: false },
+            { text: "Loại bỏ dịch, giảm áp lực trong màng tim", correct: true },
+            { text: "Kiểm tra tổn thương van tim", correct: false }
+        ]
+    },
+    {
+        question: "Ở bệnh nhân nhiễm khuẩn, protein dự trữ mất đi nhanh hơn bao nhiêu lần so với bệnh nhân không nhiễm khuẩn.",
+        options: [
+            { text: "5 lần", correct: false },
+            { text: "6 lần", correct: true },
+            { text: "7 lần", correct: false },
+            { text: "8 lần", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân xơ gan cổ trướng cần ăn chế độ ăn:",
+        options: [
+            { text: "Giàu protein và giàu muối", correct: false },
+            { text: "Ít đạm, nhiều muối", correct: false },
+            { text: "Giàu đạm và hạn chế muối", correct: true },
+            { text: "Nhiều calo và muối", correct: false }
+        ]
+    },
+    {
+        question: "Trong kỹ thuật đặt sonde dạ dày. Triệu chứng nào sau đây có thể xảy ra nếu đặt ống thông sai vị trí?",
+        options: [
+            { text: "Bệnh nhân đau vùng mũi họng", correct: false },
+            { text: "Khó thở hoặc ho dữ dội", correct: true },
+            { text: "Buồn nôn, nôn nhiều", correct: false },
+            { text: "Tấ cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Ngừng tuần hoàn được định nghĩa là gì?",
+        options: [
+            { text: "Tim ngừng đập và hô hấp vẫn còn hoạt động", correct: false },
+            { text: "Ngừng hoàn toàn hoạt động bơm máu của tim và hô hấp", correct: true },
+            { text: "Tình trạng huyết áp giảm đột ngột", correct: false },
+            { text: "Chỉ là ngừng thở tạm thời", correct: false }
+        ]
+    },
+    {
+        question: "Loại băng nào thường được sử dụng để cố định xương gãy?",
+        options: [
+            { text: "Băng cuộn thông thường", correct: false },
+            { text: "Băng thun đàn hồi", correct: false },
+            { text: "Băng thạch cao", correct: true },
+            { text: "Băng tam giác", correct: false }
+        ]
+    },
+    {
+        question: "Trong chăm sóc người bệnh hôm mê. Các biện pháp phòng chống loét",
+        options: [
+            { text: "Thay đổi tư thế 2h/lần", correct: true },
+            { text: "Giúp da luôn khô ráo và sạch sẽ", correct: false },
+            { text: "Tăng cường dinh dưỡng", correct: false },
+            { text: "Tất cả đều đúng", correct: true }
+        ]
+    },
+    {
+        question: "Trong kỹ thuật hút đờm. Khi hút đờm qua ống nội khí quản, áp lực hút phù hợp là:",
+        options: [
+            { text: "50-100 mmHg", correct: false },
+            { text: "100-120 mmHg", correct: true },
+            { text: "150-200 mmHg", correct: false },
+            { text: "200-250 mmHg", correct: false }
+        ]
+    },
+    {
+        question: "Loại dung dịch sát khuẩn nào để làm sạch vùng da xung quanh trước khi lấy máu cấy cho người người bệnh?",
+        options: [
+            { text: "Dung dịch cồn 70%", correct: false },
+            { text: "Oxy già", correct: false },
+            { text: "Povidone-iodine", correct: true },
+            { text: "Hydrogen peroxide", correct: false }
+        ]
+    },
+    {
+        question: "Khi đặt ống nội khí quản, tư thế tối ưu của bệnh nhân là:",
+        options: [
+            { text: "Nằm nghiêng trái", correct: false },
+            { text: "Nằm ngửa, đầu hơi ngửa ra sau", correct: true },
+            { text: "Nằm sấp", correct: false },
+            { text: "Ngồi thẳng", correct: false }
+        ]
+    },
+    {
+        question: "Trong kỹ thuật thay băng cắt chỉ cho người bệnh. Thời gian cắt chỉ vết thương sạch",
+        options: [
+            { text: "Chỉ khâu thường được cắt 5-7 ngày sau phẫu thuật nếu các bờ của vết thương đã khít lại tốt và quá trình lành vết thương diễn ra bình thường", correct: false },
+            { text: "Chỉ khâu thường được cắt 7-12 ngày sau phẫu thuật nếu các bờ của vết thương đã khít lại tốt và quá trình lành vết thương diễn ra bình thường", correct: false },
+            { text: "Chỉ khâu thường được cắt 7-10 ngày sau phẫu thuật nếu các bờ của vết thương chưa khít lại tốt và quá trình lành vết thương diễn ra bình thường", correct: false },
+            { text: "Chỉ khâu thường được cắt 7-10 ngày sau phẫu thuật nếu các bờ của vết thương đã khít lại tốt và quá trình lành vết thương diễn ra bình thường", correct: true }
+        ]
+    },
+    {
+        question: "Mục đích chính của việc đặt ống thông tĩnh mạch trung tâm là gì?",
+        options: [
+            { text: "Đo ấp lực động mạch", correct: false },
+            { text: "Tiêm truyền thuốc và đo lượng dịch vào ra của người bệnh", correct: true },
+            { text: "Lấy mẫu máu xét nghiệm", correct: false },
+            { text: "Tất cả đều dúng", correct: false }
+        ]
+    },
+    {
+        question: "Nguyên tắc trước khi thực hiện kỹ thuật thay băng cho người bệnh",
+        options: [
+            { text: "Giải thích cho người bệnh biết", correct: false },
+            { text: "Khớp xương hoặc chỗ lồi lỗm  của xương phải chêm lót gạc cho bằng chỗ bên cạnh", correct: false },
+            { text: "Hướng dẫn người bệnh tư thế phù hợp", correct: false },
+            { text: "Tất cả đều đúng", correct: true }
+        ]
+    },
+    {
+        question: "Trong kỹ thuật tiến hành thông tiểu nữ?",
+        options: [
+            { text: "Đưa vào lỗ tiểu khoảng 4-5 cm hoặc đến khi thấy nước tiểu chảy ra", correct: true },
+            { text: "Đưa vào lỗ tiểu khoảng 5-6 cm hoặc đến khi thấy nước tiểu chảy ra.", correct: false },
+            { text: "Đưa vào lỗ tiểu khoảng 10-15cm hoặc đến khi thấy nước tiểu chảy ra.", correct: false },
+            { text: "Đưa vào lỗ tiểu khoảng 7- 10 cm hoặc đến khi thấy nước tiểu chảy ra.", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích của thụt tháo là gì?",
+        options: [
+            { text: "Làm mềm phân và làm thành ruột giãn ra", correct: true },
+            { text: "Là phương pháp làm sạch dạ dày.", correct: false },
+            { text: "Là phương pháp làm sạch đường hô hấp.", correct: false },
+            { text: "Là phương pháp làm sạch bàng quang.", correct: false }
+        ]
+    },
+    {
+        question: "Một trong những dấu hiệu của mất cân bằng dịch là:",
+        options: [
+            { text: "Cân nặng người bệnh thay đổi", correct: false },
+            { text: "Phù hoặc tiểu ít", correct: true },
+            { text: "Uống nhiều nước", correct: false },
+            { text: "Huyết áp không đổi", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân gout nên tăng cường thức ăn sau Ngoại trừ ?",
+        options: [
+            { text: "Thực phẩm chứa purine cao như nội tạng động vật", correct: true },
+            { text: "Thực phẩm giàu vitamin C", correct: false },
+            { text: "Thực phẩm chứa chất béo lành mạnh", correct: false },
+            { text: "Các loại hạt khô", correct: false }
+        ]
+    },
+    {
+        question: "Trong cấp cứu hồi sinh tim phổi. Khi nào ngừng cấp cứu người bệnh",
+        options: [
+            { text: "Thời gian cấp cứu > 30 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: true },
+            { text: "Thời gian cấp cứu > 50 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: false },
+            { text: "Thời gian cấp cứu > 60 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: true },
+            { text: "Thời gian cấp cứu > 90 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: false }
+        ]
+    },
+    {
+        question: "Nguyên nhân dẫn đến loét ép",
+        options: [
+            { text: "Do nhiễm trùng", correct: false },
+            { text: "Tổn thương da và mô dưới da do áp lực kéo dài.", correct: true },
+            { text: "Suy dinh dưỡng", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Trong chăm sóc người bệnh ở Giai đoạn toàn phát để đảm bảo lượng kcalo cung cấp cho các hoạt động chuyển hóa cơ thể chống lại bệnh, cần khoảng:",
+        options: [
+            { text: "Khoảng 1.200 — 1.500 kcal/ngày.", correct: false },
+            { text: "Khoảng 1.500 - 2.000 kcal/ngày.", correct: true },
+            { text: "Khoảng 1.700 - 2.000 kcal/ngày.", correct: false },
+            { text: "Khoảng 2.000 -2.500 kcal/ngày.", correct: false }
+        ]
+    },
+    {
+        question: "Số lượng dịch để thực hiện kỹ thuật thụt tháo ở người lớn?",
+        options: [
+            { text: "500 – l.000ml.", correct: false },
+            { text: "700 – l.000ml", correct: false },
+            { text: "500 – l.500ml", correct: true },
+            { text: "Tùy vào tình trạng người bệnh", correct: false }
+        ]
+    },
+    {
+        question: "Biến chứng có thể xảy ra khi thực hiện thụt tháo không đúng kỹ thuật là:",
+        options: [
+            { text: "Tổn thương trực tràng, thủng ruột, rối loạn điện giải", correct: true },
+            { text: "Nhiễm trùng đường tiểu.", correct: false },
+            { text: "Suy giảm miễn dịch.", correct: false },
+            { text: "Tất cả các ý trên.", correct: false }
+        ]
+    },
+    {
+        question: "Các yếu tố nguy cơ gây loét",
+        options: [
+            { text: "Sự chèn ép lên mô kéo dài", correct: true },
+            { text: "Da khô", correct: false },
+            { text: "Bệnh cấp tính", correct: false },
+            { text: "Tất cả các ý trên", correct: false }
+        ]
+    },
+    {
+        question: "Trong chăm sóc người bệnh hôm mê. Vị trí nào trên cơ thể dễ bị loét ép nhất?",
+        options: [
+            { text: "Bụng và ngực.", correct: false },
+            { text: "Các vùng xương nhô như xương cụt, gót chân, và hông.", correct: true },
+            { text: "Bàn tay và bàn chân.", correct: false },
+            { text: "Mặt và cổ.", correct: false }
+        ]
+    },
+    {
+        question: "Nhiệt độ nước khi thực hiện thụt giữ là?",
+        options: [
+            { text: "15-20°C.", correct: false },
+            { text: "20-25°C.", correct: false },
+            { text: "35-37°C.", correct: false },
+            { text: "37 - 40°C", correct: true }
+        ]
+    },
+    {
+        question: "Khi Điều dưỡng thực hiện chăm sóc người bệnh hôm mê cần lưu ý?",
+        options: [
+            { text: "Bất động chặt người bệnh phòng tránh té ngã  tránh té ngã", correct: false },
+            { text: "Giữ da sạch sẽ và khô ráo.", correct: true },
+            { text: "Thoa kem dưỡng ẩm liên tục cho người bệnh.", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích chính của thủ thuật chọc dò màng tim là gì?",
+        options: [
+            { text: "Lấy mẫu máu để xét nghiệm", correct: false },
+            { text: "Đo áp lực trong tim", correct: false },
+            { text: "Loại bỏ dịch, giảm áp lực trong màng tim", correct: true },
+            { text: "Kiểm tra tổn thương van tim", correct: false }
+        ]
+    },
+    {
+        question: "Trong cấp cứu ngừng tuần hoàn. Khi thực hiện ép tim ngoài lồng ngực ở người lớn, tần số ép tim khuyến cáo là:",
+        options: [
+            { text: "60-80 lần/phút", correct: false },
+            { text: "80-100 lần/phút", correct: false },
+            { text: "100-120 lần/phút", correct: true },
+            { text: "120-130 lần/phút", correct: false }
+        ]
+    },
+    {
+        question: "Trong kỹ thuật thay băng vết thương sạch là",
+        options: [
+            { text: "Rửa da xung quanh vết thương bằng oxy già  rộng ra ngoài 3 - 5cm.", correct: false },
+            { text: "Rửa vết thương bằng nước muối sinh lý 0.9% rộng ra 3 – 5 cm", correct: true },
+            { text: "Rửa da xung quanh vết thương bằng nước mối sinh lý rộng ra ngoài 3 - 5cm.", correct: false },
+            { text: "Rửa da xung quanh vết thương bằng cồn 70 độ rộng ra ngoài 3 - 5cm.", correct: false }
+        ]
+    },
+    {
+        question: "Dấu hiệu loét ép giai đoạn IV là",
+        options: [
+            { text: "Da bị đỏ nặng nhưng không tổn thương sâu.", correct: false },
+            { text: "Tổn thương toàn bộ da và lan đến cơ, xương.", correct: true },
+            { text: "Da nứt nẻ và chảy máu.", correct: false },
+            { text: "Tổn thương lớp thượng bì.", correct: false }
+        ]
+    },
+    {
+        question: "Trong quy trình kỹ thuật tháy băng vết thương. Thứ tự đúng khi thay băng vết thương là:",
+        options: [
+            { text: "Sát khuẩn tay → Tháo băng cũ → Sát khuẩn vết thương → Đặt băng mới.", correct: true },
+            { text: "Tháo băng cũ → Sát khuẩn tay → Sát khuẩn vết thương → Đặt băng mới.", correct: false },
+            { text: "Sát khuẩn tay → Sát khuẩn vết thương → Tháo băng cũ → Đặt băng mới.", correct: false },
+            { text: "Tháo băng cũ → Đặt băng mới → Sát khuẩn tay → Sát khuẩn vết thương.", correct: false }
+        ]
+    },
+    {
+        question: "Đối với kỹ thuật rửa dạ dày., Dung dịch thường được sử dụng để rửa dạ dày là:",
+        options: [
+            { text: "Dung dịch muối sinh lý hoặc nước sạch", correct: true },
+            { text: "Dung dịch đường glucose", correct: false },
+            { text: "Dung dịch chứa cồn", correct: false },
+            { text: "Dung dịch hydrogen peroxide", correct: false }
+        ]
+    },
+    {
+        question: "Trong kỹ thuật chọc dò tủy sộng. Vị trí thường chọc là:",
+        options: [
+            { text: "L4-L5  hoặc L3-L4", correct: true },
+            { text: "L1-L2 hoặc T12-L1", correct: false },
+            { text: "L4-L5 hoặc L5-S1", correct: false },
+            { text: "T10-T11", correct: false }
+        ]
+    },
+    {
+        question: "Trong quá trình phụ bác sũ đạt catethe TM trung tâm. Biến chứng nào sau đây có thể xảy ra khi đặt ống thông?",
+        options: [
+            { text: "Nhiễm trùng huyết", correct: false },
+            { text: "Tràn khí màng phổi", correct: false },
+            { text: "Tổn thương mạch máu", correct: false },
+            { text: "Tất cả các phương án trên", correct: true }
+        ]
+    },
+    {
+        question: "Đối với bệnh nhân suy hô hấp. Mặt nạ Venturi thường được sử dụng trong trường hợp nào?",
+        options: [
+            { text: "Cần cung cấp oxy với nồng độ cao", correct: false },
+            { text: "Bệnh nhân cần kiểm soát chính xác nồng độ oxy", correct: true },
+            { text: "Trường hợp cấp cứu ngừng tim", correct: false },
+            { text: "Khi bệnh nhân không hợp tác", correct: false }
+        ]
+    },
+    {
+        question: "Đối với người bệnh hôn mê có thở máy. Biến chứng phổ biến nhất ở bệnh nhân thở máy kéo dài là gì?",
+        options: [
+            { text: "Viêm phổi liên quan thở máy (VAP)", correct: true },
+            { text: "Tăng huyết áp", correct: false },
+            { text: "Suy tim cấp", correct: false },
+            { text: "Nhiễm trùng tiết niệu", correct: false }
+        ]
+    },
+    {
+        question: "Trước khi hút đờm, điều gì cần được thực hiện để đảm bảo an toàn cho bệnh nhân?",
+        options: [
+            { text: "Đưa bệnh nhân vào tư thế ngồi", correct: false },
+            { text: "Bổ sung oxy 100% trong 1-2 phút đầu trước khi hút", correct: true },
+            { text: "Cho bệnh nhân uống thuốc giảm đau", correct: false },
+            { text: "Làm ẩm ống hút", correct: false }
+        ]
+    },
+    {
+        question: "Dấu  hiệu của mất cân bằng dịch ở người bệnh là:",
+        options: [
+            { text: "Người bệnh mệt, khó thở, vật vã", correct: false },
+            { text: "Mệt mỏi phù hoặc tiểu ít", correct: true },
+            { text: "Người bệnh không muốn uống nước", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Bệnh nhân gout nên hạn chế thực phẩm nào sau đây?",
+        options: [
+            { text: "Thực phẩm chứa purine cao như nội tạng động vật", correct: true },
+            { text: "Thực phẩm giàu vitamin C", correct: false },
+            { text: "Thực phẩm chứa chất béo", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Trong cấp cứu ngừng tuần hoàn. Khi nào ngừng cấp cứu cho người bệnh",
+        options: [
+            { text: "Thời gian cấp cứu > 30 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: false },
+            { text: "Thời gian cấp cứu > 50 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: false },
+            { text: "Thời gian cấp cứu > 60 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: true },
+            { text: "Thời gian cấp cứu > 90 phút mà không có kết quả, Đồng tử giãn to, mất phản xạ ánh sáng; tim không đập lại.", correct: false }
+        ]
+    },
+    {
+        question: "Trong chăm sóc người bênh đái tháo đường. Khi cho người bệnh uống thuốc hạ đường huyết, điều dưỡng cần lưu ý điều gì?",
+        options: [
+            { text: "Kiểm tra họ tên, hướng dẫn người bệnh uống đúng cách", correct: false },
+            { text: "Hướng dẫn người bệnh uống đúng thời gian", correct: false },
+            { text: "Khi có dấu hiệu bất thường phải báo cho nhân viên y tế ngay", correct: false },
+            { text: "Tất cả đều đúng", correct: true }
+        ]
+    },
+    {
+        question: "Một trong những biến chứng có thể xảy ra khi thực hiện thụt tháo không đúng kỹ thuật là:",
+        options: [
+            { text: "Xuất huyết trực tràng.", correct: true },
+            { text: "Nhiễm trùng đường tiểu.", correct: false },
+            { text: "Suy giảm miễn dịch.", correct: false },
+            { text: "Mất nước.", correct: false }
+        ]
+    },
+    {
+        question: "Chỉ định của đặt sonde dạ dày ngoại trừ",
+        options: [
+            { text: "Hút dịch, Rửa dạ dày", correct: false },
+            { text: "Nuôi dưỡng đối với những NB hôn mê, bất tỉnh hoặc không tiêu hóa hiệu quả dinh dưỡng bằng đường uống", correct: false },
+            { text: "Các bệnh ở thực quản: co thắt, chít hẹp, phình tĩnh đông, mạch thực quản.", correct: true },
+            { text: "Căn cứ vào nguyên nhân và cơ chế bệnh sinh của bệnh, tình hình lâm sàng và diễn biến của bệnh.", correct: true }
+        ]
+    },
+    {
+        question: "Vị trí nào trên cơ thể dễ bị loét ép nhất?",
+        options: [
+            { text: "Bụng và ngực.", correct: false },
+            { text: "Các vùng xương nhô như xương cụt, gót chân, và hông.", correct: true },
+            { text: "Bàn tay và bàn chân.", correct: false },
+            { text: "Mặt và cổ.", correct: false }
+        ]
+    },
+    {
+        question: "Các tai biến thường gặp trong và sau khi rửa dạ dày có thể xảy ra ngoại trừ?",
+        options: [
+            { text: "Viêm phổi do hít phải dịch rửa.", correct: false },
+            { text: "Rối loạn nước - điện giải", correct: false },
+            { text: "Nhịp tim chậm hoặc ngất", correct: false },
+            { text: "Tăng  thân nhiệt", correct: true }
+        ]
+    },
+    {
+        question: "Các dấu hiệu chẩn đoán chắc chắn gãy xương",
+        options: [
+            { text: "Đau", correct: false },
+            { text: "Biến dạng, gập góc, lệch trục chi", correct: true },
+            { text: "Sung nề, bầm tím", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Trong chăm sóc người bệnh có đặ catether TMTT. Khi rút ống thông tâm, bệnh nhân nên:",
+        options: [
+            { text: "Nằm ngửa, đầu thấp và thực hiện động tác hít sâu", correct: true },
+            { text: "Nằm nghiêng trái và thở nhẹ nhàng", correct: false },
+            { text: "Ngồi thẳng và giữ hơi thở", correct: false },
+            { text: "Nằm nghiêng phải và thở đều", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích chính của mở khí quản là:",
+        options: [
+            { text: "Giảm đau họng", correct: false },
+            { text: "Đưa khí trực tiếp vào khí quản để hỗ trợ hô hấp", correct: true },
+            { text: "Loại bỏ dịch từ dạ dày", correct: false },
+            { text: "Giảm nguy cơ nhiễm trùng hô hấp", correct: false }
+        ]
+    },
+    {
+        question: "Khi rút ống nội khí quản, bệnh nhân cần:",
+        options: [
+            { text: "Giữ hơi thở", correct: false },
+            { text: "Hít sâu và thở ra mạnh khi rút ống", correct: true },
+            { text: "Nằm sấp để tránh hít phải dịch", correct: false },
+            { text: "Uống nước ngay sau khi rút ống", correct: false }
+        ]
+    },
+    {
+        question: "Áp lực lớn hơn áp lực dưới máu mao mạch niêm mạc khí quản, tuần hoàn mao mạch bị chèn ép gây thiếu máu, hoại tử. Áp lực cuff  khoảng:",
+        options: [
+            { text: "15 — 20 mmHg", correct: false },
+            { text: "20 — 25 mmHg", correct: true },
+            { text: "10 — 25 mmHg", correct: false },
+            { text: "25 — 30 mmHg", correct: false }
+        ]
+    },
+    {
+        question: "Trong cấp cứu hồi sinh tim phổi. Khi thực hiện ép tim ngoài lồng ngực ở người lớn, tần số ép tim khuyến cáo là:",
+        options: [
+            { text: "60-80 lần/phút", correct: false },
+            { text: "80-100 lần/phút", correct: false },
+            { text: "100-120 lần/phút", correct: true },
+            { text: "120-140 lần/phút", correct: false }
+        ]
+    },
+    {
+        question: "Trong kỹ thuật rửa dạ dày. Tư thế phù hợp cho người bệnh là",
+        options: [
+            { text: "Đặt người bệnh ngồi trên ghế tựa hoặc nằm đầu cao", correct: true },
+            { text: "Đặt người bệnh nằm ngữa đầu thấp", correct: false },
+            { text: "Đặt người bệnh nằm nghiêng đầu thấp", correct: false },
+            { text: "Tùy vào tình trạng người bệnh", correct: false }
+        ]
+    },
+    {
+        question: "Trong kỹ thuật rửa dạ dày. Số lượng nước mỗi lần đổ mỗi lần qua phễu ở người lớn là:",
+        options: [
+            { text: "100 - 200 ml", correct: false },
+            { text: "200 - 300 ml", correct: false },
+            { text: "300 - 400 ml", correct: false },
+            { text: "300 - 500 ml", correct: true }
+        ]
+    },
+    {
+        question: "Triệu chứng nào sau đây có thể xảy ra nếu đặt ống thông dạ dày sai vị trí",
+        options: [
+            { text: "Bệnh nhân đau vùng mũi họng", correct: false },
+            { text: "Khó thở hoặc ho dữ dội", correct: true },
+            { text: "Buồn nôn", correct: false },
+            { text: "Tăng huyết áp", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích của sơ cứu gãy xương là",
+        options: [
+            { text: "Làm đỡ đau nhưng tăng nguy cơ sốc", correct: false },
+            { text: "Làm giảm nguy cơ gây di lệch và tổn thương mạch máu, thần kinh, da, cơ và phần mềm.", correct: true },
+            { text: "Ngừa nhiễm khuẩn  trong trường hợp gãy xương kín", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Khi người bệnh ngừng tuần hoàn bao nhiêu  phút thì sẽ xuất hiện phù não và các tổn thương não không hồi phục.",
+        options: [
+            { text: "Trên 2 phút", correct: false },
+            { text: "Trên 3 phút", correct: false },
+            { text: "Trên 4 phút", correct: true },
+            { text: "Trên 5 phút", correct: false }
+        ]
+    },
+    {
+        question: "Các mô của cơ thể có khả năng chịu đựng được thiếu oxy trong thời gian dài hơn tế bào não",
+        options: [
+            { text: "10 — 15 phút", correct: false },
+            { text: "15 — 20 phút", correct: false },
+            { text: "20 — 30 phút", correct: true },
+            { text: "30 — 40 phút", correct: false }
+        ]
+    },
+    {
+        question: "Chảy máu động mạch là",
+        options: [
+            { text: "Máu chảy ra từ động tĩnh mạch (trừ máu động mạch phổi) có màu đỏ tươi. Khi bị đứt động mạch, máu chảy ra thành tia và phun mạnh lên khi mạch đập.", correct: false },
+            { text: "Máu chảy ra từ  động mạch (trừ máu động mạch phổi) có màu đỏ đậm Khi bị đứt động mạch, máu chảy ra thành tia và phun mạnh lên khi mạch đập.", correct: false },
+            { text: "Máu chảy ra từ động mạch (trừ máu động mạch phổi) có màu đỏ tươi. Khi bị đứt động mạch, máu chảy ra thành tia và phun mạnh lên khi mạch đập.", correct: true },
+            { text: "Máu cháy ra từ tĩnh mạch (trừ máu động mạch phổi) có màu đỏ tươi. Khi bị đứt động mạch, máu chảy ra thành tia và phun mạnh lên khi mạch đập.", correct: false }
+        ]
+    },
+    {
+        question: "Khi thực hiện ép tim cho người bệnh. Cần lưu ý?",
+        options: [
+            { text: "Tay 2: đặt lòng bàn tay vào 1/3 dưới của xưong ức, để sát vào tay một đang đặt ở xưong ức.", correct: true },
+            { text: "Tay 2: đặt lòng bàn tay vào 1/3 trên của xưong ức, để sát vào tay một đang đặt ở xưong ức.", correct: false },
+            { text: "Tay 2: đặt lòng bàn tay vào 1/3 giữa của xưong ức, để sát vào tay một đang đặt ở xưong ức.", correct: false },
+            { text: "Tay 2: đặt lòng bàn tay vào 2/3 dưới của xưong ức, để sát vào tay một đang đặt ở xưong ức.", correct: false }
+        ]
+    },
+    {
+        question: "Trong chấn thương. Triệu chứng và dấu hiệu của mất nhiều máu",
+        options: [
+            { text: "Hoảng hốt, giãy giụa, kích thích, ý thức lú lẫn, lộn xộn, thay đổi mức độ tỉnh táo", correct: true },
+            { text: "Hoảng hốt lo âu", correct: false },
+            { text: "Khó thở", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Thụt tháo là gì?",
+        options: [
+            { text: "Là phương pháp làm sạch toàn bộ ruột già.", correct: true },
+            { text: "Là phương pháp làm sạch dạ dày.", correct: false },
+            { text: "Là phương pháp làm sạch bàng quang", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Thiết bị nào được sử dụng để cung cấp oxy với lưu lượng cao?",
+        options: [
+            { text: "Cannula mũi", correct: false },
+            { text: "Mặt nạ oxy đơn giản", correct: false },
+            { text: "Mặt nạ không thở lại (non-rebreather mask)", correct: true },
+            { text: "Máy thở cơ học", correct: false }
+        ]
+    },
+    {
+        question: "Để hạn chế nguy cơ viêm phổi liên quan thở máy (VAP), cần thực hiện:",
+        options: [
+            { text: "Vệ sinh răng miệng thường xuyên", correct: false },
+            { text: "Hút dịch đờm đúng kỹ thuật", correct: false },
+            { text: "Giữ bệnh nhân ở tư thế đầu cao", correct: false },
+            { text: "Tất cả các biện pháp trên", correct: true }
+        ]
+    },
+    {
+        question: "Các biến chứng của thở máy",
+        options: [
+            { text: "Tràn dịch màng phổi", correct: false },
+            { text: "Tắc đờm, tuột, hở đường thở, Nhiễm trùng phổi", correct: true },
+            { text: "Xẹp phổi", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    },
+    {
+        question: "Khi băng vùng đầu, kỹ thuật nào thường được áp dụng?",
+        options: [
+            { text: "Băng xoắn ốc", correct: false },
+            { text: "Băng chữ nhân", correct: false },
+            { text: "Băng vòng", correct: false },
+            { text: "Băng hồi quy", correct: true }
+        ]
+    },
+    {
+        question: "Khi băng vùng khớp gối, kỹ thuật băng phù hợp nhất là:",
+        options: [
+            { text: "Băng xoắn ốc", correct: false },
+            { text: "Băng chữ nhân", correct: true },
+            { text: "Băng vòng", correct: false },
+            { text: "Băng cuộn ngang", correct: false }
+        ]
+    },
+    {
+        question: "Khi vận chuyển bệnh nhân gãy cột sống, phương pháp nào là an toàn nhất?",
+        options: [
+            { text: "Đặt bệnh nhân trên cáng cứng và cố định cột sống", correct: true },
+            { text: "Để bệnh nhân tự ngồi dậy nếu có thể", correct: false },
+            { text: "Vận chuyển trên ghế tựa", correct: false },
+            { text: "Bế thẳng đứng bệnh nhân", correct: false }
+        ]
+    },
+    {
+        question: "Khi vận chuyển người bệnh khó thở cần lưu ý",
+        options: [
+            { text: "Nếu nằm trên cáng thì phải kê cao đầu, nên để bệnh nhân ngồi trên ghế di chuyển theo tư thế Fowler.", correct: false },
+            { text: "Trường hợp bệnh nhân xanh tái: để bệnh nhân nằm đầu thấp không kê gối.", correct: false },
+            { text: "Trường hơp bệnh nhân xanh tái: để bệnh nhân nằm đầu cao không kê gối.", correct: false },
+            { text: "A, B đúng", correct: true }
+        ]
+    },
+    {
+        question: "Biểu hiện chính của gãy xương là:",
+        options: [
+            { text: "Đau tại vùng tổn thương, biến dạng chi và sưng nề", correct: true },
+            { text: "Sốt cao và đau ngực", correct: false },
+            { text: "Chảy máu nhiều tại vết thương", correct: false },
+            { text: "Khó thở và tím tái", correct: false }
+        ]
+    },
+    {
+        question: "Khi phát hiện người bệnh ngừng tuần hoàn phải gọi to để mọi người hỗ trợ cấp cứu đồng thời thực hiện ngay cấp cứu cứu ban đầu theo thứ tự các bước sau:",
+        options: [
+            { text: "Các cấp cứu ban đầu: A—B—C", correct: false },
+            { text: "Các cấp cứu ban đầu: C—B—A", correct: false },
+            { text: "Các cấp cứu ban đầu: C—A—B", correct: true },
+            { text: "Tùy vào tình trạng người bệnh", correct: false }
+        ]
+    },
+    {
+        question: "Mục đích chính của việc vận chuyển bệnh nhân là gì?",
+        options: [
+            { text: "Đưa bệnh nhân đến cơ sở y tế an toàn và nhanh chóng", correct: true },
+            { text: "Giảm đau cho bệnh nhân", correct: false },
+            { text: "Cố định vị trí tổn thương", correct: false },
+            { text: "Tăng cường tuần hoàn máu", correct: false }
+        ]
+    },
+    {
+        question: "Loại băng nào thường được sử dụng để cố định tạm thời ở vùng cánh tay?",
+        options: [
+            { text: "Băng tam giác", correct: true },
+            { text: "Băng thun đàn hồi", correct: false },
+            { text: "Băng cuộn thông thường", correct: false },
+            { text: "Băng vòng", correct: false }
+        ]
+    },
+    {
+        question: "Khi đo SpO2 (độ bão hòa oxy trong máu), giá trị bình thường thường nằm trong khoảng:",
+        options: [
+            { text: "80-90%", correct: false },
+            { text: "90-100%", correct: false },
+            { text: "95-100%", correct: true },
+            { text: "70-80%", correct: false }
+        ]
+    },
+    {
+        question: "Chỉ đinh của rửa dạ dày",
+        options: [
+            { text: "Ngộ độc thức ăn, thuốc, hoá chất trước 6 giờ.", correct: true },
+            { text: "Viêm loét dạ dày tá tràng", correct: false },
+            { text: "Viêm ruột thừa vỡ mủ", correct: false },
+            { text: "Tất cả đều đúng", correct: false }
+        ]
+    }
+];
+
+
+
+
+        // Biến lưu trữ trạng thái
+        let userAnswers = Array(questionsData.length).fill(null);
+        let answeredCount = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        // Hàm tạo câu hỏi
+        function createQuestions() {
+            const container = document.getElementById('questions-container');
+            
+            questionsData.forEach((questionData, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question';
+                questionElement.dataset.index = index;
+                
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = `Câu ${index + 1}:`;
+                
+                const questionText = document.createElement('div');
+                questionText.className = 'question-text';
+                questionText.textContent = questionData.question;
+                
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'options';
+                
+               shuffle(questionData.options); // RANDOM ĐÁP ÁN
+
+const letters = ['A', 'B', 'C', 'D'];
+
+questionData.options.forEach((option, optionIndex) => {
+
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.dataset.optionIndex = optionIndex;
+                    
+                    const optionLetter = document.createElement('div');
+                    optionLetter.className = 'option-letter';
+                    optionLetter.textContent = letters[optionIndex];
+                    
+                    const optionText = document.createElement('span');
+                    optionText.textContent = option.text;
+                    
+                    // Tạo indicator nhưng ẩn đi cho đến khi người dùng chọn
+                    const indicator = document.createElement('span');
+                    indicator.className = 'result-indicator';
+                    indicator.style.visibility = 'hidden';
+                    
+                    optionElement.appendChild(optionLetter);
+                    optionElement.appendChild(optionText);
+                    optionElement.appendChild(indicator);
+                    
+                    // Thêm sự kiện click
+                    optionElement.addEventListener('click', () => {
+                        selectOption(index, optionIndex);
+                    });
+                    
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                questionElement.appendChild(questionNumber);
+                questionElement.appendChild(questionText);
+                questionElement.appendChild(optionsContainer);
+                container.appendChild(questionElement);
+            });
+            
+            // Cập nhật tổng số câu hỏi
+            document.getElementById('total-questions').textContent = questionsData.length;
+            updateProgressBar();
+        }
+
+        // Hàm chọn đáp án
+        function selectOption(questionIndex, optionIndex) {
+            const questionElement = document.querySelector(`.question[data-index="${questionIndex}"]`);
+            const options = questionElement.querySelectorAll('.option');
+            const questionData = questionsData[questionIndex];
+            
+            // Kiểm tra xem câu hỏi này đã được trả lời chưa
+            const wasAnswered = userAnswers[questionIndex] !== null;
+            
+            // Xóa lớp selected từ tất cả các đáp án trong câu hỏi này
+            options.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Thêm lớp selected cho đáp án được chọn
+            options[optionIndex].classList.add('selected');
+            
+            // Hiển thị kết quả cho tất cả các đáp án trong câu hỏi này
+            options.forEach((option, idx) => {
+                const indicator = option.querySelector('.result-indicator');
+                const isCorrect = questionData.options[idx].correct;
+                
+                // Hiển thị indicator
+                indicator.style.visibility = 'visible';
+                
+                // Đặt nội dung và lớp cho indicator
+                if (isCorrect) {
+                    option.classList.add('correct');
+                    indicator.textContent = ' ✓';
+                } else if (idx === optionIndex) {
+                    option.classList.add('incorrect');
+                    indicator.textContent = ' ✗';
+                }
+                
+                // Nếu là đáp án đúng, hiển thị màu xanh
+                if (isCorrect) {
+                    option.classList.add('correct');
+                }
+            });
+            
+            // Lưu đáp án người dùng chọn
+            userAnswers[questionIndex] = optionIndex;
+            
+            // Cập nhật số lượng câu đã trả lời
+            if (!wasAnswered) {
+                answeredCount++;
+                
+                // Cập nhật số câu đúng/sai
+                if (questionData.options[optionIndex].correct) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+                
+                // Cập nhật thanh tiến độ và số liệu
+                updateProgressBar();
+            }
+        }
+
+        // Hàm cập nhật thanh tiến độ
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progress-fill');
+            const answeredCountElement = document.getElementById('answered-count');
+            const correctProgressElement = document.getElementById('correct-progress');
+            const incorrectProgressElement = document.getElementById('incorrect-progress');
+            
+            // Tính phần trăm
+            const percentage = (answeredCount / questionsData.length) * 100;
+            
+            // Cập nhật thanh tiến độ
+            progressFill.style.width = `${percentage}%`;
+            
+            // Cập nhật số liệu
+            answeredCountElement.textContent = answeredCount;
+            correctProgressElement.textContent = correctCount;
+            incorrectProgressElement.textContent = incorrectCount;
+        }
+
+        // Hàm hiển thị kết quả tổng
+        function showScore() {
+            const scoreContainer = document.getElementById('score-container');
+            const scoreElement = document.getElementById('score');
+            const correctCountElement = document.getElementById('correct-count');
+            const incorrectCountElement = document.getElementById('incorrect-count');
+            
+            scoreElement.textContent = `${correctCount}/${questionsData.length}`;
+            correctCountElement.textContent = correctCount;
+            incorrectCountElement.textContent = incorrectCount;
+            
+            scoreContainer.classList.add('show');
+            
+            // Cuộn đến phần kết quả
+            scoreContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Hàm làm lại bài
+        function resetQuiz() {
+            // Reset tất cả biến
+            userAnswers = Array(questionsData.length).fill(null);
+            answeredCount = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            
+            // Xóa tất cả các lớp và indicator
+            const questions = document.querySelectorAll('.question');
+            questions.forEach(question => {
+                const options = question.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.classList.remove('selected', 'correct', 'incorrect');
+                    
+                    const indicator = option.querySelector('.result-indicator');
+                    if (indicator) {
+                        indicator.style.visibility = 'hidden';
+                        indicator.textContent = '';
+                    }
+                });
+            });
+            
+            // Ẩn kết quả
+            const scoreContainer = document.getElementById('score-container');
+            scoreContainer.classList.remove('show');
+            
+            // Cập nhật thanh tiến độ
+            updateProgressBar();
+        }
+
+        // Khởi tạo bài kiểm tra
+       document.addEventListener('DOMContentLoaded', () => {
+    shuffle(questionsData);   // RANDOM THỨ TỰ CÂU HỎI
+    createQuestions();
+
+
+            
+            // Gán sự kiện cho nút xem kết quả
+            document.getElementById('show-score-btn').addEventListener('click', showScore);
+            
+            // Gán sự kiện cho nút làm lại
+            document.getElementById('reset-btn').addEventListener('click', resetQuiz);
+        });
+    </script>
+</body>
+</html>
