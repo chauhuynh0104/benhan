@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chọn đề theo môn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 40px 30px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-decoration: none;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .btn:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+    }
+
+    .mp { background: linear-gradient(135deg, #ff758c, #ff7eb3); }
+    .cs { background: linear-gradient(135deg, #43cea2, #185a9d); }
+    .anh { background: linear-gradient(135deg, #f7971e, #ffd200); color:#333; }
+    .kst { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .nk2 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+    .tin { background: linear-gradient(135deg, #56ccf2, #2f80ed); }
+    .tn { background: linear-gradient(135deg, #eb3349, #f45c43); }
+
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📚 CHỌN ĐỀ THEO MÔN HỌC</h1>
+
+    <div class="grid">
+      <a class="btn mp" href="https://chauhuynh0104.github.io/benhan/mp.html">Mô phôi</a>
+      <a class="btn cs" href="https://chauhuynh0104.github.io/benhan/cs.html">Chăm sóc</a>
+      <a class="btn anh" href="https://chauhuynh0104.github.io/benhan/anh.html">Tiếng Anh</a>
+      <a class="btn kst" href="https://chauhuynh0104.github.io/benhan/kst.html">Kiểm soát nhiễm khuẩn</a>
+      <a class="btn nk2" href="https://chauhuynh0104.github.io/benhan/nk2.html">Nội khoa 2</a>
+      <a class="btn tin" href="https://chauhuynh0104.github.io/benhan/tin.html">Tin học</a>
+      <a class="btn tn" href="https://chauhuynh0104.github.io/benhan/tn.html">Truyền nhiễm</a>
+    </div>
+
+    <footer>
+      © 2025 Design By Chauhuynh0104
+    </footer>
+  </div>
+</body>
+</html>
