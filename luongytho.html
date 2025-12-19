@@ -2465,50 +2465,32 @@ function openProgressDetailModal(textarea, type) {
         }
 
         // Xử lý in ấn
-        function handlePrint(type) {
-            const record = medicalRecords.find(r => r.id === currentRecordId);
-            if (!record) return;
-            
-            // Tạo nội dung HTML để in
-            let printContent = '';
-            
-            switch(type) {
-                case 'full':
-                    printContent = generateFullPrintContent(record);
-                    break;
-                case 'medicine':
-                    printContent = generateMedicinePrintContent(record);
-                    break;
-                case 'procedure':
-                    printContent = generateProcedurePrintContent(record);
-                    break;
-                case 'progress':
-                    printContent = generateProgressPrintContent(record);
-                    break;
-            }
-            
-            // Mở cửa sổ in
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>In bệnh án - ${record.patientCode}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; }
-                        h1 { color: #FF6B35; }
-                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #f2f2f2; }
-                    </style>
-                </head>
-                <body>
-                    ${printContent}
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
-        }
+       function handlePrint(type) {
+    const record = medicalRecords.find(r => r.id === currentRecordId);
+    if (!record) return;
+
+    let printContent = '';
+
+    switch(type) {
+        case 'full':
+            printContent = generateFullPrintContent(record);
+            break;
+        case 'medicine':
+            printContent = generateMedicinePrintContent(record);
+            break;
+        case 'procedure':
+            printContent = generateProcedurePrintContent(record);
+            break;
+        case 'progress':
+            printContent = generateProgressPrintContent(record);
+            break;
+    }
+
+    printByIframe(`
+        <h1 style="color:#FF6B35">Bệnh án - ${record.patientCode}</h1>
+        ${printContent}
+    `);
+}
 
        // Tạo nội dung in full
 function generateFullPrintContent(record) {
@@ -3433,6 +3415,7 @@ async function generateProgressDocx(record) {
 
         // Khởi tạo các sự kiện
         document.addEventListener('DOMContentLoaded', function() {
+		
             // Tải dữ liệu từ Dropbox khi khởi động
             loadData();
             
@@ -3450,6 +3433,12 @@ cancelBtn.addEventListener('click', () => {
 });
             saveRecordBtn.addEventListener('click', saveRecord);
             
+			
+			
+			
+			
+			
+			
             // Sự kiện tìm kiếm
             searchBtn.addEventListener('click', searchRecords);
             resetSearchBtn.addEventListener('click', resetSearch);
@@ -3788,6 +3777,7 @@ document.querySelectorAll('.textarea-double-click').forEach(element => {
           
         }
         
+		
         // Cập nhật tổng thủ thuật
         function updateProcedureTotals() {
             const showPrice = document.getElementById('toggleProcedurePrice').checked;
@@ -4031,11 +4021,65 @@ function shadeColor(hex, percent) {
     ).toString(16).slice(1);
 }
 
+
+
+function printByIframe(htmlContent) {
+    const iframe = document.getElementById("printFrame");
+    const doc = iframe.contentWindow.document;
+
+    doc.open();
+    doc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>In bệnh án</title>
+            <style>
+                body {
+                    font-family: "Times New Roman", serif;
+                    font-size: 14px;
+                    padding: 20px;
+                }
+                h2 {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                p {
+                    margin: 6px 0;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 10px;
+                }
+                th, td {
+                    border: 1px solid #000;
+                    padding: 6px;
+                }
+            </style>
+        </head>
+        <body>
+            ${htmlContent}
+        </body>
+        </html>
+    `);
+    doc.close();
+
+    // ⚠️ BẮT BUỘC PHẢI DELAY
+    setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+    }, 500);
+}
+
+
     </script>
 	
 <footer class="app-footer">
     © 2025 DrC
 </footer>
-	
+	<!-- IFRAME DÙNG CHO IN (KHÔNG ĐƯỢC XÓA) -->
+<iframe id="printFrame" style="display:none;"></iframe>
+
 </body>
 </html>
