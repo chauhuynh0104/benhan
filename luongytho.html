@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý bệnh án</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #FF6B35;
+            --primary-dark: #E55A2B;
+            --primary-light: #FF8E5C;
+            --secondary: #2D3047;
+            --light: #F8F9FA;
+            --gray: #6C757D;
+            --danger: #DC3545;
+            --success: #28A745;
+            --warning: #FFC107;
+            --info: #17A2B8;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+        }
+
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .logo span {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3a3d5c;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background-color: var(--info);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #138496;
+            transform: translateY(-2px);
+        }
+
+        .btn-light {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+body.dark .btn-light {
+    background-color: var(--secondary) !important;
+    color: #ffffff !important;
+    border-color: var(--primary) !important;
+}
+
+        .btn-light:hover {
+            background-color: var(--primary-light);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .search-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .table-container {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: var(--secondary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-btn {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+
+        .view-btn:hover {
+            background-color: var(--info);
+            color: white;
+        }
+
+        .history-btn {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+
+        .history-btn:hover {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .print-btn {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .print-btn:hover {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .download-btn {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: var(--gray);
+        }
+
+        .download-btn:hover {
+            background-color: var(--gray);
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        .delete-btn:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 0 auto;
+            max-width: 900px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.3s;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px;
+            border-radius: var(--radius) var(--radius) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 25px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .textarea-double-click {
+            min-height: 100px;
+            border: 1px dashed #ccc;
+            border-radius: var(--radius);
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .textarea-double-click:hover {
+            border-color: var(--primary);
+            background-color: rgba(255, 107, 53, 0.05);
+        }
+
+        .table-input {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .table-input th, .table-input td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .table-input th {
+            background-color: #000000;
+            font-weight: 600;
+        }
+
+        .table-input input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .table-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .subtotal-row {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .toggle-price {
+            margin-bottom: 15px;
+        }
+
+        .toggle-price label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+      
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-new {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .gender-select {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
+
+        .gender-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .gender-radio {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--primary);
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+
+        .toast-success {
+            background-color: var(--success);
+        }
+
+        .toast-error {
+            background-color: var(--danger);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+.textarea-with-expand {
+    position: relative;
+}
+
+.expand-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(255, 107, 53, 0.1);
+    color: var(--primary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid var(--primary-light);
+    z-index: 10;
+}
+
+.expand-btn:hover {
+    background-color: rgba(255, 107, 53, 0.2);
+    transform: scale(1.1);
+}
+
+.expand-btn i {
+    font-size: 0.9rem;
+}
+
+#diagnosis {
+    min-height: 120px;
+    resize: vertical;
+    padding-right: 45px; /* Để không bị chữ che nút expand */
+}
+
+/* Thêm cho phần thủ thuật và thuốc vẫn giữ click đúp */
+.textarea-double-click {
+    min-height: 60px;
+    border: 1px dashed #ccc;
+    border-radius: var(--radius);
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.textarea-double-click:hover {
+    border-color: var(--primary);
+    background-color: rgba(255, 107, 53, 0.05);
+}
+
+.textarea-double-click i {
+    color: var(--primary);
+}
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+                margin-top: 15px;
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+        }
+		.app-footer {
+    margin-top: 40px;
+    padding: 15px 10px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #6c757d;
+    background: #ffffff;
+    border-top: 1px solid #eee;
+}
+body.dark .app-footer {
+ margin-top: 40px;
+    padding: 15px 10px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #6c757d;
+    background: #000000;
+    border-top: 1px solid #eee;
+}
+.app-footer strong {
+    color: var(--primary);
+}
+.theme-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f5f5f5;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.theme-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    outline: 2px solid transparent;
+}
+
+.theme-dot:hover {
+    outline: 2px solid #00000030;
+}
+
+.theme-blue { background: #0d6efd; }
+.theme-red { background: #dc3545; }
+.theme-green { background: #198754; }
+.theme-orange { background: #FF6B35; }
+
+.theme-dark-toggle {
+    margin-left: 10px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+}
+body.dark .theme-dark-toggle {
+    margin-left: 10px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #000000;
+    cursor: pointer;
+    font-size: 13px;
+}
+/* ===== DARK MODE ===== */
+body.dark {
+    background: #121212;
+    color: #e0e0e0;
+}
+
+body.dark .table-container,
+body.dark .search-container,
+body.dark .modal-content {
+    background: #1e1e1e;
+}
+
+body.dark th {
+    background: #2c2c2c;
+}
+
+body.dark .theme-toolbar {
+    background: #1f1f1f;
+    border-color: #333;
+}
+/* =======================
+   DARK MODE – FORCE STYLE
+   ======================= */
+
+body.dark,
+body.dark * {
+    color: #ffffff !important;
+}
+
+/* Input, textarea, select */
+body.dark input,
+body.dark textarea,
+body.dark select {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border: 1px solid #555 !important;
+}
+
+/* Placeholder */
+body.dark input::placeholder,
+body.dark textarea::placeholder {
+    color: #bbbbbb !important;
+}
+
+/* Button */
+body.dark button {
+    color: #ffffff !important;
+}
+
+/* Table */
+body.dark table {
+    background: #1b1b1b !important;
+}
+
+body.dark th {
+    background: #2a2a2a !important;
+}
+
+body.dark td {
+    background: #1e1e1e !important;
+}
+
+/* Checkbox, radio */
+body.dark input[type="checkbox"],
+body.dark input[type="radio"] {
+    accent-color: var(--primary);
+}
+
+/* Modal */
+body.dark .modal-content {
+    background: #1a1a1a !important;
+}
+
+/* Dropdown / option */
+body.dark option {
+    background: #000000;
+    color: #ffffff;
+}
+
+/* Disabled */
+body.dark input:disabled,
+body.dark textarea:disabled {
+    background: #111 !important;
+    color: #777 !important;
+}
+
+    </style>
+</head>
+<body>
+    <!-- Toast thông báo -->
+    <div id="toast" class="toast"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-file-medical-alt"></i>
+                <div>
+                    <h1>Bệnh Án Điện Tử</h1>
+                 
+							<div class="theme-toolbar">
+    <button class="theme-dot theme-blue" data-color="#0d6efd"></button>
+    <button class="theme-dot theme-red" data-color="#dc3545"></button>
+    <button class="theme-dot theme-green" data-color="#198754"></button>
+    <button class="theme-dot theme-orange" data-color="#FF6B35"></button>
+
+    <button class="theme-dark-toggle" id="darkModeToggle" title="Sáng / Tối">
+        🌙 Tối
+    </button>
+</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="newRecordBtn">
+                    <i class="fas fa-plus-circle"></i> Nhập bệnh án mới
+                </button>
+            </div>
+	
+
+        </header>
+
+        <main>
+            <div class="search-container">
+                <h2 class="section-title">Tìm kiếm bệnh án</h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Tìm theo tên, chẩn đoán, ngày khám, mã bệnh nhân...">
+                    <button class="btn btn-primary" id="searchBtn">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                    <button class="btn btn-light" id="resetSearchBtn">
+                        <i class="fas fa-redo"></i> Làm mới
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <h2 class="section-title">Danh sách bệnh án</h2>
+                <div id="loadingState" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Đang tải dữ liệu bệnh án...</p>
+                </div>
+                <table id="recordsTable">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã bệnh nhân</th>
+                            <th>Tên bệnh nhân</th>
+                            <th>Tuổi</th>
+                            <th>Ngày khám</th>
+                            <th>Chẩn đoán</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody">
+                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Chưa có bệnh án nào</h3>
+                    <p>Nhấn nút "Nhập bệnh án mới" để bắt đầu</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal thêm/sửa bệnh án -->
+    <div id="recordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Thêm bệnh án mới</h3>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="recordForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="patientName">Họ tên *</label>
+                            <input type="text" id="patientName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Giới tính *</label>
+                            <div class="gender-select">
+                                <label class="gender-option">
+                                    <input type="radio" name="gender" value="Nam" class="gender-radio" checked> Nam
+                                </label>
+                                <label class="gender-option">
+                                    <input type="radio" name="gender" value="Nữ" class="gender-radio"> Nữ
+                                </label>
+                                <label class="gender-option">
+                                    <input type="radio" name="gender" value="Khác" class="gender-radio"> Khác
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="patientAge">Tuổi *</label>
+                            <input type="number" id="patientAge" class="form-control" min="0" max="150" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="patientAddress">Địa chỉ</label>
+                            <input type="text" id="patientAddress" class="form-control">
+                        </div>
+                    </div>
+
+               <div class="form-row">
+    <div class="form-group">
+        <label class="form-label" for="patientCode">Mã bệnh nhân *</label>
+        <input type="text" id="patientCode" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label class="form-label" for="primaryDiagnosis">Chẩn đoán chính *</label>
+        <input type="text" id="primaryDiagnosis" class="form-control" required>
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group">
+        <label class="form-label" for="examinationDate">Ngày khám *</label>
+        <input type="date" id="examinationDate" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label class="form-label" for="examinationTime">Giờ khám *</label>
+        <input type="time" id="examinationTime" class="form-control" required>
+    </div>
+</div>
+
+                   <div class="form-group">
+    <label class="form-label" for="diagnosis">Nội dung bệnh án</label>
+    <div class="textarea-with-expand">
+        <textarea id="diagnosis" class="form-control" rows="4" placeholder="Nhập nội dung bệnh án tại đây..."></textarea>
+        <div class="expand-btn" id="expandDiagnosisBtn" title="Mở rộng để nhập nhiều hơn">
+            <i class="fas fa-expand-alt"></i>
+        </div>
+    </div>
+</div>
+
+                  <div class="form-group">
+    <label class="form-label">Thủ thuật</label>
+    <div class="textarea-double-click" id="procedureText" data-target="procedureModal">
+        <i class="fas fa-expand-alt"></i> Nhấn để thêm thủ thuật
+    </div>
+    <div id="procedureSummary"></div>
+</div>
+
+<div class="form-group">
+    <label class="form-label">Thuốc</label>
+    <div class="textarea-double-click" id="medicineText" data-target="medicineModal">
+        <i class="fas fa-expand-alt"></i> Nhấn để thêm thuốc
+    </div>
+    <div id="medicineSummary"></div>
+</div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="followUpDate">Hẹn ngày tái khám</label>
+                        <input type="date" id="followUpDate" class="form-control">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="loading" id="saveLoading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Đang lưu...</p>
+                </div>
+                <button class="btn btn-light" id="cancelBtn">Hủy</button>
+                <button class="btn btn-success" id="saveRecordBtn">Lưu bệnh án</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal nhập nội dung bệnh án -->
+    <div id="diagnosisModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>Nhập nội dung bệnh án</h3>
+                <button class="close-btn close-diagnosis-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nội dung chi tiết</label>
+                    <textarea id="diagnosisDetail" class="form-control" rows="12" placeholder="Nhập nội dung bệnh án chi tiết..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light close-diagnosis-modal">Hủy</button>
+                <button class="btn btn-success" id="saveDiagnosisBtn">Lưu nội dung</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal nhập thủ thuật -->
+    <div id="procedureModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Nhập thủ thuật</h3>
+                <button class="close-btn close-procedure-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="toggle-price">
+                    <label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="toggleProcedurePrice"checked>
+                            <span class="slider"></span>
+                        </div>
+                        <span>Hiển thị cột giá tiền</span>
+                    </label>
+                </div>
+                <table class="table-input" id="procedureTable">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên thủ thuật</th> 
+							<th>Ghi chú</th>
+                            <th>Số lần</th>
+                            <th class="price-column">Giá tiền</th>
+                            <th>Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="procedureTableBody">
+                        <tr>
+                            <td>1</td>
+                            <td><input type="text" class="procedure-name" placeholder="Nhập tên thủ thuật"></td>
+							<td><input type="text" class="procedure-note" placeholder="Ghi chú"></td> 
+                              <td><input type="number" class="procedure-quantity" placeholder="Số lần" min="1" value="1"></td>
+                        <td class="price-column"><input type="number" class="procedure-price" placeholder="Giá tiền" min="0"></td>
+                        <td><button class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="subtotal-row">
+                        <td colspan="3">Tổng cộng</td> <!-- Đổi từ colspan="2" thành "3" -->
+                        <td id="procedureTotalQuantity">0</td>
+                        <td class="price-column" id="procedureTotalPrice">0</td>
+                        <td></td>
+                    </tr>
+                    <tr id="procedureTotalRow" style="display: none;">
+                        <td colspan="4">Tổng giá tiền</td> <!-- Đổi từ colspan="3" thành "4" -->
+                        <td><input type="number" id="procedureTotalAmount" placeholder="Nhập tổng giá tiền" min="0"></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+            <button class="btn btn-primary" id="addProcedureRow">
+                <i class="fas fa-plus"></i> Thêm hàng mới
+            </button>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-light close-procedure-modal">Hủy</button>
+            <button class="btn btn-success" id="saveProcedureBtn">Lưu thủ thuật</button>
+        </div>
+    </div>
+</div>
+
+    <!-- Modal nhập thuốc -->
+    <div id="medicineModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Nhập thuốc</h3>
+                <button class="close-btn close-medicine-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="toggle-price">
+                    <label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="toggleMedicinePrice" checked>
+                            <span class="slider"></span>
+                        </div>
+                        <span>Hiển thị cột giá tiền</span>
+                    </label>
+                </div>
+                <table class="table-input" id="medicineTable">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên thuốc</th>
+                            <th>Số lượng</th>
+                            <th class="price-column">Giá tiền</th>
+                            <th>Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="medicineTableBody">
+                        <tr>
+                            <td>1</td>
+                            <td><input type="text" class="medicine-name" placeholder="Nhập tên thuốc"></td>
+                            <td><input type="number" class="medicine-quantity" placeholder="Số lượng" min="1" value="1"></td>
+                            <td class="price-column"><input type="number" class="medicine-price" placeholder="Giá tiền" min="0"></td>
+                            <td><button class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="subtotal-row">
+                            <td colspan="2">Tổng cộng</td>
+                            <td id="medicineTotalQuantity">0</td>
+                            <td class="price-column" id="medicineTotalPrice">0</td>
+                            <td></td>
+                        </tr>
+                        <tr id="medicineTotalRow" style="display: none;">
+                            <td colspan="3">Tổng giá tiền</td>
+                            <td><input type="number" id="medicineTotalAmount" placeholder="Nhập tổng giá tiền" min="0"></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <button class="btn btn-primary" id="addMedicineRow">
+                    <i class="fas fa-plus"></i> Thêm hàng mới
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light close-medicine-modal">Hủy</button>
+                <button class="btn btn-success" id="saveMedicineBtn">Lưu thuốc</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal diễn biến bệnh -->
+    <div id="progressModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h3>Diễn biến bệnh</h3>
+                <button class="close-btn close-progress-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tên bệnh nhân</label>
+                        <input type="text" id="progressPatientName" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tuổi</label>
+                        <input type="text" id="progressPatientAge" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mã bệnh nhân</label>
+                        <input type="text" id="progressPatientCode" class="form-control" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chẩn đoán</label>
+                    <input type="text" id="progressDiagnosis" class="form-control" readonly>
+                </div>
+                
+                <h4 class="section-title">Lịch sử diễn biến</h4>
+                <table class="table-input" id="progressTable">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Giờ và ngày</th>
+                            <th>Diễn biến</th>
+                            <th>Y lệnh</th>
+                            <th>Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="progressTableBody">
+                        <tr>
+                            <td>1</td>
+                            <td><input type="datetime-local" class="progress-datetime"></td>
+                            <td><input type="text" class="progress-detail" placeholder="Nhập diễn biến"></td>
+                            <td><input type="text" class="progress-order" placeholder="Nhập y lệnh"></td>
+                            <td><button class="btn btn-danger btn-sm remove-progress-row"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn btn-primary" id="addProgressRow">
+                    <i class="fas fa-plus"></i> Thêm diễn biến
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light close-progress-modal">Hủy</button>
+                <button class="btn btn-success" id="saveProgressBtn">Lưu diễn biến</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xác nhận xóa -->
+    <div id="confirmDeleteModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Xác nhận xóa</h3>
+                <button class="close-btn close-delete-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa bệnh án này không? Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light close-delete-modal">Hủy</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Xóa bệnh án</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal tùy chọn in/tải -->
+    <div id="printOptionsModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Tùy chọn</h3>
+                <button class="close-btn close-print-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <h4>In bệnh án</h4>
+                    <div class="actions" style="flex-direction: column; align-items: flex-start;">
+                        <button class="btn btn-light print-option" data-type="full">In toàn bộ bệnh án</button>
+                        <button class="btn btn-light print-option" data-type="medicine">In đơn thuốc</button>
+                        <button class="btn btn-light print-option" data-type="procedure">In thủ thuật</button>
+                        <button class="btn btn-light print-option" data-type="progress">In diễn biến</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <h4>Tải bệnh án</h4>
+                    <div class="actions" style="flex-direction: column; align-items: flex-start;">
+                        <button class="btn btn-light download-option" data-type="full">Tải toàn bộ bệnh án</button>
+                        <button class="btn btn-light download-option" data-type="medicine">Tải đơn thuốc</button>
+                        <button class="btn btn-light download-option" data-type="procedure">Tải thủ thuật</button>
+                        <button class="btn btn-light download-option" data-type="progress">Tải diễn biến</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light close-print-modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Khởi tạo biến toàn cục
+        let medicalRecords = [];
+        let currentRecordId = null;
+        let currentProgressRecordId = null;
+        let isEditing = false;
+		let currentEditingRecordId = null; 
+        // Hàm tạo mã bệnh nhân tự động 
+function generatePatientCode() {
+    if (medicalRecords.length === 0) {
+        return '0000001';
+    }
+    
+    // Tìm mã lớn nhất hiện có
+    let maxCode = 0;
+    medicalRecords.forEach(record => {
+        if (record.patientCode && /^\d+$/.test(record.patientCode)) {
+            const codeNum = parseInt(record.patientCode);
+            if (codeNum > maxCode) {
+                maxCode = codeNum;
+            }
+        }
+    });
+    
+    // Tạo mã mới
+    const newCode = maxCode + 1;
+    return newCode.toString().padStart(7, '0');
+}
+        // Cấu hình Dropbox
+        const DROPBOX_CONFIG = {
+            refreshToken: 'yvVdSnOoxgsAAAAAAAAAAYwqRQmU9NPgvKrMmzAL2JY9QqutemeEsykD9LmlQcRr',
+            appKey: 'qzy5kclrf827aey',
+            appSecret: '6jlsunzjqr3s3nh',
+            filePath: '/medical_records.json'
+        };
+
+        let dropboxAccessToken = null;
+
+        // DOM Elements
+        const newRecordBtn = document.getElementById('newRecordBtn');
+        const recordModal = document.getElementById('recordModal');
+		
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const saveRecordBtn = document.getElementById('saveRecordBtn');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resetSearchBtn = document.getElementById('resetSearchBtn');
+        const recordsTableBody = document.getElementById('recordsTableBody');
+        const emptyState = document.getElementById('emptyState');
+        const loadingState = document.getElementById('loadingState');
+        const toast = document.getElementById('toast');
+        
+        // Hiển thị toast thông báo
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Lấy access token từ refresh token
+        async function getDropboxAccessToken() {
+            try {
+                const response = await fetch('https://api.dropbox.com/oauth2/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'grant_type': 'refresh_token',
+                        'refresh_token': DROPBOX_CONFIG.refreshToken,
+                        'client_id': DROPBOX_CONFIG.appKey,
+                        'client_secret': DROPBOX_CONFIG.appSecret
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Không thể lấy access token từ Dropbox');
+                }
+
+                const data = await response.json();
+                dropboxAccessToken = data.access_token;
+                return data.access_token;
+            } catch (error) {
+                console.error('Lỗi khi lấy access token:', error);
+                showToast('Lỗi kết nối Dropbox: ' + error.message, 'error');
+                return null;
+            }
+        }
+
+        // Lưu dữ liệu lên Dropbox
+        async function saveToDropbox() {
+            try {
+                if (!dropboxAccessToken) {
+                    dropboxAccessToken = await getDropboxAccessToken();
+                    if (!dropboxAccessToken) {
+                        throw new Error('Không có access token');
+                    }
+                }
+
+                const data = {
+                    medicalRecords: medicalRecords,
+                    lastSync: new Date().toISOString(),
+                    totalRecords: medicalRecords.length
+                };
+
+                const response = await fetch('https://content.dropboxapi.com/2/files/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${dropboxAccessToken}`,
+                        'Content-Type': 'application/octet-stream',
+                        'Dropbox-API-Arg': JSON.stringify({
+                            path: DROPBOX_CONFIG.filePath,
+                            mode: 'overwrite',
+                            autorename: false,
+                            mute: true
+                        })
+                    },
+                    body: JSON.stringify(data, null, 2)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error_summary || 'Upload failed');
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Lỗi khi lưu :', error);
+                showToast('Lỗi khi lưu : ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        // Tải dữ liệu từ Dropbox
+        async function loadFromDropbox() {
+            try {
+                if (!dropboxAccessToken) {
+                    dropboxAccessToken = await getDropboxAccessToken();
+                    if (!dropboxAccessToken) {
+                        throw new Error('Không có access token');
+                    }
+                }
+
+                const response = await fetch('https://content.dropboxapi.com/2/files/download', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${dropboxAccessToken}`,
+                        'Dropbox-API-Arg': JSON.stringify({
+                            path: DROPBOX_CONFIG.filePath
+                        })
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 409) {
+                        // File không tồn tại, tạo file mới
+                        medicalRecords = [];
+                        await saveToDropbox();
+                        return true;
+                    }
+                    throw new Error('Download failed');
+                }
+
+                const data = await response.json();
+                
+                if (data.medicalRecords && Array.isArray(data.medicalRecords)) {
+                    medicalRecords = data.medicalRecords;
+                    return true;
+                } else {
+                    throw new Error('Dữ liệu không hợp lệ');
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải:', error);
+                showToast('Lỗi khi tải từ: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        // Tải dữ liệu khi khởi động
+        async function loadData() {
+            loadingState.style.display = 'flex';
+            recordsTableBody.innerHTML = '';
+            emptyState.style.display = 'none';
+            
+            const success = await loadFromDropbox();
+            
+            loadingState.style.display = 'none';
+            
+            if (success) {
+                renderRecordsTable();
+                showToast(`Đã tải ${medicalRecords.length} bệnh án`, 'success');
+            } else {
+                emptyState.style.display = 'block';
+            }
+        }
+
+        // Hiển thị danh sách bệnh án
+function renderRecordsTable(filteredRecords = null) {
+    const records = filteredRecords || medicalRecords;
+    
+    if (records.length === 0) {
+        recordsTableBody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+    }
+    
+    emptyState.style.display = 'none';
+    
+    // Sắp xếp mới lên trước
+    const sortedRecords = [...records].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    let tableHTML = '';
+    sortedRecords.forEach((record, index) => {
+        // SỬA DÒNG NÀY: dùng primaryDiagnosis thay vì diagnosis
+        const shortDiagnosis = record.primaryDiagnosis && record.primaryDiagnosis.length > 50 ? 
+            record.primaryDiagnosis.substring(0, 50) + '...' : record.primaryDiagnosis || '';
+        
+        tableHTML += `
+            <tr data-id="${record.id}">
+                <td>${index + 1}</td>
+                <td><strong>${record.patientCode}</strong></td>
+                <td>${record.patientName}</td>
+                <td>${record.age}</td>
+                <td>${formatDate(record.examinationDate)}</td>
+                <td>${shortDiagnosis}</td> <!-- Hiển thị chẩn đoán chính -->
+                <td>
+                    <div class="actions">
+                        <div class="action-btn view-btn" title="Xem/Sửa" onclick="viewRecord('${record.id}')">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <!-- THÊM LẠI NÚT DIỄN BIẾN -->
+                        <div class="action-btn history-btn" title="Diễn biến" onclick="showProgressModal('${record.id}')">
+                            <i class="fas fa-history"></i>
+                        </div>
+                       <div class="action-btn print-btn" 
+     title="In / Tải"
+     onclick="showPrintOptions('${record.id}')">
+    <i class="fas fa-print"></i>
+</div>
+
+                        <div class="action-btn delete-btn" title="Xóa" onclick="confirmDeleteRecord('${record.id}')">
+                            <i class="fas fa-trash"></i>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    recordsTableBody.innerHTML = tableHTML;
+}
+
+        // Định dạng ngày tháng
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        // Tìm kiếm bệnh án
+  // Tìm hàm này và thêm tìm kiếm theo chẩn đoán chính:
+function searchRecords() {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    
+    if (!searchTerm) {
+        renderRecordsTable();
+        return;
+    }
+    
+    const filteredRecords = medicalRecords.filter(record => {
+        return (
+            (record.patientName && record.patientName.toLowerCase().includes(searchTerm)) ||
+            (record.patientCode && record.patientCode.toLowerCase().includes(searchTerm)) ||
+            (record.primaryDiagnosis && record.primaryDiagnosis.toLowerCase().includes(searchTerm)) || // THÊM DÒNG NÀY
+            (record.diagnosis && record.diagnosis.toLowerCase().includes(searchTerm)) ||
+            (record.examinationDate && record.examinationDate.includes(searchTerm))
+        );
+    });
+    
+    renderRecordsTable(filteredRecords);
+}
+
+        // Reset tìm kiếm
+        function resetSearch() {
+            searchInput.value = '';
+            renderRecordsTable();
+        }
+
+        // Hiển thị modal thêm bệnh án mới
+// Hiển thị modal thêm bệnh án mới
+function showNewRecordModal() {
+    currentRecordId = null;
+	currentEditingRecordId = null;
+    isEditing = false;
+    document.getElementById('modalTitle').textContent = 'Thêm bệnh án mới';
+    document.getElementById('recordForm').reset();
+    
+    // Đặt ngày mặc định là hôm nay
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('examinationDate').value = today;
+    
+    // Đặt giờ mặc định là hiện tại
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    document.getElementById('examinationTime').value = `${hours}:${minutes}`;
+    
+    // TẠO MÃ BỆNH NHÂN TỰ ĐỘNG (THÊM ĐOẠN NÀY)
+    const autoCode = generatePatientCode();
+    document.getElementById('patientCode').value = autoCode;
+    
+    // Reset các textarea
+    document.getElementById('diagnosis').value = '';
+    document.getElementById('primaryDiagnosis').value = ''; // THÊM DÒNG NÀY
+    document.getElementById('procedureText').innerHTML = '<i class="fas fa-expand-alt"></i> Nhấn để thêm thủ thuật';
+    document.getElementById('procedureSummary').innerHTML = '';
+    document.getElementById('medicineText').innerHTML = '<i class="fas fa-expand-alt"></i> Nhấn để thêm thuốc';
+    document.getElementById('medicineSummary').innerHTML = '';
+    
+    // Tự động chọn giới tính nếu tên có "thị"
+    document.getElementById('patientName').addEventListener('input', function() {
+        const name = this.value.toLowerCase();
+        if (name.includes('thị')) {
+            document.querySelector('input[name="gender"][value="Nữ"]').checked = true;
+        }
+    });
+    
+    recordModal.style.display = 'block';
+}
+
+       // Xem/sửa bệnh án
+function viewRecord(id) {
+    const record = medicalRecords.find(r => r.id === id);
+    if (!record) return;
+    
+    currentRecordId = id;
+ currentEditingRecordId = id;
+    isEditing = true;
+    document.getElementById('modalTitle').textContent = 'Sửa bệnh án';
+    
+    // Điền dữ liệu vào form
+    document.getElementById('patientName').value = record.patientName;
+    const genderRadio = document.querySelector(`input[name="gender"][value="${record.gender || 'Nam'}"]`);
+    if (genderRadio) genderRadio.checked = true;
+    document.getElementById('patientAge').value = record.age;
+    document.getElementById('patientAddress').value = record.address || '';
+    document.getElementById('patientCode').value = record.patientCode;
+    document.getElementById('examinationDate').value = record.examinationDate;
+    document.getElementById('examinationTime').value = record.examinationTime || '09:00';
+    document.getElementById('diagnosis').value = record.diagnosis || ''; // CHỈ DÒNG NÀY THAY ĐỔI
+    document.getElementById('followUpDate').value = record.followUpDate || '';
+     document.getElementById('primaryDiagnosis').value = record.primaryDiagnosis || '';
+    // Hiển thị thủ thuật
+    if (record.procedures && record.procedures.length > 0) {
+        let procedureHTML = '<ul>';
+        record.procedures.forEach(proc => {
+            procedureHTML += `<li>${proc.name} - Số lần: ${proc.quantity}${proc.price ? ` - Giá: ${formatCurrency(proc.price)}` : ''}</li>`;
+        });
+        procedureHTML += '</ul>';
+        document.getElementById('procedureSummary').innerHTML = procedureHTML;
+        document.getElementById('procedureText').innerHTML = '<i class="fas fa-expand-alt"></i> Nhấn để chỉnh sửa thủ thuật';
+    }
+    
+    // Hiển thị thuốc
+    if (record.medicines && record.medicines.length > 0) {
+        let medicineHTML = '<ul>';
+        record.medicines.forEach(med => {
+            medicineHTML += `<li>${med.name} - Số lượng: ${med.quantity}${med.price ? ` - Giá: ${formatCurrency(med.price)}` : ''}</li>`;
+        });
+        medicineHTML += '</ul>';
+        document.getElementById('medicineSummary').innerHTML = medicineHTML;
+        document.getElementById('medicineText').innerHTML = '<i class="fas fa-expand-alt"></i> Nhấn để chỉnh sửa thuốc';
+    }
+    
+    recordModal.style.display = 'block';
+}
+
+        // Định dạng tiền tệ
+        function formatCurrency(amount) {
+            if (!amount) return '0 ₫';
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        }
+
+        // Lưu bệnh án
+        async function saveRecord() {
+            // Lấy dữ liệu từ form
+            const patientName = document.getElementById('patientName').value;
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const age = document.getElementById('patientAge').value;
+            const address = document.getElementById('patientAddress').value;
+            const patientCode = document.getElementById('patientCode').value;
+            const examinationDate = document.getElementById('examinationDate').value;
+            const examinationTime = document.getElementById('examinationTime').value;
+            const diagnosis = document.getElementById('diagnosis').value;
+            const followUpDate = document.getElementById('followUpDate').value;
+               const primaryDiagnosis = document.getElementById('primaryDiagnosis').value;
+            // Kiểm tra dữ liệu bắt buộc
+            if (!patientName || !age || !patientCode || !examinationDate || !examinationTime || !primaryDiagnosis) {
+                showToast('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
+                return;
+            }
+            
+            // Lấy dữ liệu thủ thuật và thuốc từ localStorage tạm thời
+            const tempProcedures = JSON.parse(localStorage.getItem('tempProcedures')) || [];
+            const tempMedicines = JSON.parse(localStorage.getItem('tempMedicines')) || [];
+            
+            // Hiển thị loading
+            document.getElementById('saveLoading').style.display = 'flex';
+            document.getElementById('saveRecordBtn').disabled = true;
+            
+            try {
+                if (isEditing) {
+                    // Cập nhật bệnh án hiện có
+                    const recordIndex = medicalRecords.findIndex(r => r.id === currentRecordId);
+                    if (recordIndex !== -1) {
+                        medicalRecords[recordIndex] = {
+                            ...medicalRecords[recordIndex],
+                            patientName,
+                            gender,
+                            age: parseInt(age),
+                            address,
+                            patientCode,
+							primaryDiagnosis,
+                            examinationDate,
+                            examinationTime,
+                            diagnosis,
+                            procedures: tempProcedures.length > 0 ? tempProcedures : (medicalRecords[recordIndex].procedures || []),
+                            medicines: tempMedicines.length > 0 ? tempMedicines : (medicalRecords[recordIndex].medicines || []),
+                            followUpDate: followUpDate || null,
+                            updatedAt: new Date().toISOString()
+                        };
+                    }
+                } else {
+                    // Tạo bệnh án mới
+                    const newRecord = {
+                        id: 'record_' + Date.now(),
+                        patientName,
+                        gender,
+                        age: parseInt(age),
+                        address,
+                        patientCode,
+                        examinationDate,
+                        examinationTime,
+                        diagnosis,
+						 primaryDiagnosis,
+                        procedures: tempProcedures,
+                        medicines: tempMedicines,
+                        followUpDate: followUpDate || null,
+                        progress: [],
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    medicalRecords.unshift(newRecord);
+                }
+                
+                // Xóa dữ liệu tạm
+                localStorage.removeItem('tempProcedures');
+                localStorage.removeItem('tempMedicines');
+                
+                // Lưu lên Dropbox
+                const success = await saveToDropbox();
+                
+                if (success) {
+                    // Cập nhật giao diện
+                    renderRecordsTable();
+                    recordModal.style.display = 'none';
+                    showToast(`${isEditing ? 'Cập nhật' : 'Thêm'} bệnh án thành công!`, 'success');
+                } else {
+                    showToast('Lỗi khi lưu', 'error');
+                }
+            } catch (error) {
+                console.error('Lỗi khi lưu:', error);
+                showToast('Lỗi: ' + error.message, 'error');
+            } finally {
+                // Ẩn loading
+                document.getElementById('saveLoading').style.display = 'none';
+                document.getElementById('saveRecordBtn').disabled = false;
+            }
+        }
+
+        // Xác nhận xóa bệnh án
+        function confirmDeleteRecord(id) {
+            currentRecordId = id;
+            confirmDeleteModal.style.display = 'block';
+        }
+
+        // Xóa bệnh án
+        async function deleteRecord() {
+            try {
+                document.getElementById('confirmDeleteBtn').disabled = true;
+                document.getElementById('confirmDeleteBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xóa...';
+                
+                medicalRecords = medicalRecords.filter(record => record.id !== currentRecordId);
+                
+                // Lưu lên Dropbox
+                const success = await saveToDropbox();
+                
+                if (success) {
+                    renderRecordsTable();
+                    confirmDeleteModal.style.display = 'none';
+                    showToast('Đã xóa bệnh án thành công!', 'success');
+                } else {
+                    showToast('Lỗi khi xóa bệnh án', 'error');
+                }
+            } catch (error) {
+                console.error('Lỗi khi xóa:', error);
+                showToast('Lỗi: ' + error.message, 'error');
+            } finally {
+                document.getElementById('confirmDeleteBtn').disabled = false;
+                document.getElementById('confirmDeleteBtn').innerHTML = 'Xóa bệnh án';
+            }
+        }
+
+        // Hiển thị modal diễn biến
+        function showProgressModal(id) {
+            const record = medicalRecords.find(r => r.id === id);
+            if (!record) return;
+            
+            currentProgressRecordId = id;
+            
+            // Điền thông tin bệnh nhân
+            document.getElementById('progressPatientName').value = record.patientName;
+            document.getElementById('progressPatientAge').value = record.age;
+            document.getElementById('progressPatientCode').value = record.patientCode;
+            document.getElementById('progressDiagnosis').value = record.primaryDiagnosis  || '';
+            
+            // Hiển thị diễn biến
+            const progressTableBody = document.getElementById('progressTableBody');
+            let progressHTML = '';
+            
+            if (record.progress && record.progress.length > 0) {
+                record.progress.forEach((item, index) => {
+                    progressHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><input type="datetime-local" class="progress-datetime" value="${item.datetime}"></td>
+                            <td><input type="text" class="progress-detail" value="${item.detail}"></td>
+                            <td><input type="text" class="progress-order" value="${item.order}"></td>
+                            <td><button class="btn btn-danger btn-sm remove-progress-row"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                    `;
+                });
+            } else {
+                progressHTML = `
+                    <tr>
+                        <td>1</td>
+                        <td><input type="datetime-local" class="progress-datetime"></td>
+                        <td><input type="text" class="progress-detail" placeholder="Nhập diễn biến"></td>
+                        <td><input type="text" class="progress-order" placeholder="Nhập y lệnh"></td>
+                        <td><button class="btn btn-danger btn-sm remove-progress-row"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `;
+            }
+            
+            progressTableBody.innerHTML = progressHTML;
+            progressModal.style.display = 'block';
+        }
+
+        // Lưu diễn biến
+        async function saveProgress() {
+            const recordIndex = medicalRecords.findIndex(r => r.id === currentProgressRecordId);
+            if (recordIndex === -1) return;
+            
+            // Lấy dữ liệu từ bảng
+            const progressRows = document.querySelectorAll('#progressTableBody tr');
+            const progress = [];
+            
+            progressRows.forEach(row => {
+                const datetime = row.querySelector('.progress-datetime').value;
+                const detail = row.querySelector('.progress-detail').value;
+                const order = row.querySelector('.progress-order').value;
+                
+                if (datetime && detail) {
+                    progress.push({ datetime, detail, order });
+                }
+            });
+            
+            // Cập nhật diễn biến
+            medicalRecords[recordIndex].progress = progress;
+            
+            // Lưu lên Dropbox
+            const success = await saveToDropbox();
+            
+            if (success) {
+                progressModal.style.display = 'none';
+                showToast('Đã lưu diễn biến thành công!', 'success');
+            } else {
+                showToast('Lỗi khi lưu diễn biến', 'error');
+            }
+        }
+
+        // Hiển thị tùy chọn in/tải
+        function showPrintOptions(id) {
+            currentRecordId = id;
+            printOptionsModal.style.display = 'block';
+        }
+
+        // Xử lý in ấn
+        function handlePrint(type) {
+            const record = medicalRecords.find(r => r.id === currentRecordId);
+            if (!record) return;
+            
+            // Tạo nội dung HTML để in
+            let printContent = '';
+            
+            switch(type) {
+                case 'full':
+                    printContent = generateFullPrintContent(record);
+                    break;
+                case 'medicine':
+                    printContent = generateMedicinePrintContent(record);
+                    break;
+                case 'procedure':
+                    printContent = generateProcedurePrintContent(record);
+                    break;
+                case 'progress':
+                    printContent = generateProgressPrintContent(record);
+                    break;
+            }
+            
+            // Mở cửa sổ in
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>In bệnh án - ${record.patientCode}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { color: #FF6B35; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                    </style>
+                </head>
+                <body>
+                    ${printContent}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // Tạo nội dung in full
+        function generateFullPrintContent(record) {
+            return `
+                <h1>Bệnh án - ${record.patientCode}</h1>
+                <p><strong>Họ tên:</strong> ${record.patientName}</p>
+                <p><strong>Giới tính:</strong> ${record.gender}</p>
+                <p><strong>Tuổi:</strong> ${record.age}</p>
+                <p><strong>Địa chỉ:</strong> ${record.address || ''}</p>
+                <p><strong>Ngày khám:</strong> ${formatDate(record.examinationDate)} ${record.examinationTime || ''}</p>
+                <p><strong>Chẩn đoán:</strong> ${record.diagnosis || ''}</p>
+                
+                ${record.procedures && record.procedures.length > 0 ? `
+                    <h2>Thủ thuật</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên thủ thuật</th>
+								<th>Ghi chú</th>
+                                <th>Số lần</th>
+                                <th>Giá tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${record.procedures.map((proc, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${proc.name}</td>
+									<td>${proc.note || ''}</td>
+                                    <td>${proc.quantity}</td>
+                                    <td>${formatCurrency(proc.price)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : ''}
+                
+                ${record.medicines && record.medicines.length > 0 ? `
+                    <h2>Thuốc</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên thuốc</th>
+                                <th>Số lượng</th>
+                                <th>Giá tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${record.medicines.map((med, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${med.name}</td>
+                                    <td>${med.quantity}</td>
+                                    <td>${formatCurrency(med.price)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : ''}
+                
+                ${record.followUpDate ? `<p><strong>Hẹn tái khám:</strong> ${formatDate(record.followUpDate)}</p>` : ''}
+            `;
+        }
+
+        // Tạo nội dung in thuốc
+        function generateMedicinePrintContent(record) {
+            return `
+                <h1>Đơn thuốc - ${record.patientCode}</h1>
+                <p><strong>Họ tên:</strong> ${record.patientName}</p>
+                <p><strong>Ngày khám:</strong> ${formatDate(record.examinationDate)}</p>
+                
+                <h2>Đơn thuốc</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên thuốc</th>
+                            <th>Số lượng</th>
+                            <th>Giá tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${record.medicines && record.medicines.length > 0 ? 
+                            record.medicines.map((med, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${med.name}</td>
+                                    <td>${med.quantity}</td>
+                                    <td>${formatCurrency(med.price)}</td>
+                                </tr>
+                            `).join('') : 
+                            '<tr><td colspan="4">Không có thuốc</td></tr>'
+                        }
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Tạo nội dung in thủ thuật
+        function generateProcedurePrintContent(record) {
+            return `
+                <h1>Thủ thuật - ${record.patientCode}</h1>
+                <p><strong>Họ tên:</strong> ${record.patientName}</p>
+                <p><strong>Ngày khám:</strong> ${formatDate(record.examinationDate)}</p>
+                
+                <h2>Thủ thuật</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên thủ thuật</th>
+							<th>Ghi chú</th>
+                            <th>Số lần</th>
+                            <th>Giá tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${record.procedures && record.procedures.length > 0 ? 
+                            record.procedures.map((proc, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${proc.name}</td>
+									<td>${proc.note || ''}</td>
+                                    <td>${proc.quantity}</td>
+                                    <td>${formatCurrency(proc.price)}</td>
+                                </tr>
+                            `).join('') : 
+                            '<tr><td colspan="4">Không có thủ thuật</td></tr>'
+                        }
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Tạo nội dung in diễn biến
+        function generateProgressPrintContent(record) {
+            return `
+                <h1>Diễn biến bệnh - ${record.patientCode}</h1>
+                <p><strong>Họ tên:</strong> ${record.patientName}</p>
+                <p><strong>Tuổi:</strong> ${record.age}</p>
+                <p><strong>Chẩn đoán:</strong> ${record.diagnosis || ''}</p>
+                
+                <h2>Diễn biến</h2>
+                <table>
+                    <thead>
+                        <tr>
+                           
+                            <th>Giờ và ngày</th>
+                            <th>Diễn biến</th>
+                            <th>Y lệnh</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${record.progress && record.progress.length > 0 ? 
+                            record.progress.map((item, index) => {
+                                const date = new Date(item.datetime);
+                                const dateStr = date.toLocaleString('vi-VN');
+                                return `
+                                    <tr>
+                                        
+                                        <td>${dateStr}</td>
+                                        <td>${item.detail}</td>
+                                        <td>${item.order || ''}</td>
+                                    </tr>
+                                `;
+                            }).join('') : 
+                            '<tr><td colspan="4">Không có diễn biến</td></tr>'
+                        }
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Xử lý tải xuống
+        function handleDownload(type) {
+            const record = medicalRecords.find(r => r.id === currentRecordId);
+            if (!record) return;
+            
+            // Tạo và tải file JSON
+            let dataToDownload;
+            
+            switch(type) {
+                case 'full':
+                    dataToDownload = record;
+                    break;
+                case 'medicine':
+                    dataToDownload = {
+                        patientName: record.patientName,
+                        patientCode: record.patientCode,
+                        examinationDate: record.examinationDate,
+                        medicines: record.medicines || []
+                    };
+                    break;
+                case 'procedure':
+                    dataToDownload = {
+                        patientName: record.patientName,
+                        patientCode: record.patientCode,
+                        examinationDate: record.examinationDate,
+                        procedures: record.procedures || []
+                    };
+                    break;
+                case 'progress':
+                    dataToDownload = {
+                        patientName: record.patientName,
+                        patientCode: record.patientCode,
+                        progress: record.progress || []
+                    };
+                    break;
+            }
+            
+            const dataStr = JSON.stringify(dataToDownload, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `${record.patientCode}_${type}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showToast(`Đã tải xuống ${type} của bệnh án ${record.patientCode}!`, 'success');
+        }
+
+        // Khởi tạo các sự kiện
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tải dữ liệu từ Dropbox khi khởi động
+            loadData();
+            
+            // Sự kiện cho modal bệnh án chính
+            newRecordBtn.addEventListener('click', showNewRecordModal);
+            // Thêm vào sự kiện đóng modal
+closeModalBtn.addEventListener('click', () => {
+    recordModal.style.display = 'none';
+    currentEditingRecordId = null; // Thêm dòng này
+});
+
+cancelBtn.addEventListener('click', () => {
+    recordModal.style.display = 'none';
+    currentEditingRecordId = null; // Thêm dòng này
+});
+            saveRecordBtn.addEventListener('click', saveRecord);
+            
+            // Sự kiện tìm kiếm
+            searchBtn.addEventListener('click', searchRecords);
+            resetSearchBtn.addEventListener('click', resetSearch);
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchRecords();
+            });
+            
+            // Sự kiện cho modal xác nhận xóa
+            document.querySelectorAll('.close-delete-modal').forEach(btn => {
+                btn.addEventListener('click', () => confirmDeleteModal.style.display = 'none');
+            });
+            document.getElementById('confirmDeleteBtn').addEventListener('click', deleteRecord);
+            
+            // Sự kiện cho modal diễn biến
+            document.querySelectorAll('.close-progress-modal').forEach(btn => {
+                btn.addEventListener('click', () => progressModal.style.display = 'none');
+            });
+            document.getElementById('saveProgressBtn').addEventListener('click', saveProgress);
+            document.getElementById('addProgressRow').addEventListener('click', function() {
+                const progressTableBody = document.getElementById('progressTableBody');
+                const rowCount = progressTableBody.children.length + 1;
+                
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${rowCount}</td>
+                    <td><input type="datetime-local" class="progress-datetime"></td>
+                    <td><input type="text" class="progress-detail" placeholder="Nhập diễn biến"></td>
+                    <td><input type="text" class="progress-order" placeholder="Nhập y lệnh"></td>
+                    <td><button class="btn btn-danger btn-sm remove-progress-row"><i class="fas fa-trash"></i></button></td>
+                `;
+                progressTableBody.appendChild(newRow);
+            });
+            
+            // Xử lý xóa hàng diễn biến
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-progress-row')) {
+                    const row = e.target.closest('tr');
+                    row.remove();
+                    
+                    // Cập nhật STT
+                    const rows = document.querySelectorAll('#progressTableBody tr');
+                    rows.forEach((row, index) => {
+                        row.cells[0].textContent = index + 1;
+                    });
+                }
+            });
+            
+            // Sự kiện cho modal tùy chọn in/tải
+            document.querySelectorAll('.close-print-modal').forEach(btn => {
+                btn.addEventListener('click', () => printOptionsModal.style.display = 'none');
+            });
+            
+            // Sự kiện cho các tùy chọn in
+            document.querySelectorAll('.print-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const type = this.getAttribute('data-type');
+                    handlePrint(type);
+                });
+            });
+            
+            // Sự kiện cho các tùy chọn tải xuống
+            document.querySelectorAll('.download-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const type = this.getAttribute('data-type');
+                    handleDownload(type);
+                });
+            });
+            
+          // Sự kiện cho nút mở rộng nội dung bệnh án
+document.getElementById('expandDiagnosisBtn').addEventListener('click', function() {
+    document.getElementById('diagnosisDetail').value = document.getElementById('diagnosis').value;
+    diagnosisModal.style.display = 'block';
+});
+
+// Sự kiện click cho thủ thuật và thuốc (vẫn giữ click)
+document.querySelectorAll('.textarea-double-click').forEach(element => {
+    element.addEventListener('click', function() {
+        const targetModal = this.getAttribute('data-target');
+        
+        if (targetModal === 'procedureModal') {
+            // Mở modal nhập thủ thuật
+            procedureModal.style.display = 'block';
+            initializeProcedureTable();
+        } else if (targetModal === 'medicineModal') {
+            // Mở modal nhập thuốc
+            medicineModal.style.display = 'block';
+            initializeMedicineTable();
+        }
+    });
+});
+            
+			
+            // Sự kiện đóng modal nội dung bệnh án
+            document.querySelectorAll('.close-diagnosis-modal').forEach(btn => {
+                btn.addEventListener('click', () => diagnosisModal.style.display = 'none');
+            });
+            
+            document.getElementById('saveDiagnosisBtn').addEventListener('click', function() {
+    const diagnosisDetail = document.getElementById('diagnosisDetail').value;
+    document.getElementById('diagnosis').value = diagnosisDetail;
+    diagnosisModal.style.display = 'none';
+    showToast('Đã cập nhật nội dung bệnh án!', 'success');
+});
+            
+            // Sự kiện đóng modal thủ thuật
+            document.querySelectorAll('.close-procedure-modal').forEach(btn => {
+                btn.addEventListener('click', () => procedureModal.style.display = 'none');
+            });
+            
+            // Sự kiện đóng modal thuốc
+            document.querySelectorAll('.close-medicine-modal').forEach(btn => {
+                btn.addEventListener('click', () => medicineModal.style.display = 'none');
+            });
+            
+            // Đóng modal khi click bên ngoài
+            window.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
+                }
+            });
+        });
+        
+        // Khởi tạo bảng thủ thuật
+        function initializeProcedureTable() {
+    const procedureTableBody = document.getElementById('procedureTableBody');
+    procedureTableBody.innerHTML = '';
+    
+    // Lấy dữ liệu thủ thuật từ bệnh án đang chỉnh sửa hoặc từ localStorage tạm thời
+    let procedures = [];
+    
+    if (currentEditingRecordId) {
+        // Lấy từ bệnh án đang chỉnh sửa
+        const record = medicalRecords.find(r => r.id === currentEditingRecordId);
+        if (record && record.procedures) {
+            procedures = record.procedures;
+        }
+    } else {
+        // Lấy từ localStorage tạm thời (cho thêm mới)
+        procedures = JSON.parse(localStorage.getItem('tempProcedures')) || [];
+    }
+    
+    if (procedures.length > 0) {
+        procedures.forEach((proc, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><input type="text" class="procedure-name" value="${proc.name || ''}"></td>
+                <td><input type="text" class="procedure-note" value="${proc.note || ''}" placeholder="Ghi chú"></td>
+                <td><input type="number" class="procedure-quantity" value="${proc.quantity || 1}" min="1"></td>
+                <td class="price-column"><input type="number" class="procedure-price" value="${proc.price || 0}" min="0"></td>
+                <td><button class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button></td>
+            `;
+            procedureTableBody.appendChild(row);
+        });
+    } else {
+        // Thêm hàng mặc định
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>1</td>
+            <td><input type="text" class="procedure-name" placeholder="Nhập tên thủ thuật"></td>
+            <td><input type="text" class="procedure-note" placeholder="Ghi chú"></td>
+            <td><input type="number" class="procedure-quantity" placeholder="Số lần" min="1" value="1"></td>
+            <td class="price-column"><input type="number" class="procedure-price" placeholder="Giá tiền" min="0"></td>
+            <td><button class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button></td>
+        `;
+        procedureTableBody.appendChild(row);
+    }
+    
+    // Cập nhật tổng
+    updateProcedureTotals();
+            
+            // Sự kiện cho nút thêm hàng
+            document.getElementById('addProcedureRow').onclick = function() {
+                const rowCount = procedureTableBody.children.length + 1;
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${rowCount}</td>
+                    <td><input type="text" class="procedure-name" placeholder="Nhập tên thủ thuật"></td>
+					<td><input type="text" class="procedure-note" placeholder="Ghi chú"></td>
+                    <td><input type="number" class="procedure-quantity" placeholder="Số lần" min="1" value="1"></td>
+                    <td class="price-column"><input type="number" class="procedure-price" placeholder="Giá tiền" min="0"></td>
+                    <td><button class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button></td>
+                `;
+                procedureTableBody.appendChild(newRow);
+            };
+            
+            // Sự kiện cho toggle hiển thị giá
+            document.getElementById('toggleProcedurePrice').addEventListener('change', function() {
+                const showPrice = this.checked;
+                const priceColumns = document.querySelectorAll('#procedureTable .price-column');
+                const totalRow = document.getElementById('procedureTotalRow');
+                
+                priceColumns.forEach(col => {
+                    col.style.display = showPrice ? 'table-cell' : 'none';
+                });
+                
+                totalRow.style.display = showPrice ? 'none' : 'table-row';
+                
+                if (!showPrice) {
+                    document.getElementById('procedureTotalAmount').value = '';
+                }
+                
+                updateProcedureTotals();
+            });
+            
+            // Sự kiện cập nhật tổng khi nhập liệu
+            procedureTableBody.addEventListener('input', updateProcedureTotals);
+            
+            // Sự kiện lưu thủ thuật
+           document.getElementById('saveProcedureBtn').addEventListener('click', function() {
+    const procedures = [];
+    const rows = document.querySelectorAll('#procedureTableBody tr');
+    
+    rows.forEach(row => {
+        const name = row.querySelector('.procedure-name').value.trim();
+        const note = row.querySelector('.procedure-note').value.trim();
+        const quantity = parseInt(row.querySelector('.procedure-quantity').value) || 0;
+        const price = parseFloat(row.querySelector('.procedure-price').value) || 0;
+        
+        if (name) {
+            procedures.push({ name, note, quantity, price });
+        }
+    });
+    
+    if (currentEditingRecordId) {
+        // Cập nhật vào bệnh án đang chỉnh sửa
+        const recordIndex = medicalRecords.findIndex(r => r.id === currentEditingRecordId);
+        if (recordIndex !== -1) {
+            medicalRecords[recordIndex].procedures = procedures;
+        }
+    } else {
+        // Lưu vào localStorage tạm thời
+        localStorage.setItem('tempProcedures', JSON.stringify(procedures));
+    }
+    
+    // Cập nhật hiển thị tóm tắt
+    let procedureHTML = '<ul>';
+    procedures.forEach(proc => {
+        procedureHTML += `<li>${proc.name} - Số lần: ${proc.quantity}${proc.price ? ` - Giá: ${formatCurrency(proc.price)}` : ''}</li>`;
+    });
+    procedureHTML += '</ul>';
+    document.getElementById('procedureSummary').innerHTML = procedureHTML;
+    document.getElementById('procedureText').innerHTML = '<i class="fas fa-expand-alt"></i> Nhấn để chỉnh sửa thủ thuật';
+    
+    procedureModal.style.display = 'none';
+    showToast('Đã lưu thủ thuật!', 'success');
+});
+          
+        }
+        
+        // Cập nhật tổng thủ thuật
+        function updateProcedureTotals() {
+            const showPrice = document.getElementById('toggleProcedurePrice').checked;
+            const rows = document.querySelectorAll('#procedureTableBody tr');
+            
+            let totalQuantity = 0;
+            let totalPrice = 0;
+            
+            rows.forEach(row => {
+                const quantity = parseInt(row.querySelector('.procedure-quantity').value) || 0;
+                const price = parseFloat(row.querySelector('.procedure-price').value) || 0;
+                
+                totalQuantity += quantity;
+                totalPrice += price * quantity;
+            });
+            
+            document.getElementById('procedureTotalQuantity').textContent = totalQuantity;
+            document.getElementById('procedureTotalPrice').textContent = formatCurrency(totalPrice);
+            
+            // Nếu không hiển thị giá, cập nhật tổng giá tiền từ input
+            if (!showPrice) {
+                const totalAmount = parseFloat(document.getElementById('procedureTotalAmount').value) || 0;
+                document.getElementById('procedureTotalPrice').textContent = formatCurrency(totalAmount);
+            }
+        }
+        
+        // Khởi tạo bảng thuốc
+      function initializeMedicineTable() {
+    const medicineTableBody = document.getElementById('medicineTableBody');
+    medicineTableBody.innerHTML = '';
+    
+    // Lấy dữ liệu thuốc từ bệnh án đang chỉnh sửa hoặc từ localStorage tạm thời
+    let medicines = [];
+    
+    if (currentEditingRecordId) {
+        // Lấy từ bệnh án đang chỉnh sửa
+        const record = medicalRecords.find(r => r.id === currentEditingRecordId);
+        if (record && record.medicines) {
+            medicines = record.medicines;
+        }
+    } else {
+        // Lấy từ localStorage tạm thời (cho thêm mới)
+        medicines = JSON.parse(localStorage.getItem('tempMedicines')) || [];
+    }
+    
+    if (medicines.length > 0) {
+        medicines.forEach((med, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><input type="text" class="medicine-name" value="${med.name || ''}"></td>
+                <td><input type="number" class="medicine-quantity" value="${med.quantity || 1}" min="1"></td>
+                <td class="price-column"><input type="number" class="medicine-price" value="${med.price || 0}" min="0"></td>
+                <td><button class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button></td>
+            `;
+            medicineTableBody.appendChild(row);
+        });
+    } else {
+        // Thêm hàng mặc định
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>1</td>
+            <td><input type="text" class="medicine-name" placeholder="Nhập tên thuốc"></td>
+            <td><input type="number" class="medicine-quantity" placeholder="Số lượng" min="1" value="1"></td>
+            <td class="price-column"><input type="number" class="medicine-price" placeholder="Giá tiền" min="0"></td>
+            <td><button class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button></td>
+        `;
+        medicineTableBody.appendChild(row);
+    }
+    
+    // Cập nhật tổng
+    updateMedicineTotals();
+            
+            // Sự kiện cho nút thêm hàng
+            document.getElementById('addMedicineRow').onclick = function() {
+                const rowCount = medicineTableBody.children.length + 1;
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${rowCount}</td>
+                    <td><input type="text" class="medicine-name" placeholder="Nhập tên thuốc"></td>
+                    <td><input type="number" class="medicine-quantity" placeholder="Số lượng" min="1" value="1"></td>
+                    <td class="price-column"><input type="number" class="medicine-price" placeholder="Giá tiền" min="0"></td>
+                    <td><button class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button></td>
+                `;
+                medicineTableBody.appendChild(newRow);
+            };
+            
+            // Sự kiện cho toggle hiển thị giá
+            document.getElementById('toggleMedicinePrice').addEventListener('change', function() {
+                const showPrice = this.checked;
+                const priceColumns = document.querySelectorAll('#medicineTable .price-column');
+                const totalRow = document.getElementById('medicineTotalRow');
+                
+                priceColumns.forEach(col => {
+                    col.style.display = showPrice ? 'table-cell' : 'none';
+                });
+                
+                totalRow.style.display = showPrice ? 'none' : 'table-row';
+                
+                if (!showPrice) {
+                    document.getElementById('medicineTotalAmount').value = '';
+                }
+                
+                updateMedicineTotals();
+            });
+            
+            // Sự kiện cập nhật tổng khi nhập liệu
+            medicineTableBody.addEventListener('input', updateMedicineTotals);
+            
+            // Sự kiện lưu thuốc
+            document.getElementById('saveMedicineBtn').addEventListener('click', function() {
+                const medicines = [];
+                const rows = medicineTableBody.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    const name = row.querySelector('.medicine-name').value.trim();
+                    const quantity = parseInt(row.querySelector('.medicine-quantity').value) || 0;
+                    const price = parseFloat(row.querySelector('.medicine-price').value) || 0;
+                    
+                    if (name) {
+                        medicines.push({ name, quantity, price });
+                    }
+                });
+                
+                // Lưu vào localStorage tạm thời
+                localStorage.setItem('tempMedicines', JSON.stringify(medicines));
+                
+                // Cập nhật hiển thị tóm tắt
+                let medicineHTML = '<ul>';
+                medicines.forEach(med => {
+                    medicineHTML += `<li>${med.name} - Số lượng: ${med.quantity}${med.price ? ` - Giá: ${formatCurrency(med.price)}` : ''}</li>`;
+                });
+                medicineHTML += '</ul>';
+                document.getElementById('medicineSummary').innerHTML = medicineHTML;
+                document.getElementById('medicineText').textContent = 'Nhấn đúp để chỉnh sửa thuốc...';
+                
+                medicineModal.style.display = 'none';
+                showToast('Đã lưu thuốc!', 'success');
+            });
+        }
+        
+        // Cập nhật tổng thuốc
+        function updateMedicineTotals() {
+            const showPrice = document.getElementById('toggleMedicinePrice').checked;
+            const rows = document.querySelectorAll('#medicineTableBody tr');
+            
+            let totalQuantity = 0;
+            let totalPrice = 0;
+            
+            rows.forEach(row => {
+                const quantity = parseInt(row.querySelector('.medicine-quantity').value) || 0;
+                const price = parseFloat(row.querySelector('.medicine-price').value) || 0;
+                
+                totalQuantity += quantity;
+                totalPrice += price * quantity;
+            });
+            
+            document.getElementById('medicineTotalQuantity').textContent = totalQuantity;
+            document.getElementById('medicineTotalPrice').textContent = formatCurrency(totalPrice);
+            
+            // Nếu không hiển thị giá, cập nhật tổng giá tiền từ input
+            if (!showPrice) {
+                const totalAmount = parseFloat(document.getElementById('medicineTotalAmount').value) || 0;
+                document.getElementById('medicineTotalPrice').textContent = formatCurrency(totalAmount);
+            }
+        }
+        
+        // Xử lý xóa hàng trong bảng thủ thuật và thuốc
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-row')) {
+                const row = e.target.closest('tr');
+                const tableBody = row.parentNode;
+                row.remove();
+                
+                // Cập nhật STT
+                const rows = tableBody.querySelectorAll('tr');
+                rows.forEach((row, index) => {
+                    row.cells[0].textContent = index + 1;
+                });
+                
+                // Cập nhật tổng
+                if (tableBody.id === 'procedureTableBody') {
+                    updateProcedureTotals();
+                } else if (tableBody.id === 'medicineTableBody') {
+                    updateMedicineTotals();
+                }
+            }
+        });
+		const themeDots = document.querySelectorAll('.theme-dot');
+const darkToggle = document.getElementById('darkModeToggle');
+
+// Load theme đã lưu
+const savedColor = localStorage.getItem('themeColor');
+const savedDark = localStorage.getItem('darkMode');
+
+if (savedColor) applyThemeColor(savedColor);
+if (savedDark === 'true') enableDarkMode();
+
+// Click chọn màu
+themeDots.forEach(dot => {
+    dot.addEventListener('click', () => {
+        const color = dot.dataset.color;
+        applyThemeColor(color);
+        localStorage.setItem('themeColor', color);
+    });
+});
+
+// Dark mode toggle
+darkToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    darkToggle.textContent = isDark ? '☀️ Sáng' : '🌙 Tối';
+});
+
+function enableDarkMode() {
+    document.body.classList.add('dark');
+    darkToggle.textContent = '☀️ Sáng';
+}
+
+// Áp màu chủ đề
+function applyThemeColor(color) {
+    document.documentElement.style.setProperty('--primary', color);
+    document.documentElement.style.setProperty('--primary-dark', shadeColor(color, -15));
+    document.documentElement.style.setProperty('--primary-light', shadeColor(color, 20));
+}
+
+// Xử lý sáng/tối màu
+function shadeColor(hex, percent) {
+    let num = parseInt(hex.replace("#",""),16),
+        amt = Math.round(2.55 * percent),
+        R = (num >> 16) + amt,
+        G = (num >> 8 & 0x00FF) + amt,
+        B = (num & 0x0000FF) + amt;
+
+    return "#" + (
+        0x1000000 +
+        (R<255?R<1?0:R:255)*0x10000 +
+        (G<255?G<1?0:G:255)*0x100 +
+        (B<255?B<1?0:B:255)
+    ).toString(16).slice(1);
+}
+
+    </script>
+	
+<footer class="app-footer">
+    © 2025 DrC
+</footer>
+	
+</body>
+</html>
