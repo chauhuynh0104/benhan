@@ -836,10 +836,141 @@ body.dark textarea:disabled {
     background: #111 !important;
     color: #777 !important;
 }
+/* CSS cho ô click đúp trong modal diễn biến */
+.progress-textarea {
+    min-height: 60px;
+    border: 1px dashed #ccc;
+    border-radius: var(--radius);
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f9f9f9;
+    margin-bottom: 10px;
+}
+
+.progress-textarea:hover {
+    border-color: var(--primary);
+    background-color: rgba(255, 107, 53, 0.05);
+}
+
+.progress-textarea i {
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+.progress-summary {
+    font-size: 0.9rem;
+    color: var(--gray);
+    margin-top: 5px;
+    max-height: 100px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    padding: 8px;
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+.progress-textarea-input {
+    width: 100%;
+    min-height: 70px;
+    resize: vertical;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.progress-textarea-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(255,107,53,0.15);
+}
+/* LOGIN OVERLAY */
+#loginOverlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #ffffff, #f1f3f5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+.login-box {
+    width: 360px;
+    padding: 35px;
+    border-radius: 18px;
+    background:#ff6b35;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+    text-align: center;
+    color: #fff;
+}
+
+.login-box h2 {
+    font-size: 26px;
+    margin-bottom: 5px;
+}
+
+.login-box p {
+    opacity: 0.9;
+    margin-bottom: 25px;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: #ffffff;
+    color: #ff6b35;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-box button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+#loginError {
+    margin-top: 12px;
+    color: #ffdddd;
+    font-size: 14px;
+}
 
     </style>
 </head>
 <body>
+
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay">
+    <div class="login-box">
+        <h2>BỆNH ÁN ĐIỆN TỬ</h2>
+        <p>Đăng nhập để tiếp tục</p>
+
+        <input type="text" id="loginUsername" placeholder="Tên đăng nhập">
+        <input type="password" id="loginPassword" placeholder="Mật khẩu">
+
+        <button onclick="handleLogin()">Đăng nhập</button>
+
+        <div id="loginError"></div>
+    </div>
+</div>
     <!-- Toast thông báo -->
     <div id="toast" class="toast"></div>
 
@@ -867,7 +998,10 @@ body.dark textarea:disabled {
                     <i class="fas fa-plus-circle"></i> Nhập bệnh án mới
                 </button>
             </div>
-	
+	<button class="btn btn-danger" onclick="logout()">
+    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+</button>
+
 
         </header>
 
@@ -887,10 +1021,7 @@ body.dark textarea:disabled {
 
             <div class="table-container">
                 <h2 class="section-title">Danh sách bệnh án</h2>
-                <div id="loadingState" class="loading" style="display: none;">
-                    <div class="spinner"></div>
-                    <p>Đang tải dữ liệu bệnh án...</p>
-                </div>
+                
                 <table id="recordsTable">
                     <thead>
                         <tr>
@@ -904,9 +1035,14 @@ body.dark textarea:disabled {
                         </tr>
                     </thead>
                     <tbody id="recordsTableBody">
+					
                         <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
                     </tbody>
                 </table>
+				<div id="loadingState" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Đang tải dữ liệu bệnh án...</p>
+                </div>
                 <div id="emptyState" class="empty-state">
                     <i class="fas fa-clipboard-list"></i>
                     <h3>Chưa có bệnh án nào</h3>
@@ -1024,7 +1160,7 @@ body.dark textarea:disabled {
 
     <!-- Modal nhập nội dung bệnh án -->
     <div id="diagnosisModal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
                 <h3>Nhập nội dung bệnh án</h3>
                 <button class="close-btn close-diagnosis-modal">&times;</button>
@@ -1167,63 +1303,78 @@ body.dark textarea:disabled {
     </div>
 
     <!-- Modal diễn biến bệnh -->
-    <div id="progressModal" class="modal">
-        <div class="modal-content" style="max-width: 1000px;">
-            <div class="modal-header">
-                <h3>Diễn biến bệnh</h3>
-                <button class="close-btn close-progress-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Tên bệnh nhân</label>
-                        <input type="text" id="progressPatientName" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tuổi</label>
-                        <input type="text" id="progressPatientAge" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Mã bệnh nhân</label>
-                        <input type="text" id="progressPatientCode" class="form-control" readonly>
-                    </div>
+   <!-- Modal diễn biến bệnh -->
+<div id="progressModal" class="modal">
+    <div class="modal-content" style="max-width: 1000px;">
+        <div class="modal-header">
+            <h3>Diễn biến bệnh</h3>
+            <button class="close-btn close-progress-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Tên bệnh nhân</label>
+                    <input type="text" id="progressPatientName" class="form-control" readonly>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Chẩn đoán</label>
-                    <input type="text" id="progressDiagnosis" class="form-control" readonly>
+                    <label class="form-label">Tuổi</label>
+                    <input type="text" id="progressPatientAge" class="form-control" readonly>
                 </div>
-                
-                <h4 class="section-title">Lịch sử diễn biến</h4>
-                <table class="table-input" id="progressTable">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Giờ và ngày</th>
-                            <th>Diễn biến</th>
-                            <th>Y lệnh</th>
-                            <th>Xóa</th>
-                        </tr>
-                    </thead>
-                    <tbody id="progressTableBody">
-                        <tr>
-                            <td>1</td>
-                            <td><input type="datetime-local" class="progress-datetime"></td>
-                            <td><input type="text" class="progress-detail" placeholder="Nhập diễn biến"></td>
-                            <td><input type="text" class="progress-order" placeholder="Nhập y lệnh"></td>
-                            <td><button class="btn btn-danger btn-sm remove-progress-row"><i class="fas fa-trash"></i></button></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <button class="btn btn-primary" id="addProgressRow">
-                    <i class="fas fa-plus"></i> Thêm diễn biến
-                </button>
+                <div class="form-group">
+                    <label class="form-label">Mã bệnh nhân</label>
+                    <input type="text" id="progressPatientCode" class="form-control" readonly>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-light close-progress-modal">Hủy</button>
-                <button class="btn btn-success" id="saveProgressBtn">Lưu diễn biến</button>
+            <div class="form-group">
+                <label class="form-label">Chẩn đoán</label>
+                <input type="text" id="progressDiagnosis" class="form-control" readonly>
             </div>
+            
+            <h4 class="section-title">Lịch sử diễn biến</h4>
+            <table class="table-input" id="progressTable">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Giờ và ngày</th>
+                        <th>Diễn biến</th>
+                        <th>Y lệnh</th>
+                        <th>Xóa</th>
+                    </tr>
+                </thead>
+                <tbody id="progressTableBody">
+                    <!-- Rows sẽ được thêm bằng JS -->
+                </tbody>
+            </table>
+            <button class="btn btn-primary" id="addProgressRow">
+                <i class="fas fa-plus"></i> Thêm diễn biến
+            </button>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-light close-progress-modal">Hủy</button>
+            <button class="btn btn-success" id="saveProgressBtn">Lưu diễn biến</button>
         </div>
     </div>
+</div>
+
+<!-- Modal nhập diễn biến chi tiết -->
+<div id="progressDetailModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3 id="progressDetailTitle">Nhập diễn biến</h3>
+            <button class="close-btn close-progress-detail-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label" id="progressDetailLabel">Nội dung chi tiết</label>
+                <textarea id="progressDetailText" class="form-control" rows="12" placeholder="Nhập nội dung chi tiết..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-light close-progress-detail-modal">Hủy</button>
+            <button class="btn btn-success" id="saveProgressDetailBtn">Lưu nội dung</button>
+        </div>
+    </div>
+</div>
 
     <!-- Modal xác nhận xóa -->
     <div id="confirmDeleteModal" class="modal">
@@ -1276,12 +1427,67 @@ body.dark textarea:disabled {
     </div>
 
     <script>
+	/* ================= LOGIN SYSTEM ================= */
+
+// TÀI KHOẢN MẶC ĐỊNH (ANH ĐỔI SAU)
+const AUTH_ACCOUNT = {
+    username: "admin",
+    password: "123456"
+};
+
+// Kiểm tra đăng nhập khi load
+document.addEventListener("DOMContentLoaded", () => {
+    if (localStorage.getItem("isLoggedIn") === "true") {
+        hideLogin();
+    }
+});
+
+function handleLogin() {
+    const u = document.getElementById("loginUsername").value.trim();
+    const p = document.getElementById("loginPassword").value.trim();
+    const errorBox = document.getElementById("loginError");
+
+    if (!u || !p) {
+        errorBox.textContent = "Vui lòng nhập đầy đủ thông tin";
+        return;
+    }
+
+    if (u === AUTH_ACCOUNT.username && p === AUTH_ACCOUNT.password) {
+        localStorage.setItem("isLoggedIn", "true");
+        hideLogin();
+        showToast("Đăng nhập thành công", "success");
+    } else {
+        errorBox.textContent = "Sai tài khoản hoặc mật khẩu";
+    }
+}
+
+function hideLogin() {
+    document.getElementById("loginOverlay").style.display = "none";
+}
+
+function logout() {
+    localStorage.removeItem("isLoggedIn");
+    location.reload();
+}
+
+	// Enter để đăng nhập
+document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+        const loginOverlay = document.getElementById("loginOverlay");
+        if (loginOverlay && loginOverlay.style.display !== "none") {
+            handleLogin();
+        }
+    }
+});
+
+	
         // Khởi tạo biến toàn cục
         let medicalRecords = [];
         let currentRecordId = null;
         let currentProgressRecordId = null;
         let isEditing = false;
 		let currentEditingRecordId = null; 
+		let currentEditingProgressCell = null; 
         // Hàm tạo mã bệnh nhân tự động 
 function generatePatientCode() {
     if (medicalRecords.length === 0) {
@@ -1793,83 +1999,138 @@ function viewRecord(id) {
             }
         }
 
+
         // Hiển thị modal diễn biến
-        function showProgressModal(id) {
-            const record = medicalRecords.find(r => r.id === id);
-            if (!record) return;
-            
-            currentProgressRecordId = id;
-            
-            // Điền thông tin bệnh nhân
-            document.getElementById('progressPatientName').value = record.patientName;
-            document.getElementById('progressPatientAge').value = record.age;
-            document.getElementById('progressPatientCode').value = record.patientCode;
-            document.getElementById('progressDiagnosis').value = record.primaryDiagnosis  || '';
-            
-            // Hiển thị diễn biến
-            const progressTableBody = document.getElementById('progressTableBody');
-            let progressHTML = '';
-            
-            if (record.progress && record.progress.length > 0) {
-                record.progress.forEach((item, index) => {
-                    progressHTML += `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td><input type="datetime-local" class="progress-datetime" value="${item.datetime}"></td>
-                            <td><input type="text" class="progress-detail" value="${item.detail}"></td>
-                            <td><input type="text" class="progress-order" value="${item.order}"></td>
-                            <td><button class="btn btn-danger btn-sm remove-progress-row"><i class="fas fa-trash"></i></button></td>
-                        </tr>
-                    `;
-                });
-            } else {
-                progressHTML = `
-                    <tr>
-                        <td>1</td>
-                        <td><input type="datetime-local" class="progress-datetime"></td>
-                        <td><input type="text" class="progress-detail" placeholder="Nhập diễn biến"></td>
-                        <td><input type="text" class="progress-order" placeholder="Nhập y lệnh"></td>
-                        <td><button class="btn btn-danger btn-sm remove-progress-row"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                `;
-            }
-            
-            progressTableBody.innerHTML = progressHTML;
-            progressModal.style.display = 'block';
-        }
+       function showProgressModal(id) {
+    const record = medicalRecords.find(r => r.id === id);
+    if (!record) return;
+    
+    currentProgressRecordId = id;
+    
+    // Điền thông tin bệnh nhân
+    document.getElementById('progressPatientName').value = record.patientName;
+    document.getElementById('progressPatientAge').value = record.age;
+    document.getElementById('progressPatientCode').value = record.patientCode;
+    document.getElementById('progressDiagnosis').value = record.primaryDiagnosis || '';
+    
+    // Hiển thị diễn biến
+    const progressTableBody = document.getElementById('progressTableBody');
+    progressTableBody.innerHTML = '';
+    
+    if (record.progress && record.progress.length > 0) {
+        record.progress.forEach((item, index) => {
+            const row = createProgressRow(index + 1, item);
+            progressTableBody.appendChild(row);
+        });
+    } else {
+        const row = createProgressRow(1);
+        progressTableBody.appendChild(row);
+    }
+    
+    progressModal.style.display = 'block';
+}
 
         // Lưu diễn biến
-        async function saveProgress() {
-            const recordIndex = medicalRecords.findIndex(r => r.id === currentProgressRecordId);
-            if (recordIndex === -1) return;
-            
-            // Lấy dữ liệu từ bảng
-            const progressRows = document.querySelectorAll('#progressTableBody tr');
-            const progress = [];
-            
-            progressRows.forEach(row => {
-                const datetime = row.querySelector('.progress-datetime').value;
-                const detail = row.querySelector('.progress-detail').value;
-                const order = row.querySelector('.progress-order').value;
-                
-                if (datetime && detail) {
-                    progress.push({ datetime, detail, order });
-                }
+      async function saveProgress() {
+    const recordIndex = medicalRecords.findIndex(r => r.id === currentProgressRecordId);
+    if (recordIndex === -1) return;
+    
+    // Lấy dữ liệu từ bảng
+    const progressRows = document.querySelectorAll('#progressTableBody tr');
+    const progress = [];
+    
+    progressRows.forEach(row => {
+        const datetime = row.querySelector('.progress-datetime').value;
+        const detail = row.querySelector('.progress-detail').value;
+        const order = row.querySelector('.progress-order').value;
+        
+        if (datetime) {
+            progress.push({ 
+                datetime, 
+                detail: detail || '', 
+                order: order || '' 
             });
-            
-            // Cập nhật diễn biến
-            medicalRecords[recordIndex].progress = progress;
-            
-            // Lưu lên Dropbox
-            const success = await saveToDropbox();
-            
-            if (success) {
-                progressModal.style.display = 'none';
-                showToast('Đã lưu diễn biến thành công!', 'success');
-            } else {
-                showToast('Lỗi khi lưu diễn biến', 'error');
-            }
         }
+    });
+    
+    // Cập nhật diễn biến
+    medicalRecords[recordIndex].progress = progress;
+    
+    // Lưu lên Dropbox
+    const success = await saveToDropbox();
+    
+    if (success) {
+        progressModal.style.display = 'none';
+        showToast('Đã lưu diễn biến thành công!', 'success');
+    } else {
+        showToast('Lỗi khi lưu diễn biến', 'error');
+    }
+}
+		
+		
+		
+function createProgressRow(index, data = null) {
+    const row = document.createElement('tr');
+
+    const detailText = data?.detail || '';
+    const orderText  = data?.order || '';
+    const datetimeValue = data?.datetime || '';
+
+    row.innerHTML = `
+        <td>${index}</td>
+        <td>
+            <input type="datetime-local"
+                   class="progress-datetime"
+                   value="${datetimeValue}">
+        </td>
+
+        <!-- DIỄN BIẾN -->
+        <td>
+            <textarea class="progress-textarea-input progress-detail"
+                placeholder="Nhập diễn biến..."
+                ondblclick="openProgressDetailModal(this, 'detail')"
+            >${detailText}</textarea>
+        </td>
+
+        <!-- Y LỆNH -->
+        <td>
+            <textarea class="progress-textarea-input progress-order"
+                placeholder="Nhập y lệnh..."
+                ondblclick="openProgressDetailModal(this, 'order')"
+            >${orderText}</textarea>
+        </td>
+
+        <td>
+            <button class="btn btn-danger btn-sm remove-progress-row">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+
+    return row;
+}
+
+// Mở modal nhập chi tiết diễn biến/y lệnh
+function openProgressDetailModal(textarea, type) {
+    currentEditingProgressCell = {
+        textarea,
+        type
+    };
+
+    const title = type === 'detail' ? 'Diễn biến' : 'Y lệnh';
+
+    document.getElementById('progressDetailTitle').textContent = `Nhập ${title}`;
+    document.getElementById('progressDetailLabel').textContent = title;
+    document.getElementById('progressDetailText').value = textarea.value;
+
+    document.getElementById('progressDetailModal').style.display = 'block';
+}
+		
+		
+		
+		
+		
+		
 
         // Hiển thị tùy chọn in/tải
         function showPrintOptions(id) {
@@ -2184,41 +2445,66 @@ cancelBtn.addEventListener('click', () => {
             document.querySelectorAll('.close-delete-modal').forEach(btn => {
                 btn.addEventListener('click', () => confirmDeleteModal.style.display = 'none');
             });
+			
+	
             document.getElementById('confirmDeleteBtn').addEventListener('click', deleteRecord);
             
             // Sự kiện cho modal diễn biến
-            document.querySelectorAll('.close-progress-modal').forEach(btn => {
+   
+
+
+document.getElementById('saveProgressDetailBtn').onclick = () => {
+    if (!currentEditingProgressCell) return;
+
+    const value = document.getElementById('progressDetailText').value;
+    currentEditingProgressCell.textarea.value = value;
+
+    document.getElementById('progressDetailModal').style.display = 'none';
+};
+
+// Đóng modal progress detail
+document.querySelectorAll('.close-progress-detail-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.getElementById('progressDetailModal').style.display = 'none';
+        currentEditingProgressCell = null;
+    });
+});
+
+
+
+
+   document.querySelectorAll('.close-progress-modal').forEach(btn => {
                 btn.addEventListener('click', () => progressModal.style.display = 'none');
             });
             document.getElementById('saveProgressBtn').addEventListener('click', saveProgress);
-            document.getElementById('addProgressRow').addEventListener('click', function() {
-                const progressTableBody = document.getElementById('progressTableBody');
-                const rowCount = progressTableBody.children.length + 1;
-                
-                const newRow = document.createElement('tr');
-                newRow.innerHTML = `
-                    <td>${rowCount}</td>
-                    <td><input type="datetime-local" class="progress-datetime"></td>
-                    <td><input type="text" class="progress-detail" placeholder="Nhập diễn biến"></td>
-                    <td><input type="text" class="progress-order" placeholder="Nhập y lệnh"></td>
-                    <td><button class="btn btn-danger btn-sm remove-progress-row"><i class="fas fa-trash"></i></button></td>
-                `;
-                progressTableBody.appendChild(newRow);
-            });
+           // Sự kiện thêm hàng mới trong progress
+document.getElementById('addProgressRow').addEventListener('click', function() {
+    const progressTableBody = document.getElementById('progressTableBody');
+    const rowCount = progressTableBody.children.length + 1;
+    const newRow = createProgressRow(rowCount);
+    progressTableBody.appendChild(newRow);
+});
             
+			
+			
+			
             // Xử lý xóa hàng diễn biến
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.remove-progress-row')) {
-                    const row = e.target.closest('tr');
-                    row.remove();
-                    
-                    // Cập nhật STT
-                    const rows = document.querySelectorAll('#progressTableBody tr');
-                    rows.forEach((row, index) => {
-                        row.cells[0].textContent = index + 1;
-                    });
-                }
-            });
+         document.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-progress-row')) {
+        const row = e.target.closest('tr');
+        row.remove();
+        
+        // Cập nhật STT
+        const rows = document.querySelectorAll('#progressTableBody tr');
+        rows.forEach((row, index) => {
+            row.dataset.index = index + 1;
+            row.cells[0].textContent = index + 1;
+        });
+    }
+});
+			
+			
+			
             
             // Sự kiện cho modal tùy chọn in/tải
             document.querySelectorAll('.close-print-modal').forEach(btn => {
