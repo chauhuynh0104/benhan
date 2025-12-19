@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý bệnh án</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://unpkg.com/docx@8.0.0/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         :root {
             --primary: #FF6B35;
@@ -952,7 +954,200 @@ body.dark textarea:disabled {
     color: #ffdddd;
     font-size: 14px;
 }
+.download-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    color: white;
+    font-size: 1.2rem;
+}
+/* CSS cho modal xuất hiện đại */
+.export-tabs {
+    display: flex;
+    background: #f8f9fa;
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
 
+.export-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.export-tab.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: var(--shadow);
+}
+
+.export-content {
+    display: none;
+}
+
+.export-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.option-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.export-option {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: white;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    gap: 15px;
+}
+
+.export-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    border-color: var(--primary-light);
+}
+
+.export-option.print-option {
+    color: white;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+}
+
+.export-option.print-option .option-icon {
+    background: rgba(255,255,255,0.2);
+}
+
+.export-option.print-option .option-arrow {
+    color: rgba(255,255,255,0.8);
+}
+
+.option-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.option-content {
+    flex: 1;
+}
+
+.option-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 4px;
+}
+
+.option-desc {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.option-arrow {
+    font-size: 0.9rem;
+    color: var(--gray);
+    transition: transform 0.3s ease;
+}
+
+.export-option:hover .option-arrow {
+    transform: translateX(3px);
+    color: var(--primary);
+}
+
+
+
+.format-btn {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.format-btn.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+}
+
+.format-btn:hover:not(.active) {
+    border-color: var(--primary-light);
+    background: #f9f9f9;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark mode support */
+body.dark .export-tabs {
+    background: #2a2a2a;
+}
+
+body.dark .export-tab {
+    color: #aaa;
+}
+
+body.dark .export-tab.active {
+    background: #333;
+    color: var(--primary-light);
+}
+
+body.dark .export-option:not(.print-option) {
+    background: #333;
+    border-color: #444;
+}
+
+body.dark .format-btn {
+    background: #333;
+    border-color: #444;
+    color: #aaa;
+}
+
+body.dark .format-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
     </style>
 </head>
 <body>
@@ -1394,37 +1589,167 @@ body.dark textarea:disabled {
     </div>
 
     <!-- Modal tùy chọn in/tải -->
-    <div id="printOptionsModal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3>Tùy chọn</h3>
-                <button class="close-btn close-print-modal">&times;</button>
+  <!-- Modal tùy chọn in/tải - HIỆN ĐẠI -->
+<div id="printOptionsModal" class="modal">
+    <div class="modal-content" style="max-width: 500px; border-radius: 16px;">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary), var(--secondary));">
+            <h3 style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-file-export" style="font-size: 1.3rem;"></i>
+                Xuất bệnh án
+            </h3>
+            <button class="close-btn close-print-modal" style="background: rgba(255,255,255,0.2);">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body" style="padding: 25px;">
+            <!-- Tabs chuyển đổi -->
+            <div class="export-tabs" style="display: flex; gap: 5px; margin-bottom: 25px; background: #f8f9fa; padding: 5px; border-radius: 12px;">
+                <button class="export-tab active" data-tab="print">
+                    <i class="fas fa-print"></i> In
+                </button>
+                <button class="export-tab" data-tab="download">
+                    <i class="fas fa-download"></i> Tải xuống
+                </button>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <h4>In bệnh án</h4>
-                    <div class="actions" style="flex-direction: column; align-items: flex-start;">
-                        <button class="btn btn-light print-option" data-type="full">In toàn bộ bệnh án</button>
-                        <button class="btn btn-light print-option" data-type="medicine">In đơn thuốc</button>
-                        <button class="btn btn-light print-option" data-type="procedure">In thủ thuật</button>
-                        <button class="btn btn-light print-option" data-type="progress">In diễn biến</button>
+            
+            <!-- Tab In ấn -->
+            <div class="export-content active" id="printTab">
+                <h4 style="color: var(--secondary); margin-bottom: 15px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-print" style="color: var(--primary);"></i>
+                    Chọn loại in ấn
+                </h4>
+                
+                <div class="option-grid">
+                    <div class="export-option print-option" data-type="full" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="option-icon">
+                            <i class="fas fa-file-medical-alt"></i>
+                        </div>
+                        <div class="option-content">
+                            <div class="option-title">Toàn bộ bệnh án</div>
+                            <div class="option-desc">In đầy đủ thông tin</div>
+                        </div>
+                        <div class="option-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="export-option print-option" data-type="medicine" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="option-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="option-content">
+                            <div class="option-title">Đơn thuốc</div>
+                            <div class="option-desc">Danh sách thuốc kê đơn</div>
+                        </div>
+                        <div class="option-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="export-option print-option" data-type="procedure" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="option-icon">
+                            <i class="fas fa-procedures"></i>
+                        </div>
+                        <div class="option-content">
+                            <div class="option-title">Thủ thuật</div>
+                            <div class="option-desc">Các thủ thuật đã thực hiện</div>
+                        </div>
+                        <div class="option-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="export-option print-option" data-type="progress" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <div class="option-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="option-content">
+                            <div class="option-title">Diễn biến</div>
+                            <div class="option-desc">Lịch sử diễn biến bệnh</div>
+                        </div>
+                        <div class="option-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <h4>Tải bệnh án</h4>
-                    <div class="actions" style="flex-direction: column; align-items: flex-start;">
-                        <button class="btn btn-light download-option" data-type="full">Tải toàn bộ bệnh án</button>
-                        <button class="btn btn-light download-option" data-type="medicine">Tải đơn thuốc</button>
-                        <button class="btn btn-light download-option" data-type="procedure">Tải thủ thuật</button>
-                        <button class="btn btn-light download-option" data-type="progress">Tải diễn biến</button>
-                    </div>
-                </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-light close-print-modal">Đóng</button>
+            
+            <!-- Tab Tải xuống -->
+           <!-- Tab Tải xuống - CHỈ CÓ DOCX -->
+<div class="export-content" id="downloadTab">
+    <h4 style="color: var(--secondary); margin-bottom: 15px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-file-word" style="color: var(--primary);"></i>
+        Tải xuống file DOCX
+    </h4>
+    
+    <div class="option-grid">
+        <div class="export-option download-option" data-type="full">
+            <div class="option-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fas fa-file-archive"></i>
+            </div>
+            <div class="option-content">
+                <div class="option-title">Toàn bộ bệnh án</div>
+                <div class="option-desc">Tải đầy đủ thông tin</div>
+            </div>
+            <div class="option-arrow">
+                <i class="fas fa-download"></i>
+            </div>
+        </div>
+        
+        <div class="export-option download-option" data-type="medicine">
+            <div class="option-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <i class="fas fa-prescription-bottle-alt"></i>
+            </div>
+            <div class="option-content">
+                <div class="option-title">Đơn thuốc</div>
+                <div class="option-desc">Danh sách thuốc</div>
+            </div>
+            <div class="option-arrow">
+                <i class="fas fa-download"></i>
+            </div>
+        </div>
+        
+        <div class="export-option download-option" data-type="procedure">
+            <div class="option-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <i class="fas fa-syringe"></i>
+            </div>
+            <div class="option-content">
+                <div class="option-title">Thủ thuật</div>
+                <div class="option-desc">Các thủ thuật</div>
+            </div>
+            <div class="option-arrow">
+                <i class="fas fa-download"></i>
+            </div>
+        </div>
+        
+        <div class="export-option download-option" data-type="progress">
+            <div class="option-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="option-content">
+                <div class="option-title">Diễn biến</div>
+                <div class="option-desc">Lịch sử bệnh</div>
+            </div>
+            <div class="option-arrow">
+                <i class="fas fa-download"></i>
             </div>
         </div>
     </div>
+</div>
+        </div>
+        
+        <div class="modal-footer" style="border-top: 1px solid #eee; padding: 15px 25px; display: flex; justify-content: space-between;">
+            <button class="btn btn-light close-print-modal" style="border-radius: 30px; padding: 8px 20px;">
+                <i class="fas fa-times"></i> Đóng
+            </button>
+            <div class="export-info" style="font-size: 0.9rem; color: var(--gray); display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-info-circle"></i>
+                <span id="selectedOptionText">Chọn một tùy chọn</span>
+            </div>
+        </div>
+    </div>
+</div>
 
     <script>
 	/* ================= LOGIN SYSTEM ================= */
@@ -1864,10 +2189,11 @@ function viewRecord(id) {
 }
 
         // Định dạng tiền tệ
-        function formatCurrency(amount) {
-            if (!amount) return '0 ₫';
-            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-        }
+      function formatCurrency(amount) {
+    if (!amount && amount !== 0) return '0 ₫';
+    if (typeof amount !== 'number') amount = parseFloat(amount) || 0;
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
 
         // Lưu bệnh án
         async function saveRecord() {
@@ -2365,55 +2691,745 @@ function generateFullPrintContent(record) {
             `;
         }
 
-        // Xử lý tải xuống
-        function handleDownload(type) {
-            const record = medicalRecords.find(r => r.id === currentRecordId);
-            if (!record) return;
-            
-            // Tạo và tải file JSON
-            let dataToDownload;
-            
-            switch(type) {
-                case 'full':
-                    dataToDownload = record;
-                    break;
-                case 'medicine':
-                    dataToDownload = {
-                        patientName: record.patientName,
-                        patientCode: record.patientCode,
-                        examinationDate: record.examinationDate,
-                        medicines: record.medicines || []
-                    };
-                    break;
-                case 'procedure':
-                    dataToDownload = {
-                        patientName: record.patientName,
-                        patientCode: record.patientCode,
-                        examinationDate: record.examinationDate,
-                        procedures: record.procedures || []
-                    };
-                    break;
-                case 'progress':
-                    dataToDownload = {
-                        patientName: record.patientName,
-                        patientCode: record.patientCode,
-                        progress: record.progress || []
-                    };
-                    break;
+       
+
+// Hàm tạo DOCX toàn bộ bệnh án - TẤT CẢ TRONG MỘT SECTION
+async function generateFullDocx(record) {
+    const { Document, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, AlignmentType } = docx;
+    
+    const children = [
+        new Paragraph({
+            text: "BỆNH ÁN ĐIỆN TỬ",
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 100 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Mã bệnh nhân: ", bold: true }),
+                new TextRun(record.patientCode)
+            ],
+            spacing: { after: 20 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Họ tên: ", bold: true }),
+                new TextRun(record.patientName)
+            ],
+            spacing: { after: 20 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Giới tính: ", bold: true }),
+                new TextRun(record.gender)
+            ],
+            spacing: { after: 20 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Tuổi: ", bold: true }),
+                new TextRun(record.age.toString())
+            ],
+            spacing: { after: 20 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Địa chỉ: ", bold: true }),
+                new TextRun(record.address || 'Không có')
+            ],
+            spacing: { after: 20 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Ngày khám: ", bold: true }),
+                new TextRun(`${formatDate(record.examinationDate)} ${record.examinationTime || ''}`)
+            ],
+            spacing: { after: 20 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Chẩn đoán chính: ", bold: true }),
+                new TextRun(record.primaryDiagnosis || '')
+            ],
+            spacing: { after: 40 }
+        }),
+        
+        new Paragraph({
+            text: "NỘI DUNG BỆNH ÁN",
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 40, after: 20 }
+        })
+    ];
+    
+    // Thêm nội dung bệnh án với XUỐNG DÒNG ĐÚNG CÁCH
+    if (record.diagnosis) {
+        // Tách nội dung thành các dòng
+        const lines = record.diagnosis.split('\n');
+        
+        // Thêm từng dòng như một Paragraph riêng
+        lines.forEach(line => {
+            if (line.trim() !== '') {
+                children.push(
+                    new Paragraph({
+                        text: line,
+                        spacing: { after: 10 }
+                    })
+                );
             }
+        });
+        
+        // Thêm khoảng cách sau phần nội dung
+        children.push(
+            new Paragraph({
+                text: '',
+                spacing: { after: 40 }
+            })
+        );
+    } else {
+        children.push(
+            new Paragraph({
+                text: "Không có nội dung",
+                spacing: { after: 40 }
+            })
+        );
+    }
+    
+    // Thêm thủ thuật nếu có
+    if (record.procedures && record.procedures.length > 0) {
+        children.push(
+            new Paragraph({
+                text: "THỦ THUẬT",
+                heading: HeadingLevel.HEADING_2,
+                spacing: { before: 20, after: 10 }
+            }),
             
-            const dataStr = JSON.stringify(dataToDownload, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            new Table({
+                rows: [
+                    new TableRow({
+                        children: [
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "STT", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Tên thủ thuật", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Ghi chú", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Số lần", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Giá tiền", bold: true })]
+                                })] 
+                            })
+                        ]
+                    }),
+                    ...record.procedures.map((proc, index) => 
+                        new TableRow({
+                            children: [
+                                new TableCell({ children: [new Paragraph((index + 1).toString())] }),
+                                new TableCell({ children: [new Paragraph(proc.name)] }),
+                                new TableCell({ children: [new Paragraph(proc.note || '-')] }),
+                                new TableCell({ children: [new Paragraph(proc.quantity.toString())] }),
+                                new TableCell({ children: [new Paragraph(formatCurrency(proc.price))] })
+                            ]
+                        })
+                    )
+                ]
+            })
+        );
+    }
+    
+    // Thêm thuốc nếu có
+    if (record.medicines && record.medicines.length > 0) {
+        children.push(
+            new Paragraph({
+                text: "ĐƠN THUỐC",
+                heading: HeadingLevel.HEADING_2,
+                spacing: { before: 20, after: 10 }
+            }),
             
-            const exportFileDefaultName = `${record.patientCode}_${type}.json`;
+            new Table({
+                rows: [
+                    new TableRow({
+                        children: [
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "STT", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Tên thuốc", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Số lượng", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Giá tiền", bold: true })]
+                                })] 
+                            })
+                        ]
+                    }),
+                    ...record.medicines.map((med, index) => 
+                        new TableRow({
+                            children: [
+                                new TableCell({ children: [new Paragraph((index + 1).toString())] }),
+                                new TableCell({ children: [new Paragraph(med.name)] }),
+                                new TableCell({ children: [new Paragraph(med.quantity.toString())] }),
+                                new TableCell({ children: [new Paragraph(formatCurrency(med.price))] })
+                            ]
+                        })
+                    )
+                ]
+            })
+        );
+    }
+    
+    // Thêm diễn biến nếu có
+    if (record.progress && record.progress.length > 0) {
+        children.push(
+            new Paragraph({
+                text: "DIỄN BIẾN BỆNH",
+                heading: HeadingLevel.HEADING_2,
+                spacing: { before: 20, after: 10 }
+            }),
             
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-            
-            showToast(`Đã tải xuống ${type} của bệnh án ${record.patientCode}!`, 'success');
+            new Table({
+                rows: [
+                    new TableRow({
+                        children: [
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "STT", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Thời gian", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Diễn biến", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Y lệnh", bold: true })]
+                                })] 
+                            })
+                        ]
+                    }),
+                    ...record.progress.map((item, index) => {
+                        const date = new Date(item.datetime);
+                        const dateStr = date.toLocaleString('vi-VN');
+                        return new TableRow({
+                            children: [
+                                new TableCell({ children: [new Paragraph((index + 1).toString())] }),
+                                new TableCell({ children: [new Paragraph(dateStr)] }),
+                                new TableCell({ 
+                                    children: [new Paragraph({
+                                        children: item.detail ? 
+                                            // Xử lý xuống dòng cho diễn biến
+                                            item.detail.split('\n').map(line => 
+                                                new TextRun({ text: line, break: 1 })
+                                            ) : [new TextRun('')]
+                                    })] 
+                                }),
+                                new TableCell({ 
+                                    children: [new Paragraph({
+                                        children: item.order ? 
+                                            // Xử lý xuống dòng cho y lệnh
+                                            item.order.split('\n').map(line => 
+                                                new TextRun({ text: line, break: 1 })
+                                            ) : [new TextRun('')]
+                                    })] 
+                                })
+                            ]
+                        });
+                    })
+                ]
+            })
+        );
+    }
+    
+    // Thêm hẹn tái khám nếu có
+    if (record.followUpDate) {
+        children.push(
+            new Paragraph({
+                children: [
+                    new TextRun({ text: "Hẹn tái khám: ", bold: true }),
+                    new TextRun(formatDate(record.followUpDate))
+                ],
+                spacing: { before: 20, after: 40 }
+            })
+        );
+    }
+    
+    // Thêm footer
+    children.push(
+    
+        
+        new Paragraph({
+            children: [
+                new TextRun(`Ngày xuất bệnh án: ${new Date().toLocaleDateString('vi-VN')}`)
+            ],
+            alignment: AlignmentType.RIGHT,
+            spacing: { before: 20 }
+        })
+    );
+    
+    const doc = new Document({
+        sections: [{
+            properties: {},
+            children: children
+        }]
+    });
+    
+    // Tạo blob
+    const blob = await docx.Packer.toBlob(doc);
+    return blob;
+}
+
+
+// Hàm tạo DOCX đơn thuốc
+// Hàm tạo DOCX đơn thuốc - sửa phần xuống dòng trong table cell
+async function generateMedicineDocx(record) {
+    const { Document, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, AlignmentType } = docx;
+    
+    const children = [
+        new Paragraph({
+            text: "ĐƠN THUỐC",
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 80 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Mã bệnh nhân: ", bold: true }),
+                new TextRun(record.patientCode)
+            ],
+            spacing: { after: 10 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Họ tên: ", bold: true }),
+                new TextRun(record.patientName)
+            ],
+            spacing: { after: 10 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Ngày khám: ", bold: true }),
+                new TextRun(formatDate(record.examinationDate))
+            ],
+            spacing: { after: 30 }
+        })
+    ];
+    
+    // Thêm bảng thuốc
+    if (record.medicines && record.medicines.length > 0) {
+        children.push(
+            new Table({
+                rows: [
+                    new TableRow({
+                        children: [
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "STT", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Tên thuốc", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Số lượng", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Đơn giá", bold: true })]
+                                })] 
+                            }),
+                            new TableCell({ 
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: "Thành tiền", bold: true })]
+                                })] 
+                            })
+                        ]
+                    }),
+                    ...record.medicines.map((med, index) => {
+                        const total = (med.price || 0) * (med.quantity || 0);
+                        return new TableRow({
+                            children: [
+                                new TableCell({ children: [new Paragraph((index + 1).toString())] }),
+                                new TableCell({ 
+                                    children: [new Paragraph({
+                                        children: med.name ? 
+                                            // Xử lý xuống dòng cho tên thuốc nếu có \n
+                                            med.name.split('\n').map((line, i, arr) => 
+                                                new TextRun({ 
+                                                    text: line, 
+                                                    break: i < arr.length - 1 ? 1 : 0 
+                                                })
+                                            ) : [new TextRun('')]
+                                    })] 
+                                }),
+                                new TableCell({ children: [new Paragraph(med.quantity.toString())] }),
+                                new TableCell({ children: [new Paragraph(formatCurrency(med.price))] }),
+                                new TableCell({ children: [new Paragraph(formatCurrency(total))] })
+                            ]
+                        });
+                    })
+                ]
+            })
+        );
+        
+        // Thêm tổng cộng
+        const grandTotal = record.medicines.reduce((sum, med) => 
+            sum + ((med.price || 0) * (med.quantity || 0)), 0);
+        
+        children.push(
+            new Paragraph({
+                children: [
+                    new TextRun({ text: "TỔNG CỘNG: ", bold: true, size: 24 }),
+                    new TextRun({ text: formatCurrency(grandTotal), bold: true, size: 24 })
+                ],
+                alignment: AlignmentType.RIGHT,
+                spacing: { before: 20, after: 40 }
+            })
+        );
+    } else {
+        children.push(
+            new Paragraph({
+                text: "Không có thuốc trong đơn",
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 20 }
+            })
+        );
+    }
+    
+    // Thêm footer
+    children.push(
+     
+        
+        new Paragraph({
+            children: [
+                new TextRun(`Ngày xuất đơn: ${new Date().toLocaleDateString('vi-VN')}`)
+            ],
+            alignment: AlignmentType.RIGHT
+        })
+    );
+    
+    const doc = new Document({
+        sections: [{
+            properties: {},
+            children: children
+        }]
+    });
+    
+    const blob = await docx.Packer.toBlob(doc);
+    return blob;
+}
+
+
+// Hàm tạo DOCX thủ thuật
+async function generateProcedureDocx(record) {
+    const { Document, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, AlignmentType } = docx;
+    
+    const children = [
+        new Paragraph({
+            text: "THỦ THUẬT",
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 80 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Mã bệnh nhân: ", bold: true }),
+                new TextRun(record.patientCode)
+            ],
+            spacing: { after: 10 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Họ tên: ", bold: true }),
+                new TextRun(record.patientName)
+            ],
+            spacing: { after: 10 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Ngày khám: ", bold: true }),
+                new TextRun(formatDate(record.examinationDate))
+            ],
+            spacing: { after: 30 }
+        })
+    ];
+    
+    // Thêm bảng thủ thuật
+    if (record.procedures && record.procedures.length > 0) {
+        children.push(
+            new Table({
+                rows: [
+                    new TableRow({
+                        children: [
+                            new TableCell({ children: [new Paragraph({ text: "STT", bold: true })] }),
+                            new TableCell({ children: [new Paragraph({ text: "Tên thủ thuật", bold: true })] }),
+                            new TableCell({ children: [new Paragraph({ text: "Ghi chú", bold: true })] }),
+                            new TableCell({ children: [new Paragraph({ text: "Số lần", bold: true })] }),
+                            new TableCell({ children: [new Paragraph({ text: "Đơn giá", bold: true })] }),
+                            new TableCell({ children: [new Paragraph({ text: "Thành tiền", bold: true })] })
+                        ]
+                    }),
+                    ...record.procedures.map((proc, index) => {
+                        const total = (proc.price || 0) * (proc.quantity || 0);
+                        return new TableRow({
+                            children: [
+                                new TableCell({ children: [new Paragraph((index + 1).toString())] }),
+                                new TableCell({ children: [new Paragraph(proc.name)] }),
+                                new TableCell({ children: [new Paragraph(proc.note || '-')] }),
+                                new TableCell({ children: [new Paragraph(proc.quantity.toString())] }),
+                                new TableCell({ children: [new Paragraph(formatCurrency(proc.price))] }),
+                                new TableCell({ children: [new Paragraph(formatCurrency(total))] })
+                            ]
+                        });
+                    })
+                ]
+            })
+        );
+        
+        // Thêm tổng cộng
+        const grandTotal = record.procedures.reduce((sum, proc) => 
+            sum + ((proc.price || 0) * (proc.quantity || 0)), 0);
+        
+        children.push(
+            new Paragraph({
+                children: [
+                    new TextRun({ text: "TỔNG CỘNG: ", bold: true, size: 24 }),
+                    new TextRun({ text: formatCurrency(grandTotal), bold: true, size: 24 })
+                ],
+                alignment: AlignmentType.RIGHT,
+                spacing: { before: 20, after: 40 }
+            })
+        );
+    } else {
+        children.push(
+            new Paragraph({
+                text: "Không có thủ thuật",
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 20 }
+            })
+        );
+    }
+    
+    // Thêm footer
+    children.push(
+     
+        
+        new Paragraph({
+            children: [
+                new TextRun(`Ngày xuất: ${new Date().toLocaleDateString('vi-VN')}`)
+            ],
+            alignment: AlignmentType.RIGHT
+        })
+    );
+    
+    const doc = new Document({
+        sections: [{
+            properties: {},
+            children: children
+        }]
+    });
+    
+    const blob = await docx.Packer.toBlob(doc);
+    return blob;
+}
+
+// Hàm tạo DOCX diễn biến
+async function generateProgressDocx(record) {
+    const { Document, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, AlignmentType } = docx;
+    
+    const children = [
+        new Paragraph({
+            text: "DIỄN BIẾN BỆNH",
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 80 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Mã bệnh nhân: ", bold: true }),
+                new TextRun(record.patientCode)
+            ],
+            spacing: { after: 10 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Họ tên: ", bold: true }),
+                new TextRun(record.patientName)
+            ],
+            spacing: { after: 10 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Tuổi: ", bold: true }),
+                new TextRun(record.age.toString())
+            ],
+            spacing: { after: 10 }
+        }),
+        
+        new Paragraph({
+            children: [
+                new TextRun({ text: "Chẩn đoán: ", bold: true }),
+                new TextRun(record.primaryDiagnosis || record.diagnosis || '')
+            ],
+            spacing: { after: 30 }
+        })
+    ];
+    
+    // Thêm bảng diễn biến
+    if (record.progress && record.progress.length > 0) {
+        children.push(
+            new Table({
+                rows: [
+                    new TableRow({
+                        children: [
+                            new TableCell({ children: [new Paragraph({ text: "STT", bold: true })] }),
+                            new TableCell({ children: [new Paragraph({ text: "Thời gian", bold: true })] }),
+                            new TableCell({ children: [new Paragraph({ text: "Diễn biến", bold: true })] }),
+                            new TableCell({ children: [new Paragraph({ text: "Y lệnh", bold: true })] })
+                        ]
+                    }),
+                    ...record.progress.map((item, index) => {
+                        const date = new Date(item.datetime);
+                        const dateStr = date.toLocaleString('vi-VN');
+                        return new TableRow({
+                            children: [
+                                new TableCell({ children: [new Paragraph((index + 1).toString())] }),
+                                new TableCell({ children: [new Paragraph(dateStr)] }),
+                                new TableCell({ children: [new Paragraph(item.detail || '')] }),
+                                new TableCell({ children: [new Paragraph(item.order || '')] })
+                            ]
+                        });
+                    })
+                ]
+            })
+        );
+    } else {
+        children.push(
+            new Paragraph({
+                text: "Không có diễn biến",
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 20 }
+            })
+        );
+    }
+    
+    // Thêm footer
+    children.push(
+    
+        
+        new Paragraph({
+            children: [
+                new TextRun(`Ngày xuất: ${new Date().toLocaleDateString('vi-VN')}`)
+            ],
+            alignment: AlignmentType.RIGHT
+        })
+    );
+    
+    const doc = new Document({
+        sections: [{
+            properties: {},
+            children: children
+        }]
+    });
+    
+    const blob = await docx.Packer.toBlob(doc);
+    return blob;
+}
+
+	   // Xử lý tải xuống
+       async function handleDownload(type) {
+    const record = medicalRecords.find(r => r.id === currentRecordId);
+    if (!record) {
+        showToast('Không tìm thấy bệnh án!', 'error');
+        return;
+    }
+    
+    try {
+        // Hiển thị loading
+        showToast('Đang tạo file DOCX...', 'success');
+        
+        let docxContent;
+        let fileName;
+        
+        switch(type) {
+            case 'full':
+                docxContent = await generateFullDocx(record);
+                fileName = `BENH_AN_${record.patientCode}_${record.patientName}.docx`;
+                break;
+            case 'medicine':
+                docxContent = await generateMedicineDocx(record);
+                fileName = `DON_THUOC_${record.patientCode}_${record.patientName}.docx`;
+                break;
+            case 'procedure':
+                docxContent = await generateProcedureDocx(record);
+                fileName = `THU_THUAT_${record.patientCode}_${record.patientName}.docx`;
+                break;
+            case 'progress':
+                docxContent = await generateProgressDocx(record);
+                fileName = `DIEN_BIEN_${record.patientCode}_${record.patientName}.docx`;
+                break;
+            default:
+                throw new Error('Loại tải không hợp lệ');
         }
+        
+        // Tải file xuống
+        const blob = docxContent;
+        saveAs(blob, fileName);
+        
+        showToast(`Đã tải xuống file ${fileName}!`, 'success');
+        
+    } catch (error) {
+        console.error('Lỗi khi tạo DOCX:', error);
+        showToast('Lỗi khi tạo file: ' + error.message, 'error');
+    }
+}
 
         // Khởi tạo các sự kiện
         document.addEventListener('DOMContentLoaded', function() {
@@ -2511,22 +3527,85 @@ document.getElementById('addProgressRow').addEventListener('click', function() {
                 btn.addEventListener('click', () => printOptionsModal.style.display = 'none');
             });
             
-            // Sự kiện cho các tùy chọn in
-            document.querySelectorAll('.print-option').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const type = this.getAttribute('data-type');
-                    handlePrint(type);
-                });
-            });
+       // Tab chuyển đổi In/Tải
+    document.querySelectorAll('.export-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
             
-            // Sự kiện cho các tùy chọn tải xuống
-            document.querySelectorAll('.download-option').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const type = this.getAttribute('data-type');
-                    handleDownload(type);
-                });
-            });
+            // Cập nhật tab active
+            document.querySelectorAll('.export-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
             
+            // Hiển thị content tương ứng
+            document.querySelectorAll('.export-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+            
+            // Cập nhật text thông tin
+            const infoText = tabName === 'print' ? 'Chọn loại in ấn' : 'Chọn định dạng tải xuống';
+            document.getElementById('selectedOptionText').textContent = infoText;
+        });
+    });
+    
+    
+    // Hiệu ứng hover cho export option
+   document.querySelectorAll('.export-option').forEach(option => {
+    option.addEventListener('mouseenter', function() {
+        const type = this.dataset.type;
+        const isPrint = this.classList.contains('print-option');
+        let text = '';
+        
+        if (isPrint) {
+            const printTexts = {
+                'full': 'In toàn bộ bệnh án với tất cả thông tin',
+                'medicine': 'In đơn thuốc cho bệnh nhân',
+                'procedure': 'In danh sách thủ thuật đã thực hiện',
+                'progress': 'In lịch sử diễn biến bệnh'
+            };
+            text = printTexts[type] || '';
+        } else {
+            // CHỈ CÒN DOCX
+            const downloadTexts = {
+                'full': 'Tải toàn bộ bệnh án (DOCX)',
+                'medicine': 'Tải đơn thuốc (DOCX)',
+                'procedure': 'Tải thủ thuật (DOCX)',
+                'progress': 'Tải diễn biến (DOCX)'
+            };
+            text = downloadTexts[type] || '';
+        }
+        
+        if (text) {
+            document.getElementById('selectedOptionText').textContent = text;
+        }
+    });
+    
+    option.addEventListener('mouseleave', function() {
+        const isPrintTab = document.querySelector('.export-tab[data-tab="print"]').classList.contains('active');
+        const text = isPrintTab ? 'Chọn loại in ấn' : 'Chọn tùy chọn tải xuống';
+        document.getElementById('selectedOptionText').textContent = text;
+    });
+});
+    
+    // Sự kiện cho các tùy chọn in
+    document.querySelectorAll('.print-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const type = this.getAttribute('data-type');
+            handlePrint(type);
+            printOptionsModal.style.display = 'none';
+        });
+    });
+    
+    // Sự kiện cho các tùy chọn tải xuống
+document.querySelectorAll('.download-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const type = this.getAttribute('data-type');
+        handleDownload(type); // Chỉ gọi hàm DOCX
+        printOptionsModal.style.display = 'none';
+    });
+});
+   
+	
           // Sự kiện cho nút mở rộng nội dung bệnh án
 document.getElementById('expandDiagnosisBtn').addEventListener('click', function() {
     document.getElementById('diagnosisDetail').value = document.getElementById('diagnosis').value;
