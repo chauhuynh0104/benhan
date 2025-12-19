@@ -1923,70 +1923,77 @@ function viewRecord(id) {
             printWindow.print();
         }
 
-        // Tạo nội dung in full
-        function generateFullPrintContent(record) {
-            return `
-                <h1>Bệnh án - ${record.patientCode}</h1>
-                <p><strong>Họ tên:</strong> ${record.patientName}</p>
-                <p><strong>Giới tính:</strong> ${record.gender}</p>
-                <p><strong>Tuổi:</strong> ${record.age}</p>
-                <p><strong>Địa chỉ:</strong> ${record.address || ''}</p>
-                <p><strong>Ngày khám:</strong> ${formatDate(record.examinationDate)} ${record.examinationTime || ''}</p>
-                <p><strong>Chẩn đoán:</strong> ${record.diagnosis || ''}</p>
-                
-                ${record.procedures && record.procedures.length > 0 ? `
-                    <h2>Thủ thuật</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Tên thủ thuật</th>
-								<th>Ghi chú</th>
-                                <th>Số lần</th>
-                                <th>Giá tiền</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${record.procedures.map((proc, index) => `
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td>${proc.name}</td>
-									<td>${proc.note || ''}</td>
-                                    <td>${proc.quantity}</td>
-                                    <td>${formatCurrency(proc.price)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                ` : ''}
-                
-                ${record.medicines && record.medicines.length > 0 ? `
-                    <h2>Thuốc</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Tên thuốc</th>
-                                <th>Số lượng</th>
-                                <th>Giá tiền</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${record.medicines.map((med, index) => `
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td>${med.name}</td>
-                                    <td>${med.quantity}</td>
-                                    <td>${formatCurrency(med.price)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                ` : ''}
-                
-                ${record.followUpDate ? `<p><strong>Hẹn tái khám:</strong> ${formatDate(record.followUpDate)}</p>` : ''}
-            `;
-        }
+       // Tạo nội dung in full
+function generateFullPrintContent(record) {
+    // Thay thế xuống dòng \n thành <br> để hiển thị đúng
+    const diagnosisWithBreaks = (record.diagnosis || '').replace(/\n/g, '<br>');
+    
+    return `
+        <h1>Bệnh án - ${record.patientCode}</h1>
+        <p><strong>Họ tên:</strong> ${record.patientName}</p>
+        <p><strong>Giới tính:</strong> ${record.gender}</p>
+        <p><strong>Tuổi:</strong> ${record.age}</p>
+        <p><strong>Địa chỉ:</strong> ${record.address || ''}</p>
+        <p><strong>Ngày khám:</strong> ${formatDate(record.examinationDate)} ${record.examinationTime || ''}</p>
+        <p><strong>Chẩn đoán chính:</strong> ${record.primaryDiagnosis || ''}</p>
+        <p><strong>Nội dung:</strong></p>
+        <div style="white-space: pre-wrap; border: 1px solid #ddd; padding: 10px; margin: 10px 0; background: #f9f9f9;">
+            ${diagnosisWithBreaks}
+        </div>
+        
+        ${record.procedures && record.procedures.length > 0 ? `
+            <h2>Thủ thuật</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên thủ thuật</th>
+                        <th>Ghi chú</th>
+                        <th>Số lần</th>
+                        <th>Giá tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${record.procedures.map((proc, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${proc.name}</td>
+                            <td style="white-space: pre-wrap;">${proc.note || ''}</td>
+                            <td>${proc.quantity}</td>
+                            <td>${formatCurrency(proc.price)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        ` : ''}
+        
+        ${record.medicines && record.medicines.length > 0 ? `
+            <h2>Thuốc</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên thuốc</th>
+                        <th>Số lượng</th>
+                        <th>Giá tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${record.medicines.map((med, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${med.name}</td>
+                            <td>${med.quantity}</td>
+                            <td>${formatCurrency(med.price)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        ` : ''}
+        
+        ${record.followUpDate ? `<p><strong>Hẹn tái khám:</strong> ${formatDate(record.followUpDate)}</p>` : ''}
+    `;
+}
 
         // Tạo nội dung in thuốc
         function generateMedicinePrintContent(record) {
