@@ -1148,6 +1148,33 @@ body.dark .format-btn.active {
     border-color: var(--primary);
     color: white;
 }
+<style>
+.pdf-preview-wrapper {
+    background: #888;
+    padding: 30px;
+    overflow-y: auto;
+    max-height: 80vh;
+}
+
+.pdf-page {
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    margin: 0 auto 20px auto;
+    padding: 20mm;
+    box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    font-family: "Times New Roman";
+    font-size: 14px;
+}
+
+.pdf-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+</style>
+
     </style>
 </head>
 <body>
@@ -2038,13 +2065,16 @@ function renderRecordsTable(filteredRecords = null) {
                 <td>${shortDiagnosis}</td> <!-- Hiển thị chẩn đoán chính -->
                 <td>
                     <div class="actions">
-                        <div class="action-btn view-btn" title="Xem/Sửa" onclick="viewRecord('${record.id}')">
+                        <div class="action-btn view-btn" title="Sửa" onclick="viewRecord('${record.id}')">
                             <i class="fas fa-eye"></i>
                         </div>
                         <!-- THÊM LẠI NÚT DIỄN BIẾN -->
                         <div class="action-btn history-btn" title="Diễn biến" onclick="showProgressModal('${record.id}')">
                             <i class="fas fa-history"></i>
                         </div>
+						<div class="action-btn view-btn" onclick="showPreview('${record.id}')" title="Xem">
+    <i class="fas fa-file-pdf"></i>
+</div>
                        <div class="action-btn print-btn" 
      title="In / Tải"
      onclick="showPrintOptions('${record.id}')">
@@ -4072,6 +4102,24 @@ function printByIframe(htmlContent) {
     }, 500);
 }
 
+function showPreview(recordId) {
+    const record = medicalRecords.find(r => r.id === recordId);
+    if (!record) return;
+
+    const html = generateFullPrintContent(record);
+
+    document.getElementById("previewContainer").innerHTML = `
+        <div class="pdf-page">
+            ${html}
+        </div>
+    `;
+
+    document.getElementById("previewModal").style.display = "block";
+}
+
+function closePreview() {
+    document.getElementById("previewModal").style.display = "none";
+}
 
     </script>
 	
@@ -4080,6 +4128,20 @@ function printByIframe(htmlContent) {
 </footer>
 	<!-- IFRAME DÙNG CHO IN (KHÔNG ĐƯỢC XÓA) -->
 <iframe id="printFrame" style="display:none;"></iframe>
+<div id="previewModal" class="modal">
+  <div class="modal-content" style="max-width:1200px">
+    <div class="modal-header">
+      <h3>👁 Xem bệnh án</h3>
+      <button class="close-btn" onclick="closePreview()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+   
+
+      <div class="pdf-preview-wrapper" id="previewContainer"></div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
