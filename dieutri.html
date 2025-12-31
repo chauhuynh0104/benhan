@@ -1,561 +1,404 @@
-
-
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Kiểm tra tờ điều trị</title>
-<!-- GOOGLE FONT + ICON -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<title>Kiểm tra tờ điều trị bệnh án</title>
 <style>
-  :root {
-    --primary: #2962ff;
-    --primary-light: #6fa1ff;
-    --bg: #f5f7fb;
+:root {
+    --bg: #f1f5f9;
     --card: #ffffff;
-    --text: #2b2b2b;
-  }
-
-  body.dark {
-    --bg: #0f0f0f;
-    --card: #171717;
-    --text: #efefef;
-  }
-body.dark .result-box {
-  background: #1e1e1e !important;
-  border-left-color: var(--primary-light);
-  color: #fff !important;
+    --primary: #2563eb;
+    --primary-soft: #dbeafe;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+    --success: #16a34a;
+    --success-soft: #dcfce7;
+    --border: #e5e7eb;
+    --text: #0f172a;
+    --muted: #64748b;
 }
 
-body.dark .success {
-  background: #123c1a !important;
-  border-left-color: #4caf50 !important;
+* {
+    box-sizing: border-box;
 }
 
-body.dark .error {
-  background: #3b0c0c !important;
-  border-left-color: #ff6b6b !important;
-}
-
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(180deg, #f8fafc, #eef2ff);
     color: var(--text);
-    margin: 0;
-    padding: 0;
-    transition: .3s;
-  }
-
-  header {
-    background: linear-gradient(135deg, #2962ff, #03a9f4);
-    color: white;
-    padding: 20px 40px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.15);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px;
+}
 
-  header h1 {
-    margin: 0;
-    font-weight: 600;
-    font-size: 24px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .theme-toggle {
-    background: rgba(255,255,255,0.2);
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-
-  .theme-toggle:hover {
-    background: rgba(255,255,255,0.35);
-  }
-
-  main {
-    max-width: 900px;
-    margin: 40px auto;
+.container {
+    width: 100%;
+    max-width: 920px;
     background: var(--card);
-    padding: 35px 45px;
     border-radius: 18px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    animation: fadeIn 0.5s ease;
-  }
+    padding: 28px 34px;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+}
 
-  @keyframes fadeIn {
-    from {opacity: 0; transform: translateY(20px)}
-    to {opacity: 1; transform: translateY(0)}
-  }
-
-  .upload-box {
-    border: 2px dashed var(--primary);
-    background: rgba(41,98,255,0.04);
-    padding: 30px;
-    border-radius: 14px;
-    text-align: center;
-    transition: .3s;
-  }
-
-  .upload-box:hover {
-    background: rgba(41,98,255,0.1);
-  }
-
-  button {
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 24px;
-    font-size: 15px;
-    cursor: pointer;
-    transition: 0.25s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  button:hover {
-    background: var(--primary-light);
-    transform: translateY(-2px);
-  }
-
-  #fileName {
-    margin-top: 12px;
-    font-style: italic;
-    color: var(--text);
-  }
-
-  #resultSection {
-    display: none;
-    margin-top: 30px;
-  }
-
-  h2 {
-    margin-bottom: 10px;
+h1 {
+    margin-top: 0;
+    font-size: 26px;
     font-weight: 600;
-  }
-
-  .result-box {
-    margin-top: 10px;
-    padding: 22px;
-    border-radius: 10px;
-    background: #fff8f3;
-    border-left: 6px solid var(--primary);
-    white-space: pre-wrap;
-    line-height: 1.55;
-    font-size: 15px;
-  }
-
-  .success {
-    background: #ecffef;
-    border-left-color: #4caf50;
-  }
-
-  .error {
-    background: #ffe8e8;
-    border-left-color: #e53935;
-  }
-
-  .footer-note {
-    margin-top: 30px;
-    font-size: 14px;
-    opacity: 0.7;
     text-align: center;
-    letter-spacing: 0.5px;
-  }
+    color: var(--primary);
+}
 
-  /* LOADING SPINNER */
-  .loader {
-    border: 4px solid #ddd;
-    border-top: 4px solid var(--primary);
-    border-radius: 50%;
-    width: 26px;
-    height: 26px;
-    animation: spin 0.8s linear infinite;
+.upload-box {
+    margin: 26px 0;
+    border: 2px dashed #c7d2fe;
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    background: #f8fafc;
+    transition: all 0.25s ease;
+}
+
+.upload-box:hover {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.upload-label {
     display: inline-block;
-    margin-right: 10px;
-    vertical-align: middle;
-  }
+    padding: 14px 28px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #ffffff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: 0 10px 22px rgba(37,99,235,0.25);
+}
 
-  @keyframes spin {
-    0% { transform: rotate(0deg) }
-    100% { transform: rotate(360deg) }
-  }
+.upload-label:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(37,99,235,0.35);
+}
 
+#fileName {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--muted);
+}
 
+h2 {
+    margin-top: 30px;
+    font-size: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+}
+
+.error {
+    color: var(--danger);
+    background: var(--danger-soft);
+    border-left: 5px solid var(--danger);
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin: 8px 0;
+    font-size: 15px;
+}
+
+.ok {
+    color: var(--success);
+    background: var(--success-soft);
+    border-left: 5px solid var(--success);
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin: 12px 0;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+#result h3 {
+    margin-top: 28px;
+    color: var(--primary);
+}
 </style>
+
 </head>
 <body>
 
-<header>
-  <h1><i class="fa-solid fa-file-medical"></i> KIỂM TRA TỜ ĐIỀU TRỊ</h1>
-  <div class="theme-toggle" onclick="toggleTheme()">
-    <i class="fa-solid fa-moon"></i> / <i class="fa-solid fa-sun"></i>
-  </div>
-</header>
+<div class="container">
 
-<main>
-  <div class="upload-box">
-    <input type="file" id="fileInput" accept=".html" style="display:none">
-    <input type="file" id="folderInput" webkitdirectory directory style="display:none">
+<h1>Kiểm tra tờ điều trị bệnh án</h1>
 
-   <button  onclick="document.getElementById('fileInput').click()">
-  <i class="fa-solid fa-file-arrow-up"></i> Chọn file thủ công
-</button>
+<div class="upload-box">
+    <label for="fileInput" class="upload-label">
+        📂 Chọn file HTML để kiểm tra
+    </label>
+    <input type="file" id="fileInput" accept=".html">
+    <div id="fileName">Chưa chọn file</div>
+</div>
 
-<button onclick="document.getElementById('folderInput').click()">
-  <i class="fa-solid fa-folder-open"></i> Chọn thư mục 
-</button>
+<h2>Kết quả</h2>
+<div id="result"></div>
 
-
-    <div id="fileName"></div>
-  </div>
-
-  <div id="resultSection">
-    <h2>Kết quả kiểm tra:</h2>
-    <div id="output" class="result-box"></div>
-  </div>
-
-  <p class="footer-note">Design by Dr.Châu</p>
-</main>
-
-
+</div>
 <script>
-let selectedFile = null;
-
-document.getElementById('fileInput').addEventListener('change', function() {
-  if (this.files.length > 0) {
-    selectedFile = this.files[0];
-    document.getElementById('fileName').textContent = `✅ Đã chọn file: ${selectedFile.name}`;
-    checkFile();
-  }
-});
-
-document.getElementById('folderInput').addEventListener('change', function() {
-  const files = Array.from(this.files).filter(f => f.name.endsWith('.html'));
-  if (files.length === 0) {
-    alert('Không tìm thấy file HTML nào trong thư mục.');
-    return;
-  }
-
-  const readPromises = files.map(f =>
-    new Promise(resolve => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const text = e.target.result;
-        resolve({ file: f, valid: text.includes('cs53A8CA98') });
-      };
-      reader.readAsText(f);
-    })
-  );
-
-  Promise.all(readPromises).then(results => {
-    const validFiles = results.filter(r => r.valid).map(r => r.file);
-    if (validFiles.length === 0) {
-      alert('Không có file HTML hợp lệ trong thư mục!');
-      return;
+document.getElementById("fileInput").addEventListener("change", function () {
+    if (this.files.length) {
+        document.getElementById("fileName").textContent = this.files[0].name;
+        runCheck(); // ⭐ tự động chạy kiểm tra
     }
-    validFiles.sort((a, b) => b.lastModified - a.lastModified);
-    selectedFile = validFiles[0];
-    document.getElementById('fileName').textContent = `✅ Đã chọn file mới nhất: ${selectedFile.name}`;
-    checkFile();
-  });
 });
+function hasText(content, text) {
+    return content.toLowerCase().includes(text.toLowerCase());
+}
+function dateToNumber(d) {
+    const [dd, mm, yyyy] = d.split("/");
+    return new Date(yyyy, mm - 1, dd).getTime();
+}
+function getDateRange(start, end) {
+    const dates = [];
+    let cur = new Date(start.split("/").reverse().join("-"));
+    const last = new Date(end.split("/").reverse().join("-"));
 
-function checkFile() {
-  const resultSection = document.getElementById('resultSection');
-  const output = document.getElementById('output');
-  resultSection.style.display = "block";
-  output.textContent = '⏳ Đang xử lý...';
-  output.className = 'result-box';
+    while (cur <= last) {
+        const dd = String(cur.getDate()).padStart(2, "0");
+        const mm = String(cur.getMonth() + 1).padStart(2, "0");
+        const yyyy = cur.getFullYear();
+        dates.push(`${dd}/${mm}/${yyyy}`);
+        cur.setDate(cur.getDate() + 1);
+    }
+    return dates;
+}
 
-  if (!selectedFile) {
-    output.textContent = '⚠️ Vui lòng chọn file hoặc thư mục!';
-    output.classList.add('error');
-    return;
-  }
+function runCheck() {
+    const file = document.getElementById("fileInput").files[0];
+    if (!file) {
+        alert("Chưa chọn file HTML");
+        return;
+    }
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(e.target.result, 'text/html');
-    const dateCells = doc.querySelectorAll('td.cs53A8CA98[rowspan], td.csD113743C[rowspan]');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const html = e.target.result;
+        processHTML(html);
+    };
+    reader.readAsText(file);
+}
+
+function processHTML(html) {
+    const result = [];
     const days = [];
 
-    dateCells.forEach(td => {
-      const fullText = td.innerText.trim().replace(/\s+/g, ' ');
-      const dateMatch = fullText.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
-      const dateStr = dateMatch ? dateMatch[1] : '';
-      const dateObj = parseVietnameseDate(dateStr);
-      const weekday = dateObj ? getWeekdayName(dateObj) : 'Không xác định';
+    // ===== 1. TÁCH NGÀY =====
+    const dayRegex = /<td class="csD113743C"[\s\S]*?<\/td>/g;
+    const matches = html.match(dayRegex) || [];
 
-      let html = '';
-      let next = td.parentElement.nextElementSibling;
-      while (next && !next.querySelector('td.cs53A8CA98[rowspan], td.csD113743C[rowspan]')) {
-        html += next.innerText + '\n';
-        next = next.nextElementSibling;
-      }
+    for (let i = 0; i < matches.length; i++) {
+        const start = html.indexOf(matches[i]);
+        const end = (i < matches.length - 1)
+            ? html.indexOf(matches[i + 1])
+            : html.length;
 
-      days.push({ date: dateStr, weekday, content: html, dateObj });
-    });
+        const block = html.substring(start, end);
 
-    if (days.length === 0) {
-      output.textContent = '❌ Không tìm thấy dữ liệu ngày trong file.';
-      output.classList.add('error');
-      return;
+        const dateMatch = matches[i].match(/<nobr>(\d{2}\/\d{2}\/\d{4})<\/nobr>/);
+        const date = dateMatch ? dateMatch[1] : "Không xác định";
+
+        days.push({
+            date,
+            content: block
+        });
     }
 
-    const errors = [];
+    // ===== BỎ NGÀY RA VIỆN =====
+    const validDays = days.filter(d => !d.content.includes("ra viện"));
 
+    // ===== 2. THỦ THUẬT =====
+    const techniques = [
+    { key: "[kim ngắn]", label: "Điện châm [kim ngắn]" },
+    { key: "bấm huyệt bằng tay", label: "Xoa bóp bấm huyệt bằng tay" },
+    { key: "Điều trị bằng tia hồng ngoại", label: "Điều trị bằng tia hồng ngoại" },
+    { key: "Kỹ thuật xoa", label: "Kỹ thuật xoa bóp vùng" }
+];
 
-// ======================
-// ✅ Bổ sung kiểm tra "Sắc thuốc thang" theo ngày bắt đầu bài thuốc
-// ======================
+   techniques.forEach(t => {
+    let mustHave = false;
 
-// 1. Tìm tất cả các bài thuốc y học cổ truyền
-const herbalPeriods = [];
-const doc2 = parser.parseFromString(e.target.result, 'text/html'); // Đổi tên biến
-const herbalElements = doc2.querySelectorAll('p.csDFA850B2');
+    validDays.forEach(d => {
+        if (hasText(d.content, "Thứ bảy") || hasText(d.content, "Chủ nhật")) return;
 
-herbalElements.forEach(p => {
-    const text = p.textContent || p.innerText;
-    if (text.includes('Vị thuốc y học cổ truyền')) {
-        const dateMatch = text.match(/từ ngày\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+đến ngày\s+(\d{1,2}\/\d{1,2}\/\d{4})/);
-        if (dateMatch) {
-            const startDateStr = dateMatch[1];
-            const endDateStr = dateMatch[2];
-            const startDate = parseVietnameseDate(startDateStr);
-            const endDate = parseVietnameseDate(endDateStr);
-            
-            herbalPeriods.push({
-                startDateStr,
-                endDateStr,
-                startDate,
-                endDate
-            });
+        if (d.content.includes(t.key)) mustHave = true;
+
+        if (mustHave && !d.content.includes(t.key)) {
+            result.push(`❌ ${d.date} thiếu thủ thuật: ${t.label}`);
         }
-    }
+    });
 });
 
-// 2. Kiểm tra từng ngày trong days có nằm trong khoảng bài thuốc không
-days.forEach((day, index) => {
-    const dayDate = parseVietnameseDate(day.date);
-    
-    // Tìm bài thuốc nào chứa ngày này
-    const matchingHerbal = herbalPeriods.find(herbal => {
-        return dayDate >= herbal.startDate && dayDate <= herbal.endDate;
-    });
-    
-    if (matchingHerbal && day.content.includes('Sắc thuốc thang')) {
-        // Kiểm tra xem có đúng ngày bắt đầu không
-        const expectedDate = matchingHerbal.startDateStr;
-        const dateRegex = new RegExp(`ngày\\s*${expectedDate.replace(/\//g, '\\/')}`);
-        
-        if (!dateRegex.test(day.content)) {
-            errors.push(`❌ Ngày ${day.date} (${day.weekday}) có "Sắc thuốc thang" nhưng không đúng ngày bắt đầu bài thuốc (phải là ngày ${expectedDate})`);
-        }
-    }
-});
+// ===== 3. VỊ THUỐC + SẮC THUỐC (ĐẦY ĐỦ LOGIC) =====
+const vtBlockRegex = /Vị thuốc y học cổ truyền[\s\S]*?(x\s*\d+\s*thang)/g;
+let vtMatch;
 
-// 3. Kiểm tra các ngày trong khoảng bài thuốc phải có thủ thuật sắc thuốc (trừ ngày ra viện)
-herbalPeriods.forEach(herbal => {
-    const startDate = parseVietnameseDate(herbal.startDateStr);
-    const endDate = parseVietnameseDate(herbal.endDateStr);
-    
-    // Tìm các ngày nằm trong khoảng (không tính cuối tuần)
-    for (let i = 0; i < days.length; i++) {
-        const dayDate = parseVietnameseDate(days[i].date);
-        const isDischargeDay = /cho ra viện|ra viện/i.test(days[i].content);
-        
-        // Bỏ qua nếu là ngày ra viện
-        if (isDischargeDay) continue;
-        
-        if (dayDate >= startDate && dayDate <= endDate && !isWeekend(dayDate)) {
-            // Kiểm tra ngày này có thủ thuật sắc thuốc không
-            const hasHerbalProcedure = days[i].content.includes('Sắc thuốc thang');
-            if (!hasHerbalProcedure) {
-                errors.push(`❌ Ngày ${days[i].date} (${days[i].weekday}) nằm trong khoảng bài thuốc ${herbal.startDateStr}-${herbal.endDateStr} nhưng thiếu thủ thuật "Sắc thuốc thang"`);
+while ((vtMatch = vtBlockRegex.exec(html)) !== null) {
+
+    const block = vtMatch[0];
+
+    // Lấy ngày bắt đầu – kết thúc
+    const dateMatch = block.match(
+        /ng&agrave;y (\d{2}\/\d{2}\/\d{4}) đến ng&agrave;y (\d{2}\/\d{2}\/\d{4})/
+    );
+    if (!dateMatch) continue;
+
+    const start = dateMatch[1];
+    const end = dateMatch[2];
+
+    // ===== 3.1 TÍNH SỐ NGÀY THỰC TẾ =====
+    const daysInRange = validDays.filter(
+        d => d.date >= start && d.date <= end
+    );
+
+    const realDays = daysInRange.length;
+
+    // ===== 3.2 LẤY SỐ THANG GHI TRONG BÀI =====
+    const thangMatch = block.match(/x\s*(\d+)\s*thang/);
+    const declaredThang = thangMatch ? parseInt(thangMatch[1]) : null;
+
+   if (declaredThang !== realDays) {
+
+    const refDate = daysInRange.length ? daysInRange[0].date : start;
+
+    result.push(
+        `❌ ${refDate} Sai số thang thuốc (${start} → ${end}): ghi x ${declaredThang} thang, đúng phải là x ${realDays} thang`
+    );
+}
+
+
+    // ===== 3.3 KIỂM TRA SẮC THUỐC TỪNG NGÀY =====
+    daysInRange.forEach(d => {
+
+        if (!d.content.includes("Sắc thuốc thang")) {
+            result.push(`❌ ${d.date} thiếu "Sắc thuốc thang"`);
+            return;
+        }
+
+        // ⭐ LOGIC BẠN NHẮC: PHẢI CÓ NGÀY BẮT ĐẦU
+     const startRegex = new RegExp(start.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*,');
+
+if (!startRegex.test(d.content)) {
+    result.push(
+        `❌ ${d.date} "Sắc thuốc thang" không đúng ngày bắt đầu (${start})`
+    );
+}
+    });
+}
+
+
+
+    // ===== 4. THUỐC VIÊN =====
+    const pills = ["Amlodipine 5 mg Cap"];
+    pills.forEach(p => {
+        let must = false;
+        validDays.forEach(d => {
+            if (d.content.includes(p)) must = true;
+            if (must && !d.content.includes(p)) {
+                result.push(`❌ ${d.date} thiếu thuốc viên: ${p}`);
+            }
+        });
+    });
+
+    // ===== 5. THUỐC TIÊM =====
+    validDays.forEach(d => {
+        if (d.content.includes("Dubemin injection") && !d.content.includes("Thủy ch&acirc;m:")) {
+            result.push(`❌ ${d.date} có Dubemin injection nhưng thiếu Thủy ch&acirc;m`);
+        }
+    });
+
+    // ===== 6. CẬN LÂM SÀNG =====
+    for (let i = 0; i < validDays.length - 1; i++) {
+        const d = validDays[i];
+        if (d.content.includes("đếm tổng trở") || d.content.includes("Chẩn đo&aacute;n h&igrave;nh ảnh")) {
+            let j = i + 1;
+            while (j < validDays.length &&
+    (hasText(validDays[j].content, "Thứ bảy") ||
+     hasText(validDays[j].content, "Chủ nhật"))) {
+    j++;
+}
+            if (j < validDays.length && !validDays[j].content.includes("Kết quả CLS")) {
+                result.push(`❌ ${validDays[j].date} thiếu "Kết quả CLS"`);
             }
         }
     }
+
+  // ===== 7. BÁO THUỐC ĐÃ DÙNG =====
+ const noMissingCheck = ["Dubemin injection", "Giác hơi", "Khang minh thanh"];
+
+const reportPills = ["Amlodipine 5 mg Cap", "Mimosa", "Kamelox 15"];
+
+const used = {};
+reportPills
+  .concat("Dubemin injection", "Giác hơi", "Khang minh thanh")
+  .forEach(t => used[t] = []);
+validDays.forEach(d => {
+    Object.keys(used).forEach(t => {
+        if (d.content.includes(t)) used[t].push(d.date);
+    });
 });
 
-    // ======================
-    // ✅ Ý 1: Kiểm tra "đếm tổng trở / X-quang" → "Kết quả CLS"
-    // ======================
-    for (let i = 0; i < days.length; i++) {
-      const txt = days[i].content.toLowerCase();
-      if (txt.includes('đếm tổng trở') || txt.includes('Chẩn đo&aacute;n h&igrave;nh ảnh')) {
-        let j = i + 1;
-        // Bỏ qua các ngày cuối tuần
-        while (j < days.length && isWeekend(days[j].dateObj)) j++;
-        if (j < days.length) {
-          const nextDay = days[j];
-          if (!nextDay.content.toLowerCase().includes('kết quả cls')) {
-            errors.push(`❌ Ngày ${nextDay.date} (${nextDay.weekday}) thiếu "Kết quả CLS" (Ngày chỉ định: ${days[i].date})`);
-          }
-        }
-      }
-    }
-// --- YÊU CẦU 2 & 3: Hiển thị khoảng dùng thuốc ---
-const drugList = ['Amlodipine', 'Mimosa', 'Piracetam'];
-const drugPeriods = {};
+let report = "<h3>Báo thuốc đã dùng</h3>";
 
-for (const drug of drugList) {
-  let start = null;
-  for (let i = 0; i < days.length; i++) {
-    const hasDrug = days[i].content.includes(drug);
-    if (hasDrug && !start) start = i;
-    if ((!hasDrug || i === days.length - 1) && start !== null) {
-      const endIdx = hasDrug && i === days.length - 1 ? i : i - 1;
-      const startDate = days[start].date;
-      const endDate = days[endIdx].date;
-      if (!drugPeriods[drug]) drugPeriods[drug] = [];
-      drugPeriods[drug].push({ startDate, endDate });
-      start = null;
-    }
-  }
-}
+Object.keys(used).forEach(t => {
+    if (!used[t].length) return;
 
-// --- Hiển thị kết quả dùng thuốc ---
-for (const [drug, periods] of Object.entries(drugPeriods)) {
-  for (const p of periods) {
-    if (drug === 'Piracetam') {
-      errors.push(`💊 ${drug} từ ngày ${p.startDate} → ${p.endDate}`);
-    } else {
-      errors.push(`💊 ${drug} từ ngày ${p.startDate} → ${p.endDate}`);
-    }
-  }
-}
-    // ======================
-    // ✅ Ý 2: Thay đổi logic kiểm tra thủ thuật
-    // ======================
-    const checks = [
-      { key: 'Sắc thuốc thang', label:'Sắc thuốc thang' },
-      { key: '[kim ngắn]', label:'Điện châm' },
-      { key: 'tia hồng ngoại', label:'Điều trị bằng tia hồng ngoại' },
-      { key: 'bấm huyệt bằng tay', label:'Xoa bóp bấm huyệt bằng tay' },
-      { key: 'Kỹ thuật xoa', label:'Kỹ thuật xoa bóp vùng' }
-    ];
-   const ongoingChecks = [
-      { key: 'Amlodipine', active: false },
-      { key: 'Mimosa', active: false }
-    ];
-    for (const chk of checks) {
-      let startIndex = -1;
-      for (let i = 0; i < days.length; i++) {
-        const text = days[i].content;
-        const isDischarge = /ra viện/i.test(text);
-        if (isDischarge) continue;
-        if (startIndex === -1 && text.includes(chk.key)) {
-          startIndex = i;
-        }
-        if (startIndex !== -1 && i > startIndex) {
-          if (!text.includes(chk.key) && !isWeekend(days[i].dateObj)) {
-            errors.push(`❌ Ngày ${days[i].date} (${days[i].weekday}) thiếu ${chk.label}`);
-          }
-        }
-      }
+    // ❗ Dubemin injection & Giác hơi: KHÔNG báo thiếu
+    if (noMissingCheck.includes(t)) {
+        report += `<div>• ${t}: ${used[t].join(", ")}</div>`;
+        return;
     }
 
-    // ======================
-    // ✅ Các phần cũ vẫn giữ nguyên
-    // ======================
-    for (const d of days) {
-      if (d.content.includes('Dubemin') && !d.content.includes('mỗi huyệt')) {
-        errors.push(`❌ Ngày ${d.date} (${d.weekday}) có Dubemin nhưng thiếu thủ thuật thủy châm`);
-      }
-    }
-for (const chk of ongoingChecks) {
-  let activeFrom = -1;
-  for (let i = 0; i < days.length; i++) {
-    const text = days[i].content;
-    const isDischarge = /ra viện/i.test(text); // 🔹 kiểm tra ngày có "ra viện"
-    if (isDischarge) continue; // 🔹 bỏ qua kiểm tra ngày đó
+    // ✅ Thuốc viên: báo từ–đến + ngày thiếu
+    const start = used[t][0];
+    const end = used[t][used[t].length - 1];
 
-    if (text.includes(chk.key)) {
-      if (activeFrom === -1) activeFrom = i;
-    } else if (activeFrom !== -1) {
-      errors.push(`❌ Ngày ${days[i].date} (${days[i].weekday}) thiếu ${chk.key}`);
-    }
-  }
-}
-// Gom nhóm lỗi theo loại
-const grouped = {
-  cls: [],
-  drug: [],
-  procedure: []
-};
+    report += `<div>• ${t}: ${start} → ${end}</div>`;
 
-// Phân loại lỗi vào nhóm
-errors.forEach(err => {
-  if (err.includes('CLS')) grouped.cls.push(err);
-  else if (err.includes('💊') || err.toLowerCase().includes('amlodipine') || err.toLowerCase().includes('mimosa')) grouped.drug.push(err);
-  else grouped.procedure.push(err);
+    const fullRange = getDateRange(start, end);
+    const missing = fullRange.filter(d => !used[t].includes(d));
+
+    if (missing.length) {
+        report += `<div style="margin-left:18px;color:#dc2626">
+            ⚠ Thiếu ngày: ${missing.join(", ")}
+        </div>`;
+    }
 });
-function renderGroupedErrors() {
-  let html = '';
 
-  if (grouped.cls.length) {
-    html += `<strong>📋 Lỗi CLS:</strong><br>${grouped.cls.join('<br>')}<hr>`;
-  }
 
-  if (grouped.drug.length) {
-    html += `<strong>💊 Thuốc:</strong><br>${grouped.drug.join('<br>')}<hr>`;
-  }
+    // ===== HIỂN THỊ =====
+    const out = document.getElementById("result");
+    out.innerHTML = "";
+   out.innerHTML += report;
+    if (result.length === 0) {
+    out.innerHTML += `<div class="ok">✅ Không phát hiện lỗi</div>`;
+} else {
 
-  if (grouped.procedure.length) {
-    html += `<strong>⚡ Thủ thuật:</strong><br>${grouped.procedure.join('<br>')}<hr>`;
-  }
+    result.sort((a, b) => {
+        const da = a.match(/(\d{2}\/\d{2}\/\d{4})/);
+        const db = b.match(/(\d{2}\/\d{2}\/\d{4})/);
+        if (!da || !db) return 0;
+        return dateToNumber(da[1]) - dateToNumber(db[1]);
+    });
 
-  return html;
+    result.forEach(e => out.innerHTML += `<div class="error">${e}</div>`);
 }
 
-
-    // Hiển thị kết quả
-    if (errors.length === 0) {
-      output.innerHTML = '✅ Tất cả kiểm tra đều hợp lệ.';
-      output.classList.add('success');
-    } else {
-  output.innerHTML = renderGroupedErrors();
-      output.classList.add('error');
-    }
-  };
-  reader.readAsText(selectedFile);
-}
-
-// ======================
-// Hàm phụ trợ
-// ======================
-function parseVietnameseDate(str) {
-  const match = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (!match) return null;
-  const [_, d, m, y] = match;
-  return new Date(`${y}-${m}-${d}T00:00:00`);
-}
-
-function isWeekend(date) {
-  if (!date) return false;
-  const dow = date.getDay();
-  return dow === 0 || dow === 6;
-}
-
-function getWeekdayName(date) {
-  const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-  return weekdays[date.getDay()];
-}
-function toggleTheme() {
-  document.body.classList.toggle("dark");
+ 
 }
 </script>
 
 </body>
 </html>
-
