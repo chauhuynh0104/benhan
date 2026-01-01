@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Kiểm tra tờ điều trị bệnh án</title>
+<title>Chauhuynh0104 - Kiểm tra tờ điều trị</title>
 <style>
 :root {
     --bg: #f1f5f9;
@@ -16,6 +16,8 @@
     --border: #e5e7eb;
     --text: #0f172a;
     --muted: #64748b;
+    --table-border: #93c5fd;
+    --table-header: #dbeafe;
 }
 
 * {
@@ -101,16 +103,6 @@ h2 {
     padding-bottom: 8px;
 }
 
-.error {
-    color: var(--danger);
-    background: var(--danger-soft);
-    border-left: 5px solid var(--danger);
-    padding: 10px 14px;
-    border-radius: 10px;
-    margin: 8px 0;
-    font-size: 15px;
-}
-
 .ok {
     color: var(--success);
     background: var(--success-soft);
@@ -122,45 +114,153 @@ h2 {
     font-size: 15px;
 }
 
+/* Bảng chung (lỗi + báo thuốc) */
+.common-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+	border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.common-table th {
+   padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+            word-break: break-word;
+            max-width: 200px;
+			background: #f2f2f2;
+            position: sticky;
+            top: 0;
+			 background: linear-gradient(90deg, #3498db, #2980b9) !important;
+  color: #fff !important;
+  font-weight: bold;
+  
+  
+}
+ .hang {
+        background-color: #e0f7fa;
+    }
+tr:hover td {
+  background: rgba(0,0,0,0.03);
+}
+.common-table td {
+    padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+            word-break: break-word;
+            max-width: 200px;
+			transition: background 0.2s ease-in-out;
+			
+}
+
+.common-table tr:last-child td {
+    border-bottom: none;
+}
+
+.common-table tr:nth-child(even) {
+    background: #f0f9ff;
+}
+
+td hr {
+    border: none;
+    height: 1px;
+    background: #ddd;        /* màu giống viền bảng */
+    margin: 12px 0;
+}
+
+.common-table .date-col {
+    font-weight: 600;
+    white-space: nowrap;
+    width: 180px;
+}
+/* Cải thiện bảng lỗi - thoáng hơn, cao hàng gấp đôi */
+.error-msg-item {
+    margin-bottom: 12px;
+    line-height: 1.6;
+    padding: 8px 0;
+}
+
+.error-msg-divider {
+    height: 1px;
+    background: #ddd;
+    margin: 14px 0;
+}
+
+/* Tăng chiều cao hàng bảng chung cho đẹp */
+.common-table td {
+    padding: 20px 12px !important;  /* Tăng padding dọc → hàng cao hơn */
+    vertical-align: top;
+}
+
+.common-table th {
+    padding: 16px 12px !important;
+}
+
+/* Đảm bảo hàng xen kẽ vẫn nổi bật nhẹ */
+.hang {
+    background-color: #f8fbff;
+    transition: background 0.2s ease;
+}
+
+.hang:hover {
+    background-color: #eef4ff !important;
+}
 #result h3 {
     margin-top: 28px;
     color: var(--primary);
 }
+.footer {
+    margin-top: 60px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 15px;
+    padding: 25px 0;
+    border-top: 1px solid var(--border);
+}
 </style>
-
 </head>
 <body>
 
 <div class="container">
 
-<h1>Kiểm tra tờ điều trị bệnh án</h1>
 
 <div class="upload-box">
     <label for="fileInput" class="upload-label">
         📂 Chọn file HTML để kiểm tra
     </label>
     <input type="file" id="fileInput" accept=".html">
-    <div id="fileName">Chưa chọn file</div>
+    <div id="fileName"></div>
 </div>
-
-<h2>Kết quả</h2>
 <div id="result"></div>
 
+<div class="footer">
+        Design By <strong>Dr.Châu</strong>
+    </div>
 </div>
+
 <script>
-document.getElementById("fileInput").addEventListener("change", function () {
-    if (this.files.length) {
-        document.getElementById("fileName").textContent = this.files[0].name;
-        runCheck(); // ⭐ tự động chạy kiểm tra
-    }
-});
+// Hàm định dạng ngày + thứ
+function formatDateWithDay(dateStr) {
+    const [dd, mm, yyyy] = dateStr.split("/").map(Number);
+    const date = new Date(yyyy, mm - 1, dd);
+    const days = ["Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+    const dayName = days[date.getDay()];
+    return `${dayName} - ${dateStr}`;
+}
+
 function hasText(content, text) {
     return content.toLowerCase().includes(text.toLowerCase());
 }
+
 function dateToNumber(d) {
     const [dd, mm, yyyy] = d.split("/");
     return new Date(yyyy, mm - 1, dd).getTime();
 }
+
 function getDateRange(start, end) {
     const dates = [];
     let cur = new Date(start.split("/").reverse().join("-"));
@@ -192,212 +292,279 @@ function runCheck() {
 }
 
 function processHTML(html) {
-    const result = [];
+    const rawErrors = [];
     const days = [];
 
-    // ===== 1. TÁCH NGÀY =====
-    const dayRegex = /<td class="csD113743C"[\s\S]*?<\/td>/g;
+    // ===== 1. Tách ngày =====
+    const dayRegex = /<td\b[^>]*>\s*<nobr>\d{2}\/\d{2}\/\d{4}<\/nobr>[\s\S]*?<\/td>/gi;
     const matches = html.match(dayRegex) || [];
-
     for (let i = 0; i < matches.length; i++) {
         const start = html.indexOf(matches[i]);
-        const end = (i < matches.length - 1)
-            ? html.indexOf(matches[i + 1])
-            : html.length;
-
+        const end = (i < matches.length - 1) ? html.indexOf(matches[i + 1]) : html.length;
         const block = html.substring(start, end);
 
         const dateMatch = matches[i].match(/<nobr>(\d{2}\/\d{2}\/\d{4})<\/nobr>/);
         const date = dateMatch ? dateMatch[1] : "Không xác định";
 
-        days.push({
-            date,
-            content: block
+        days.push({ date, content: block });
+    }
+
+    const validDays = days.filter(d => !d.content.includes("ra viện"));
+
+    // ===== 2. Thủ thuật =====
+    const techniques = [
+        { key: "[kim ngắn]", label: "Điện châm [kim ngắn]" },
+        { key: "bấm huyệt bằng tay", label: "Xoa bóp bấm huyệt bằng tay" },
+        { key: "Điều trị bằng tia hồng ngoại", label: "Điều trị bằng tia hồng ngoại" },
+        { key: "Kỹ thuật xoa", label: "Kỹ thuật xoa bóp vùng" }
+    ];
+
+    techniques.forEach(t => {
+        let mustHave = false;
+        validDays.forEach(d => {
+            if (hasText(d.content, "Thứ bảy") || hasText(d.content, "Chủ nhật")) return;
+            if (d.content.includes(t.key)) mustHave = true;
+            if (mustHave && !d.content.includes(t.key)) {
+                rawErrors.push({
+                    date: d.date,
+                    msg: `Thiếu thủ thuật: ${t.label}`
+                });
+            }
+        });
+    });
+
+    // ===== 3. Vị thuốc + Sắc thuốc =====
+    const vtBlockRegex = /Vị thuốc y học cổ truyền[\s\S]*?(x\s*\d+\s*thang)/g;
+    let vtMatch;
+    while ((vtMatch = vtBlockRegex.exec(html)) !== null) {
+        const block = vtMatch[0];
+        const dateMatch = block.match(/ng&agrave;y (\d{2}\/\d{2}\/\d{4}) đến ng&agrave;y (\d{2}\/\d{2}\/\d{4})/);
+        if (!dateMatch) continue;
+
+        const start = dateMatch[1];
+        const end = dateMatch[2];
+
+        const [dd1, mm1, yyyy1] = start.split("/").map(Number);
+        const [dd2, mm2, yyyy2] = end.split("/").map(Number);
+        const startDate = new Date(yyyy1, mm1 - 1, dd1);
+        const endDate = new Date(yyyy2, mm2 - 1, dd2);
+        const realDays = Math.floor((endDate - startDate) / (1000*60*60*24)) + 1;
+
+        const thangMatch = block.match(/x\s*(\d+)\s*thang/);
+        const declaredThang = thangMatch ? parseInt(thangMatch[1]) : null;
+
+        if (declaredThang !== realDays) {
+            rawErrors.push({
+                date: start,
+                msg: `Sai số thang thuốc (${formatDateWithDay(start)} → ${formatDateWithDay(end)}): ghi x ${declaredThang} thang, đúng phải là x ${realDays} thang`
+            });
+        }
+
+        const daysInRange = validDays.filter(
+            d => dateToNumber(d.date) >= dateToNumber(start) && dateToNumber(d.date) <= dateToNumber(end)
+        );
+
+        daysInRange.forEach(d => {
+            if (!d.content.includes("Sắc thuốc thang")) {
+                rawErrors.push({
+                    date: d.date,
+                    msg: `Thiếu thủ thuật Sắc thuốc thang`
+                });
+            } else {
+                const startRegex = new RegExp(start.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*,');
+                if (!startRegex.test(d.content)) {
+                    rawErrors.push({
+                        date: d.date,
+                        msg: `Thủ thuật sắc thuốc thang không đúng ngày bắt đầu (${formatDateWithDay(start)})`
+                    });
+                }
+            }
         });
     }
 
-    // ===== BỎ NGÀY RA VIỆN =====
-    const validDays = days.filter(d => !d.content.includes("ra viện"));
-
-    // ===== 2. THỦ THUẬT =====
-    const techniques = [
-    { key: "[kim ngắn]", label: "Điện châm [kim ngắn]" },
-    { key: "bấm huyệt bằng tay", label: "Xoa bóp bấm huyệt bằng tay" },
-    { key: "Điều trị bằng tia hồng ngoại", label: "Điều trị bằng tia hồng ngoại" },
-    { key: "Kỹ thuật xoa", label: "Kỹ thuật xoa bóp vùng" }
-];
-
-   techniques.forEach(t => {
-    let mustHave = false;
-
-    validDays.forEach(d => {
-        if (hasText(d.content, "Thứ bảy") || hasText(d.content, "Chủ nhật")) return;
-
-        if (d.content.includes(t.key)) mustHave = true;
-
-        if (mustHave && !d.content.includes(t.key)) {
-            result.push(`❌ ${d.date} thiếu thủ thuật: ${t.label}`);
-        }
-    });
-});
-
-// ===== 3. VỊ THUỐC + SẮC THUỐC (ĐẦY ĐỦ LOGIC) =====
-const vtBlockRegex = /Vị thuốc y học cổ truyền[\s\S]*?(x\s*\d+\s*thang)/g;
-let vtMatch;
-
-while ((vtMatch = vtBlockRegex.exec(html)) !== null) {
-
-    const block = vtMatch[0];
-
-    // Lấy ngày bắt đầu – kết thúc
-    const dateMatch = block.match(
-        /ng&agrave;y (\d{2}\/\d{2}\/\d{4}) đến ng&agrave;y (\d{2}\/\d{2}\/\d{4})/
-    );
-    if (!dateMatch) continue;
-
-    const start = dateMatch[1];
-    const end = dateMatch[2];
-
-    // ===== 3.1 TÍNH SỐ NGÀY THỰC TẾ =====
-    const daysInRange = validDays.filter(
-        d => d.date >= start && d.date <= end
-    );
-
-    const realDays = daysInRange.length;
-
-    // ===== 3.2 LẤY SỐ THANG GHI TRONG BÀI =====
-    const thangMatch = block.match(/x\s*(\d+)\s*thang/);
-    const declaredThang = thangMatch ? parseInt(thangMatch[1]) : null;
-
-   if (declaredThang !== realDays) {
-
-    const refDate = daysInRange.length ? daysInRange[0].date : start;
-
-    result.push(
-        `❌ ${refDate} Sai số thang thuốc (${start} → ${end}): ghi x ${declaredThang} thang, đúng phải là x ${realDays} thang`
-    );
-}
-
-
-    // ===== 3.3 KIỂM TRA SẮC THUỐC TỪNG NGÀY =====
-    daysInRange.forEach(d => {
-
-        if (!d.content.includes("Sắc thuốc thang")) {
-            result.push(`❌ ${d.date} thiếu "Sắc thuốc thang"`);
-            return;
-        }
-
-        // ⭐ LOGIC BẠN NHẮC: PHẢI CÓ NGÀY BẮT ĐẦU
-     const startRegex = new RegExp(start.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*,');
-
-if (!startRegex.test(d.content)) {
-    result.push(
-        `❌ ${d.date} "Sắc thuốc thang" không đúng ngày bắt đầu (${start})`
-    );
-}
-    });
-}
-
-
-
-    // ===== 4. THUỐC VIÊN =====
+/*  
+  // ===== 4. Thuốc viên =====
     const pills = ["Amlodipine 5 mg Cap"];
     pills.forEach(p => {
         let must = false;
         validDays.forEach(d => {
             if (d.content.includes(p)) must = true;
             if (must && !d.content.includes(p)) {
-                result.push(`❌ ${d.date} thiếu thuốc viên: ${p}`);
+                rawErrors.push({
+                    date: d.date,
+                    msg: `Thiếu thuốc: ${p}`
+                });
             }
         });
     });
+*/
 
-    // ===== 5. THUỐC TIÊM =====
+    // ===== 5. Thuốc tiêm =====
     validDays.forEach(d => {
         if (d.content.includes("Dubemin injection") && !d.content.includes("Thủy ch&acirc;m:")) {
-            result.push(`❌ ${d.date} có Dubemin injection nhưng thiếu Thủy ch&acirc;m`);
+            rawErrors.push({
+                date: d.date,
+                msg: `Có Dubemin injection nhưng thiếu Thủy ch&acirc;m`
+            });
         }
     });
 
-    // ===== 6. CẬN LÂM SÀNG =====
+    // ===== 6. Cận lâm sàng =====
     for (let i = 0; i < validDays.length - 1; i++) {
         const d = validDays[i];
         if (d.content.includes("đếm tổng trở") || d.content.includes("Chẩn đo&aacute;n h&igrave;nh ảnh")) {
             let j = i + 1;
-            while (j < validDays.length &&
-    (hasText(validDays[j].content, "Thứ bảy") ||
-     hasText(validDays[j].content, "Chủ nhật"))) {
-    j++;
-}
+            while (j < validDays.length && (hasText(validDays[j].content, "Thứ bảy") || hasText(validDays[j].content, "Chủ nhật"))) {
+                j++;
+            }
             if (j < validDays.length && !validDays[j].content.includes("Kết quả CLS")) {
-                result.push(`❌ ${validDays[j].date} thiếu "Kết quả CLS"`);
+                rawErrors.push({
+                    date: validDays[j].date,
+                    msg: `Thiếu "Kết quả CLS"`
+                });
             }
         }
     }
 
-  // ===== 7. BÁO THUỐC ĐÃ DÙNG =====
- const noMissingCheck = ["Dubemin injection", "Giác hơi", "Khang minh thanh"];
+   // ===== 7. Báo thuốc đã dùng (theo yêu cầu mới) =====
+    // Các thuốc chỉ hiển thị ngày đầu - ngày cuối + kiểm tra thiếu
+    const rangeDisplayItems = ["Amlodipine 5 mg Cap", "Mimosa", "Kamelox 15", "Giác hơi", "Khang minh thanh"];
+    // Thuốc liệt kê từng ngày, không kiểm tra thiếu
+    const listEachDayItems = ["Dubemin injection"];
 
-const reportPills = ["Amlodipine 5 mg Cap", "Mimosa", "Kamelox 15"];
+    const allTrackedItems = [...rangeDisplayItems, ...listEachDayItems];
+    const used = {};
+    allTrackedItems.forEach(t => used[t] = []);
 
-const used = {};
-reportPills
-  .concat("Dubemin injection", "Giác hơi", "Khang minh thanh")
-  .forEach(t => used[t] = []);
-validDays.forEach(d => {
-    Object.keys(used).forEach(t => {
-        if (d.content.includes(t)) used[t].push(d.date);
+    validDays.forEach(d => {
+        allTrackedItems.forEach(t => {
+            if (d.content.includes(t)) used[t].push(d.date);
+        });
     });
-});
 
-let report = "<h3>Báo thuốc đã dùng</h3>";
+    let reportTable = `
+ 
+    <table class="common-table">
+        <thead>
+            <tr>
+                <th style="width:240px;">Tên thuốc / Thủ thuật</th>
+                <th style="width:300px;">Ngày đã dùng</th>
+                <th>Thiếu ngày</th>
+            </tr>
+        </thead>
+        <tbody>`;
 
-Object.keys(used).forEach(t => {
-    if (!used[t].length) return;
+    allTrackedItems.filter(t => used[t].length > 0).forEach(t => {
+        let datesHTML = "";
+        let missingHTML = "";
 
-    // ❗ Dubemin injection & Giác hơi: KHÔNG báo thiếu
-    if (noMissingCheck.includes(t)) {
-        report += `<div>• ${t}: ${used[t].join(", ")}</div>`;
+        if (listEachDayItems.includes(t)) {
+            // Dubemin: liệt kê từng ngày, xuống dòng, không kiểm tra thiếu
+            datesHTML = used[t].map(d => formatDateWithDay(d)).join("<br>");
+        } else {
+            // Các thuốc còn lại: chỉ hiển thị ngày đầu và ngày cuối
+            const start = used[t][0];
+            const end = used[t][used[t].length - 1];
+            datesHTML = `${formatDateWithDay(start)}<br>${formatDateWithDay(end)}`;
+
+            // Kiểm tra thiếu ngày trong khoảng
+            const fullRange = getDateRange(start, end);
+            const missing = fullRange.filter(d => !used[t].includes(d));
+            if (missing.length > 0) {
+                const formattedMissing = missing.map(d => formatDateWithDay(d)).join("<br> ");
+                missingHTML = `<span style="color:#dc2626">${formattedMissing}</span>`;
+            }
+        }
+
+        reportTable += `
+        <tr class="hang">
+            <td><strong>${t}</strong></td>
+            <td>${datesHTML}</td>
+            <td>${missingHTML}</td>
+        </tr>`;
+    });
+
+    reportTable += `</tbody></table>`;
+
+    // ===== HIỂN THỊ KẾT QUẢ =====
+    const out = document.getElementById("result");
+    out.innerHTML = reportTable;
+
+    if (rawErrors.length === 0) {
+        out.innerHTML += `<div class="ok">Không phát hiện lỗi</div>`;
         return;
     }
 
-    // ✅ Thuốc viên: báo từ–đến + ngày thiếu
-    const start = used[t][0];
-    const end = used[t][used[t].length - 1];
-
-    report += `<div>• ${t}: ${start} → ${end}</div>`;
-
-    const fullRange = getDateRange(start, end);
-    const missing = fullRange.filter(d => !used[t].includes(d));
-
-    if (missing.length) {
-        report += `<div style="margin-left:18px;color:#dc2626">
-            ⚠ Thiếu ngày: ${missing.join(", ")}
-        </div>`;
-    }
-});
-
-
-    // ===== HIỂN THỊ =====
-    const out = document.getElementById("result");
-    out.innerHTML = "";
-   out.innerHTML += report;
-    if (result.length === 0) {
-    out.innerHTML += `<div class="ok">✅ Không phát hiện lỗi</div>`;
-} else {
-
-    result.sort((a, b) => {
-        const da = a.match(/(\d{2}\/\d{2}\/\d{4})/);
-        const db = b.match(/(\d{2}\/\d{2}\/\d{4})/);
-        if (!da || !db) return 0;
-        return dateToNumber(da[1]) - dateToNumber(db[1]);
+    // Gộp lỗi theo ngày
+    const errorsByDate = {};
+    rawErrors.forEach(err => {
+        if (!errorsByDate[err.date]) errorsByDate[err.date] = [];
+        errorsByDate[err.date].push(err.msg);
     });
 
-    result.forEach(e => out.innerHTML += `<div class="error">${e}</div>`);
+    // Sắp xếp theo ngày
+    const sortedDates = Object.keys(errorsByDate).sort((a, b) => dateToNumber(a) - dateToNumber(b));
+
+    // Tạo bảng lỗi
+// Tạo bảng lỗi - CĂN GIỮA NGÀY THEO CHIỀU DỌC, ĐẸP HƠN
+let errorTableHTML = `
+    <table class="common-table" style="margin-top: 40px;">
+        <thead>
+            <tr>
+                <th style="width: 200px;">Ngày</th>
+                <th>Nội dung lỗi</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    sortedDates.forEach(date => {
+        const formattedDate = formatDateWithDay(date);
+        
+        // Danh sách lỗi, mỗi lỗi một div riêng, khoảng cách đẹp
+        const messagesHTML = errorsByDate[date]
+            .map(msg => `<div style="margin-bottom: 14px; line-height: 1.5;">${msg}</div>`)
+            .join('<hr style="margin: 14px 0; border: none; height: 1px; background: #ddd;">');
+
+        errorTableHTML += `
+        <tr class="hang" style="vertical-align: middle;">
+            <td class="date-col" style="padding: 24px 12px; font-weight: 600; text-align: left;">
+                ${formattedDate}
+            </td>
+            <td style="padding: 24px 16px;">
+                ${messagesHTML}
+            </td>
+        </tr>`;
+    });
+
+    errorTableHTML += `</tbody></table>`;
+    out.innerHTML += errorTableHTML;
+	
+	// === TỰ ĐỘNG CUỘN XUỐNG KẾT QUẢ ===
+   setTimeout(() => {
+        const firstTable = out.querySelector(".common-table");
+        if (firstTable) {
+            firstTable.scrollIntoView({
+                behavior: "smooth",
+                block: "start"  // Đưa phần đầu bảng lên gần đỉnh màn hình
+            });
+        } else {
+            // Nếu chỉ có dòng "Không phát hiện lỗi"
+            out.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+    }, 100);  // 100ms là đủ để browser render xong nội dung mới
+
+	
 }
 
- 
-}
+document.getElementById("fileInput").addEventListener("change", function () {
+    if (this.files.length) {
+        document.getElementById("fileName").textContent = this.files[0].name;
+        runCheck();
+    }
+});
 </script>
 
 </body>
