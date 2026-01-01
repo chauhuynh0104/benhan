@@ -291,9 +291,46 @@ function runCheck() {
     reader.readAsText(file);
 }
 
+
+
+
+
 function processHTML(html) {
+const patient = getPatientInfo(html);
     const rawErrors = [];
     const days = [];
+
+// ==== Info bệnh nhân ======
+
+function getPatientInfo(html) {
+    const info = {
+        name: "",
+        age: "",
+        gender: ""
+    };
+
+    // Họ tên người bệnh
+    const nameRegex =
+        /Họ&nbsp;t&#234;n&nbsp;người&nbsp;bệnh:<\/nobr>\s*<\/td>[\s\S]*?<nobr>(.*?)<\/nobr>/i;
+    const nameMatch = html.match(nameRegex);
+    if (nameMatch) info.name = nameMatch[1];
+
+    // Tuổi
+    const ageRegex =
+        /Tuổi:<\/nobr>\s*<\/td>[\s\S]*?<nobr>(.*?)<\/nobr>/i;
+    const ageMatch = html.match(ageRegex);
+    if (ageMatch) info.age = ageMatch[1];
+
+    // Giới tính
+    const genderRegex =
+        /Giới&nbsp;t&#237;nh:<\/nobr>\s*<\/td>[\s\S]*?<nobr>(.*?)<\/nobr>/i;
+    const genderMatch = html.match(genderRegex);
+    if (genderMatch) info.gender = genderMatch[1];
+
+    return info;
+}
+
+
 
     // ===== 1. Tách ngày =====
     const dayRegex = /<td\b[^>]*>\s*<nobr>\d{2}\/\d{2}\/\d{4}<\/nobr>[\s\S]*?<\/td>/gi;
@@ -441,13 +478,27 @@ function processHTML(html) {
             if (d.content.includes(t)) used[t].push(d.date);
         });
     });
-
+let patientInfoHTML = `
+<div style="
+    margin: 20px 0;
+    padding: 16px 20px;
+    background: #eef2ff;
+    border-left: 6px solid #2563eb;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+">
+    <strong>👤 THÔNG TIN NGƯỜI BỆNH</strong><br>
+    Họ tên: <strong>${patient.name || "Không xác định"}</strong><br>
+    Tuổi: <strong>${patient.age || "Không xác định"}</strong><br>
+    Giới tính: <strong>${patient.gender || "Không xác định"}</strong>
+</div>
+`;
     let reportTable = `
- 
     <table class="common-table">
         <thead>
             <tr>
-                <th style="width:240px;">Tên thuốc / Thủ thuật</th>
+                <th style="width:240px;">Tên</th>
                 <th style="width:300px;">Ngày đã dùng</th>
                 <th>Thiếu ngày</th>
             </tr>
@@ -488,7 +539,8 @@ function processHTML(html) {
 
     // ===== HIỂN THỊ KẾT QUẢ =====
     const out = document.getElementById("result");
-    out.innerHTML = reportTable;
+    out.innerHTML = patientInfoHTML + reportTable;
+
 
     if (rawErrors.length === 0) {
         out.innerHTML += `<div class="ok">Không phát hiện lỗi</div>`;
@@ -569,3 +621,4 @@ document.getElementById("fileInput").addEventListener("change", function () {
 
 </body>
 </html>
+
