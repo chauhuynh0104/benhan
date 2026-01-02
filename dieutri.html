@@ -1,3 +1,15 @@
+<!-- 
+////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+//////////////Code được viết bởi Chauhuynh0104////////////////
+/////////////http://fb.com/chauhuynh0104/////////////////////
+//////////////////////079.567.9350//////////////////////////
+////////////Vui lòng tôn trọng bản quyền tác giả///////////
+//////////////////Không xoá dòng này /////////////////////
+/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+!-->
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -364,7 +376,7 @@ function getPatientInfo(html) {
             if (mustHave && !d.content.includes(t.key)) {
                 rawErrors.push({
                     date: d.date,
-                    msg: `Thiếu thủ thuật: ${t.label}`
+                    msg: `Thiếu thủ thuật: <font color="red"><b>${t.label}</b></font>`
                 });
             }
         });
@@ -393,7 +405,7 @@ function getPatientInfo(html) {
         if (declaredThang !== realDays) {
             rawErrors.push({
                 date: start,
-                msg: `Sai số thang thuốc (${formatDateWithDay(start)} → ${formatDateWithDay(end)}): ghi x ${declaredThang} thang, đúng phải là x ${realDays} thang`
+                msg: `Sai số thang thuốc (${start} → ${end}): ghi <font color="red"><b>x ${declaredThang}</b></font> thang, đúng phải là <font color="red"><b>x ${realDays}</b></font> thang`
             });
         }
 
@@ -405,14 +417,14 @@ function getPatientInfo(html) {
             if (!d.content.includes("Sắc thuốc thang")) {
                 rawErrors.push({
                     date: d.date,
-                    msg: `Thiếu thủ thuật Sắc thuốc thang`
+                    msg: `Thiếu thủ thuật <font color="red"><b>Sắc thuốc thang</b></font>`
                 });
             } else {
                 const startRegex = new RegExp(start.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*,');
                 if (!startRegex.test(d.content)) {
                     rawErrors.push({
                         date: d.date,
-                        msg: `Thủ thuật sắc thuốc thang không đúng ngày bắt đầu (${formatDateWithDay(start)})`
+                        msg: `Thủ thuật <font color="red"><b>Sắc thuốc thang</b></font> không đúng ngày bắt đầu (${formatDateWithDay(start)})`
                     });
                 }
             }
@@ -441,7 +453,7 @@ function getPatientInfo(html) {
         if (d.content.includes("Dubemin injection") && !d.content.includes("Thủy ch&acirc;m:")) {
             rawErrors.push({
                 date: d.date,
-                msg: `Có Dubemin injection nhưng thiếu Thủy ch&acirc;m`
+                msg: `Có <font color="red"><b>Dubemin injection</b></font> nhưng thiếu thủ thuật <font color="red"><b>Thủy ch&acirc;m</b></font>`
             });
         }
     });
@@ -457,7 +469,7 @@ function getPatientInfo(html) {
             if (j < validDays.length && !validDays[j].content.includes("Kết quả CLS")) {
                 rawErrors.push({
                     date: validDays[j].date,
-                    msg: `Thiếu "Kết quả CLS"`
+                    msg: `Thiếu <font color="red"><b>Kết quả CLS</b></font>`
                 });
             }
         }
@@ -465,7 +477,7 @@ function getPatientInfo(html) {
 
    // ===== 7. Báo thuốc đã dùng (theo yêu cầu mới) =====
     // Các thuốc chỉ hiển thị ngày đầu - ngày cuối + kiểm tra thiếu
-    const rangeDisplayItems = ["Amlodipine 5 mg Cap", "Mimosa", "Kamelox 15", "Giác hơi", "Khang minh thanh"];
+    const rangeDisplayItems = ["Amlodipine 5 mg Cap", "Mimosa", "Kamelox 15", "Giác hơi", "Khang minh thanh", "Agilosart"];
     // Thuốc liệt kê từng ngày, không kiểm tra thiếu
     const listEachDayItems = ["Dubemin injection"];
 
@@ -511,12 +523,12 @@ let patientInfoHTML = `
 
         if (listEachDayItems.includes(t)) {
             // Dubemin: liệt kê từng ngày, xuống dòng, không kiểm tra thiếu
-            datesHTML = used[t].map(d => formatDateWithDay(d)).join("<br>");
+            datesHTML = used[t].map(d => formatDateWithDay(d)).join("<hr>");
         } else {
             // Các thuốc còn lại: chỉ hiển thị ngày đầu và ngày cuối
             const start = used[t][0];
             const end = used[t][used[t].length - 1];
-            datesHTML = `${formatDateWithDay(start)}<br>${formatDateWithDay(end)}`;
+            datesHTML = `${formatDateWithDay(start)}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⭣<br>${formatDateWithDay(end)}`;
 
             // Kiểm tra thiếu ngày trong khoảng
             const fullRange = getDateRange(start, end);
@@ -524,14 +536,16 @@ let patientInfoHTML = `
             if (missing.length > 0) {
                 const formattedMissing = missing.map(d => formatDateWithDay(d)).join("<br> ");
                 missingHTML = `<span style="color:#dc2626">${formattedMissing}</span>`;
-            }
+            }else{
+			missingHTML = `<span style="color:#dc2626">Đã lên thuốc đủ</span>`;
+			}
         }
 
         reportTable += `
         <tr class="hang">
             <td><strong>${t}</strong></td>
             <td>${datesHTML}</td>
-            <td>${missingHTML}</td>
+            <td><font color="red"><b>${missingHTML}</b></font></td>
         </tr>`;
     });
 
@@ -606,7 +620,7 @@ let errorTableHTML = `
                 block: "start"
             });
         }
-    }, 100);  // 100ms là đủ để browser render xong nội dung mới
+    }, 100);  
 
 	
 }
@@ -621,4 +635,5 @@ document.getElementById("fileInput").addEventListener("change", function () {
 
 </body>
 </html>
+
 
