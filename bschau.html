@@ -246,7 +246,38 @@
         padding: 10px;
     }
 }
+.date-wrapper{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
 
+/* chừa chỗ cho chữ + icon */
+.date-wrapper input{
+    width: 100%;
+    padding-right: 110px;
+}
+
+/* chữ Thứ nằm TRƯỚC icon */
+.date-wrapper span{
+    position: absolute;
+    right: 55px;
+    font-weight: 600;
+    color: #ff5722;
+}
+
+/* icon lịch nằm mép phải */
+.date-wrapper input::-webkit-calendar-picker-indicator{
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+}
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -328,7 +359,16 @@
                         <div class="form-group"><label for="age">Tuổi *</label><input type="number" id="age" min="1" max="120" required></div>
                         <div class="form-group"><label for="gender">Giới tính *</label><select id="gender" required><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select></div>
                         <div class="form-group"><label for="diagnosis">Chẩn đoán *</label><input type="text" id="diagnosis" required></div>
-                        <div class="form-group"><label for="admissionDate">Ngày vào viện *</label><input type="date" id="admissionDate" required></div>
+                       <div class="form-group">
+					  <label for="admissionDate">Ngày vào viện *</label>
+                        
+
+    <div class="date-wrapper">
+        <input type="date" id="admissionDate" required>
+        <span id="admissionWeekday"></span>
+    </div>
+</div>
+
                         <div class="form-group"><label for="admissionTime">Giờ vào viện *</label><input type="time" id="admissionTime" required></div>
                         <div class="form-group"><label for="examinationTime">Giờ khám bệnh *</label><input type="time" id="examinationTime" required></div>
                         <div class="form-group"><label for="room">Phòng *</label><select id="room" required><option value="9">Phòng 9</option><option value="11">Phòng 11</option></select></div>
@@ -516,7 +556,7 @@
                     statusText = p.dischargeDate === today ? `Ra viện hôm nay - ${p.dischargeTime}` : `Ra viện ${formatDate(p.dischargeDate)} - ${p.dischargeTime}`;
                     statusClass = p.dischargeDate === today ? 'status-warning' : 'status-error';
                 }
-                html += `<tr><td>${stt++}</td><td>${p.fullName}</td><td>${p.room}</td><td>${p.examinationTime}</td><td>${days} ngày</td><td>${p.patientType}</td><td><span class="${statusClass}">${statusText}</span></td></tr>`;
+                html += `<tr><td>${stt++}</td><td>${p.fullName}</td><td>${p.room}</td><td>${formatHourHM(p.examinationTime)}</td><td>${days} ngày</td><td>${p.patientType}</td><td><span class="${statusClass}">${statusText}</span></td></tr>`;
             });
             document.getElementById('statsTableBody').innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:40px;">Không có dữ liệu</td></tr>';
         }
@@ -553,19 +593,64 @@
                         <div class="form-group"><label>Tuổi *</label><input type="number" id="detailAge" value="${p.age}" required></div>
                         <div class="form-group"><label>Giới tính *</label><select id="detailGender" required><option value="Nam" ${p.gender==='Nam'?'selected':''}>Nam</option><option value="Nữ" ${p.gender==='Nữ'?'selected':''}>Nữ</option></select></div>
                         <div class="form-group"><label>Chẩn đoán *</label><input id="detailDiagnosis" value="${p.diagnosis}" required></div>
-                        <div class="form-group"><label>Ngày vào viện *</label><input type="date" id="detailAdmissionDate" value="${p.admissionDate}" required></div>
+                        <div class="form-group">
+    <label>Ngày vào viện *</label>
+    <div class="date-wrapper">
+        <input type="date" id="detailAdmissionDate" value="${p.admissionDate}" required>
+        <span id="detailAdmissionWeekday"></span>
+    </div>
+</div>
+
+
                         <div class="form-group"><label>Giờ vào viện *</label><input type="time" id="detailAdmissionTime" value="${p.admissionTime}" required></div>
                         <div class="form-group"><label>Giờ khám bệnh *</label><input type="time" id="detailExaminationTime" value="${p.examinationTime}" required></div>
                         <div class="form-group"><label>Phòng *</label><select id="detailRoom" required><option value="9" ${p.room==='9'?'selected':''}>Phòng 9</option><option value="11" ${p.room==='11'?'selected':''}>Phòng 11</option></select></div>
                         <div class="form-group"><label>Loại bệnh nhân *</label><select id="detailPatientType" required><option value="Nội trú" ${p.patientType==='Nội trú'?'selected':''}>Nội trú</option><option value="Ban ngày" ${p.patientType==='Ban ngày'?'selected':''}>Ban ngày</option></select></div>
-                        <div class="form-group"><label>Ngày ra viện</label><input type="date" id="detailDischargeDate" value="${p.dischargeDate||''}"></div>
-                        <div class="form-group"><label>Giờ ra viện</label><input type="time" id="detailDischargeTime" value="${p.dischargeTime||''}"></div>
+                       <div class="form-group">
+    <label>Ngày ra viện</label>
+    <div class="date-wrapper">
+        <input type="date" id="detailDischargeDate" value="${p.dischargeDate||''}">
+        <span id="detailDischargeWeekday"></span>
+    </div>
+</div>
+
+    <div class="form-group"><label>Giờ ra viện</label><input type="time" id="detailDischargeTime" value="${p.dischargeTime||''}"></div>
+	
+	<div class="form-group">
+  <label>Tổng ngày:</label>
+  <input type="text" id="totalDays" readonly>
+</div>
                     </div>
                     <div class="action-buttons">
                         <button type="button" class="btn btn-success" onclick="requirePassword(() => updatePatient('${id}'))">Cập nhật</button>
                         <button type="button" class="btn btn-danger" onclick="requirePassword(() => showConfirmDeleteModal('${id}'))">Xóa bệnh nhân</button>
                     </div>
                 </form>`;
+				// Đặt giá trị ban đầu cho ô Tổng ngày
+				document.getElementById("totalDays").value = calcHospitalDays(p.admissionDate, p.dischargeDate);
+// Gắn sự kiện tự động cập nhật thứ trong			
+			setTimeout(()=>{
+    bindWeekdayAutoUpdate("detailAdmissionDate","detailAdmissionWeekday");
+    bindWeekdayAutoUpdate("detailDischargeDate","detailDischargeWeekday");
+},100);
+
+// === THÊM MỚI: Tự động tính tổng ngày khi thay đổi ngày vào hoặc ngày ra ===
+    const admissionDateInput = document.getElementById('detailAdmissionDate');
+    const dischargeDateInput = document.getElementById('detailDischargeDate');
+    const totalDaysInput = document.getElementById('totalDays');
+
+    function updateTotalDays() {
+        const admit = admissionDateInput.value;
+        const discharge = dischargeDateInput.value;
+        totalDaysInput.value = calcHospitalDays(admit, discharge);
+    }
+
+    // Lắng nghe sự kiện thay đổi trên cả hai ô ngày
+    admissionDateInput.addEventListener('input', updateTotalDays);
+    dischargeDateInput.addEventListener('input', updateTotalDays);
+
+    // Nếu người dùng xóa ngày ra viện → ô tổng ngày sẽ trống
+    // (hàm calcHospitalDays đã xử lý trường hợp thiếu discharge)
             document.getElementById('statsContent').classList.add('hidden');
             document.getElementById('patientDetailContent').classList.remove('hidden');
             renderPatientList();
@@ -587,6 +672,8 @@
             document.getElementById('admissionTime').value = now.toTimeString().slice(0,5);
             document.getElementById('examinationTime').value = "07:00";
             document.getElementById('patientModal').classList.remove('hidden');
+			bindWeekdayAutoUpdate("admissionDate", "admissionWeekday");
+bindWeekdayAutoUpdate("dischargeDate", "dischargeWeekday");
         }
 
         async function savePatient() {
@@ -716,6 +803,42 @@
     }
 
         document.addEventListener('DOMContentLoaded', initApp);
+		
+	
+
+
+function getVNWeekday(dateStr){
+    if(!dateStr) return "";
+    const d = new Date(dateStr);
+    const days = ["Chủ Nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
+    return days[d.getDay()];
+}
+
+function bindWeekdayAutoUpdate(inputId, spanId){
+    const input = document.getElementById(inputId);
+    const span = document.getElementById(spanId);
+    if(!input || !span) return;
+
+    function update(){
+        span.textContent = getVNWeekday(input.value);
+    }
+
+    input.addEventListener("input", update);
+    update(); // chạy ngay lần đầu khi mở bệnh án
+}
+
+function formatHourHM(timeStr){
+    if(!timeStr) return "";
+    const [h, m] = timeStr.split(":");
+    return `${h.padStart(2,'0')}:${m.padStart(2,'0')}`;
+}
+function calcHospitalDays(admit, discharge){
+    if(!admit || !discharge) return "";
+    const a = new Date(admit);
+    const r = new Date(discharge);
+    const diff = Math.round((r - a) / (1000*60*60*24));
+    return diff + " ngày";
+}
     </script>
 </body>
 </html>
