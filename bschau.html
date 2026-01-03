@@ -518,9 +518,24 @@
         }
         if (e.key === 'Escape') requirePassword(showStatsView);
         if (e.key === 'F5') location.reload();
-        if (e.ctrlKey && e.key === 's') { 
-            e.preventDefault(); 
-            if (currentPatientId) requirePassword(() => updatePatient(currentPatientId)); 
+    if (e.ctrlKey && e.key === 's') {
+            e.preventDefault(); // Ngăn hành vi lưu trang mặc định của trình duyệt
+
+            requirePassword(() => {
+                if (currentView === 'stats' && !currentPatientId) {
+                    // Đang ở modal Thêm bệnh nhân mới (modal đang mở)
+                    if (!document.getElementById('patientModal').classList.contains('hidden')) {
+                        savePatient(); // Gọi hàm lưu bệnh nhân mới
+                    } else {
+                        showToast('Không có hành động lưu nào đang mở', 'info');
+                    }
+                } else if (currentPatientId) {
+                    // Đang xem chi tiết bệnh nhân → Cập nhật
+                    updatePatient(currentPatientId);
+                } else {
+                    showToast('Không có hành động lưu nào', 'info');
+                }
+            });
         }
         if (e.key === 'F1') { 
             e.preventDefault(); 
