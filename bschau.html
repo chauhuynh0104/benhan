@@ -127,7 +127,7 @@
                 <div class="search-filter">
                     <input type="text" id="searchInput" placeholder="Tìm kiếm bệnh nhân...">
                     <select id="filterStatus">   <option value="all">Tất cả</option><option value="discharged">Đã ra viện</option>
-                        <option value="active">Chưa ra viện</option>
+                        <option value="active"selected>Chưa ra viện</option>
                         
                      
                     </select>
@@ -188,7 +188,7 @@
                         <div class="form-group"><label for="admissionTime">Giờ vào viện *</label><input type="time" id="admissionTime" required></div>
                         <div class="form-group"><label for="examinationTime">Giờ khám bệnh *</label><input type="time" id="examinationTime" required></div>
                         <div class="form-group"><label for="room">Phòng *</label><select id="room" required><option value="9">Phòng 9</option><option value="11">Phòng 11</option></select></div>
-                        <div class="form-group"><label for="patientType">Loại bệnh nhân *</label><select id="patientType" required><option value="Nội trú">Nội trú</option><option value="Ngoại trú">Ngoại trú</option></select></div>
+                        <div class="form-group"><label for="patientType">Loại bệnh nhân *</label><select id="patientType" required><option value="Nội trú">Nội trú</option><option value="Ban ngày">Ban ngày</option></select></div>
                     </div>
                 </form>
             </div>
@@ -382,7 +382,7 @@
             const overdue = patients.filter(p => {
                 if (isDischarged(p)) return false;
                 const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
-                return (p.patientType === 'Nội trú' && days > 21) || (p.patientType === 'Ngoại trú' && days > 14);
+                return (p.patientType === 'Nội trú' && days > 21) || (p.patientType === 'Ban ngày' && days > 14);
             });
 
             if (overdue.length === 0) {
@@ -413,7 +413,7 @@
                         <div class="form-group"><label>Giờ vào viện *</label><input type="time" id="detailAdmissionTime" value="${p.admissionTime}" required></div>
                         <div class="form-group"><label>Giờ khám bệnh *</label><input type="time" id="detailExaminationTime" value="${p.examinationTime}" required></div>
                         <div class="form-group"><label>Phòng *</label><select id="detailRoom" required><option value="9" ${p.room==='9'?'selected':''}>Phòng 9</option><option value="11" ${p.room==='11'?'selected':''}>Phòng 11</option></select></div>
-                        <div class="form-group"><label>Loại bệnh nhân *</label><select id="detailPatientType" required><option value="Nội trú" ${p.patientType==='Nội trú'?'selected':''}>Nội trú</option><option value="Ngoại trú" ${p.patientType==='Ngoại trú'?'selected':''}>Ngoại trú</option></select></div>
+                        <div class="form-group"><label>Loại bệnh nhân *</label><select id="detailPatientType" required><option value="Nội trú" ${p.patientType==='Nội trú'?'selected':''}>Nội trú</option><option value="Ban ngày" ${p.patientType==='Ban ngày'?'selected':''}>Ban ngày</option></select></div>
                         <div class="form-group"><label>Ngày ra viện</label><input type="date" id="detailDischargeDate" value="${p.dischargeDate||''}"></div>
                         <div class="form-group"><label>Giờ ra viện</label><input type="time" id="detailDischargeTime" value="${p.dischargeTime||''}"></div>
                     </div>
