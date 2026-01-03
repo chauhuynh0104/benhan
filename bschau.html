@@ -9,2145 +9,554 @@
 /////////////////////////////////////////
 
 !-->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Doctor Châu</title><script src="https://unpkg.com/dropbox/dist/Dropbox-sdk.min.js"></script>
-<script>
-const REFRESH_KEY = "yvVdSnOoxgsAAAAAAAAAAYwqRQmU9NPgvKrMmzAL2JY9QqutemeEsykD9LmlQcRr";
-const APP_KEY = "qzy5kclrf827aey";
-const APP_SECRET = "6jlsunzjqr3s3nh";
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Bệnh Án</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff9800;
+            --primary-light: #ffe0b2;
+            --primary-dark: #f57c00;
+            --bg-color: #ffffff;
+            --border-color: #ffcc80;
+            --text-color: #333;
+            --light-text: #666;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --danger-color: #f44336;
+            --info-color: #2196f3;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+        }
 
-let dropboxToken = null;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f9f9f9; color: var(--text-color); line-height: 1.6; padding: 10px; }
 
-// ⚙️ Lấy access_token từ refresh_token
-async function getAccessToken() {
-  const resp = await fetch("https://api.dropboxapi.com/oauth2/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: REFRESH_KEY,
-      client_id: APP_KEY,
-      client_secret: APP_SECRET
-    })
-  });
-  const data = await resp.json();
-  dropboxToken = data.access_token;
+        .container { max-width: 1400px; margin: 0 auto; display: flex; gap: 20px; }
+        .header { background: linear-gradient(135deg, #ff9800, #ff5722); color: white; padding: 20px; border-radius: var(--radius); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
+        .header h1 { font-size: 28px; font-weight: 600; }
+        .header i { margin-right: 10px; }
 
-}
-</script>
-<script>
-// 📥 Tải /patients_v1.json từ Dropbox
-async function loadPatientsFromDropbox() {
-  if (!dropboxToken) await getAccessToken();
-  const resp = await fetch("https://content.dropboxapi.com/2/files/download", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + dropboxToken,
-      "Dropbox-API-Arg": JSON.stringify({ path: "/patients_v1.json" })
-    }
-  });
+        .left-panel, .right-panel { flex: 1; background-color: var(--bg-color); border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; }
+        .right-panel { flex: 2; }
 
-  if (!resp.ok) {
-    console.warn("⚠️ Không tìm thấy file trên Dropbox, tạo danh sách trống.");
-    return [];
-  }
+        .panel-header { background-color: var(--primary-light); padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .panel-header h2 { color: var(--primary-dark); font-size: 20px; }
 
-  const text = await resp.text();
-  try {
-    const data = JSON.parse(text);
-   
-    return data;
-  } catch (e) {
-    console.error("❌ JSON bị lỗi:", e);
-    return [];
-  }
-}
-</script>
-<script>
-// 💾 Ghi đè /patients_v1.json lên Dropbox
-async function savePatientsToDropbox(patients) {
-  if (!dropboxToken) await getAccessToken();
-  const resp = await fetch("https://content.dropboxapi.com/2/files/upload", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + dropboxToken,
-      "Dropbox-API-Arg": JSON.stringify({
-        path: "/patients_v1.json",
-        mode: "overwrite",
-        autorename: false
-      }),
-      "Content-Type": "application/octet-stream"
-    },
-    body: JSON.stringify(patients, null, 2)
-  });
-  if (resp.ok) {
+        .panel-content { padding: 20px; flex: 1; overflow-y: auto; }
 
-  } else {
-    console.error("❌ Lưu thất bại:", await resp.text());
-  }
-}
-</script>
-  <style>
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+        .btn-secondary { background-color: #f0f0f0; color: var(--text-color); }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-danger { background-color: var(--danger-color); color: white; }
 
-    :root{
-      --bg:#fff7f0; --accent:#ff7a18; --muted:#6b6b6b; --card:#ffffff; --glass: rgba(255,255,255,0.6);
-      --shadow: 0 6px 18px rgba(0,0,0,0.08);
-      font-family: "Segoe UI", Roboto, Arial, sans-serif;
-    }
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,#fffaf5 0%, #fff1e6 100%);color:#222}
-    .app{display:flex;gap:20px;height:100vh;padding:18px}
-   .sidebar{
-  width:220px;
-  background:var(--card);
-  border-radius:14px;
-  padding:14px;
-  box-shadow:var(--shadow);
-  overflow:auto;
-   resize: none;        /* ✅ Cho phép kéo ngang */
-  min-width:150px;           /* Giới hạn nhỏ nhất */
-  max-width:400px;           /* Giới hạn lớn nhất */
-}
+        .notification-bar { background-color: #fff3e0; border-left: 5px solid var(--warning-color); padding: 15px; margin-bottom: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .notification-bar i { color: var(--warning-color); margin-right: 10px; }
 
-.room-header {
-  background: rgba(240, 240, 240, 0.7);  /* nền xám mờ nhẹ */
-  color: #ff7a18;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 6px 10px;
-  margin: 10px 0 4px 0;
-  border-radius: 6px;
-  border-left: 4px solid #ff7a18;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
+        .search-filter { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-filter input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; min-width: 200px; }
+        .search-filter select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
 
+        .patient-room-group { margin-bottom: 20px; }
+        .patient-room-group h3 { color: var(--primary-dark); margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--border-color); }
+        .patient-item { padding: 15px; border: 1px solid #eee; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: center; }
+        .patient-item:hover { background-color: #fff9f0; border-color: var(--border-color); }
+        .patient-item.active { background-color: var(--primary-light); border-color: var(--primary-color); }
 
-/* Hiệu ứng hover nhẹ cho đẹp */
-.room-header:hover {
-  background: rgba(180, 180, 180, 0.45);
-  transition: background 0.2s ease;
-}
+        .patient-type.inpatient { display: inline-block; padding: 8px 16px; background: #34d399; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); }
+        .patient-type.outpatient { display: inline-block; padding: 8px 16px; background: #fbbf24; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2); }
 
-    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    h2{margin:0;color:var(--accent)}
-    .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:10px;border:none;cursor:pointer}
-    .btn.secondary{background:transparent;color:var(--accent);border:1px solid rgba(255,122,24,0.15)}
-    .patient-list{display:flex;flex-direction:column;gap:8px}
-    .patient-item{padding:10px;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
-    .patient-item:hover{background:linear-gradient(90deg,rgba(255,122,24,0.06),transparent)}
-    .patient-meta{font-size:13px;color:var(--muted)}
-.app{
-  display:flex;
-  gap:20px;
-  height:100vh;
-  padding:18px;
-  align-items: stretch;  /* ✅ để hai khối cùng cao */
-}
+        .status-ok { display: inline-block; padding: 8px 16px; background: #34d399; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; }
+        .status-error { display: inline-block; padding: 8px 16px; background: #fb7185; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; }
+        .status-warning { display: inline-block; padding: 8px 16px; background: #fbbf24; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; }
 
-  .main{
-  flex:1;
-  background:var(--card);
-  border-radius:14px;
-  padding:18px;
-  box-shadow:var(--shadow);
-  overflow:auto;
- resize: none; 
-  min-width:400px;
-  min-height:300px;
-  max-height:100vh;
-}    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    label{display:block;font-size:13px;margin-bottom:6px}
-    input,select,textarea{width:90%;padding:8px;border-radius:8px;border:1px solid #eee;background:#fff}
-    .section{background:var(--glass);padding:12px;border-radius:10px}
-    .med-list,.thang-list,.procedure-list{display:flex;flex-direction:column;gap:8px}
-.med-row{
-  background: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #f0e6de;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
-  align-items: center;
-}
+        .stats-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .stats-table th, .stats-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        .stats-table th { background-color: #f9f9f9; color: var(--primary-dark); font-weight: 600; }
 
-/* Thuốc sắc: 5 cột giãn đều hơn */
-.thang-row,.proc-row {
-  background: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #f0e6de;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 40px;
-  align-items: center;
-}
+        .patient-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; font-weight: 600; color: var(--light-text); }
+        .form-group input, .form-group select { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2); }
 
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background-color: white; border-radius: var(--radius); width: 90%; max-width: 700px; max-height: 90vh; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
+        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: bold; }
+        .modal-content { padding: 20px; overflow-y: auto; flex: 1; }
+        .modal-footer { padding: 15px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--light-text); }
 
-   .med-row .full{grid-column:1/-1}
-    .med-row input, .thang-row input, .proc-row input{padding:6px}
-    .small{font-size:12px}
-    .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+        .hidden { display: none; }
 
-    /* modal form */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.35)}
-    .modal.open{display:flex}
-    .card{background:#fff;padding:18px;border-radius:12px;width:720px;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+        #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { min-width: 300px; padding: 15px 20px; border-radius: 8px; color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.2); animation: slideIn 0.4s ease; }
+        .toast.success { background-color: var(--success-color); }
+        .toast.error { background-color: var(--danger-color); }
+        .toast.info { background-color: var(--info-color); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-    .right-top{display:flex;gap:12px;align-items:center}
-    .meta-block{background:#fff;padding:10px;border-radius:8px;border:1px solid #f2e7df}
-
-    footer{margin-top:16px;font-size:12px;color:var(--muted)}
-
-    @media (max-width:900px){.app{flex-direction:column}.sidebar{width:100%;height:260px}.main{height:auto}}
-	.med-row,thang-row{
-  gap: 20px; /* tăng khoảng cách chung giữa các ô */
-}#divider {
-  width: 6px;
-  cursor: col-resize;               /* ✅ hiện con trỏ kéo ngang */
-  background: linear-gradient(to right, #f8d5b2, #ffd7a0);
-  border-radius: 3px;
-  transition: background 0.2s;
-}
-#divider:hover {
-  background: linear-gradient(to right, #ffb56b, #ff9a3c);
-#popupContent ul { list-style-type: none; padding-left: 15px; }
-#popupContent li strong { color: #2c3e50; }
-#popupContent h4 { margin-top: 15px; margin-bottom: 5px; }
-#thongBaoChung {
-  transition: all 0.3s ease;
-}
-#hiddenPatientsNotice {
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-
-/* ==== HIỆU ỨNG UỐN LƯỢN CHỮ "ĐANG TẢI..." ==== */
-.loading-text {
-  font-weight: 500;
-  color: #ff7a18;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
-}
-
-  </style>
+        footer { text-align: center; padding: 20px; color: var(--light-text); font-size: 14px; margin-top: 30px; }
+    </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-  
     <div class="header">
-  <button class="btn" id="addPatientBtn">👩‍⚕️ Thêm</button>
-  <button id="btnFuture" class="btn secondary">👏 Future</button>
-
- 
-</div>
-  <div class="header">   <button class="btn secondary" id="btnTiem">💉 Tiêm</button>
-  <button class="btn secondary" id="btnVien">💊 Viên</button>
-  <button class="btn secondary" id="btnSac">🍵 Sắc</button>
-  <button class="btn secondary" id="btnGio">🕒 Giờ</button></div>
-  
-  
-    <input id="search" placeholder="Tìm kiếm tên / tuổi / giới" style="width:90%;padding:8px;border-radius:10px;border:1px solid #fde9d8;margin-bottom:10px" />
-    <div class="patient-list" id="patientList"></div>
-  </aside>
-<div id="divider"></div>
-  <main class="main">
-    <div class="right-top"style="display:none">
-      <div class="meta-block" id="patientHeader">Chọn một bệnh nhân để xem chi tiết</div>
-      <div style="flex:1"></div>
-     
+        <div>
+            <h1><i class="fas fa-heartbeat"></i> HỆ THỐNG QUẢN LÝ BỆNH ÁN</h1>
+            <p>Quản lý thông tin bệnh nhân và theo dõi quá trình điều trị</p>
+        </div>
+        <button id="newPatientBtn" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Thêm bệnh nhân mới
+        </button>
     </div>
 
-    <div id="patientDetailArea" style="margin-top:12px;display:none">
-<div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:320px;display:none" class="section">
-          <h3>Thông tin cơ bản</h3>
-          <div class="grid">
-            <div>
-              <label>Tên bệnh nhân</label>
-              <input id="p_name" />
+    <div class="notification-bar" id="notificationContainer">
+        <div><i class="fas fa-bell"></i><span id="notificationText">Không có thông báo nào</span></div>
+    </div>
+
+    <div class="container">
+        <div class="left-panel">
+            <div class="panel-header"><h2><i class="fas fa-users"></i> DANH SÁCH BỆNH NHÂN</h2></div>
+            <div class="panel-content">
+                <div class="search-filter">
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm bệnh nhân...">
+                    <select id="filterStatus">   <option value="all">Tất cả</option><option value="discharged">Đã ra viện</option>
+                        <option value="active">Chưa ra viện</option>
+                        
+                     
+                    </select>
+                </div>
+                <div id="patientListContainer"><div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Đang tải dữ liệu...</p></div></div>
             </div>
-            <div>
-              <label>Tuổi</label>
-              <input id="p_age" type="number"/>
+        </div>
+
+        <div class="right-panel">
+            <div class="panel-header">
+                <h2 id="rightPanelTitle"><i class="fas fa-chart-bar"></i> THỐNG KÊ GIỜ KHÁM</h2>
+                <button id="viewStatsBtn" class="btn btn-secondary"><i class="fas fa-chart-bar"></i> Xem thống kê</button>
             </div>
-
-<div>
-        <label>Giới</label>
-        <select id="p_gender"><option>Nam</option><option>Nữ</option><option>Khác</option></select>
-      </div>
-
-   <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:6px; grid-column:2;">
-  <input type="checkbox" id="p_outpatient"
-         style="width:16px; height:16px; margin:0 4px 0 0; cursor:pointer; accent-color:#ff7f32; vertical-align:middle;" />
-  <label for="p_outpatient" style="cursor:pointer; user-select:none; line-height:1;">Ngoại trú</label>
-</div>
- 
-</div>
-
-
-            <div>
-              <label>Địa chỉ</label>
-              <input id="p_address" />
+            <div class="panel-content" id="rightPanelContent">
+                <div id="statsContent">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th><th>Tên</th><th>Phòng</th><th>Giờ khám</th><th>Số ngày</th><th>Loại</th><th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statsTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="patientDetailContent" class="hidden"></div>
             </div>
-            <div style="grid-column:1/-1">
-              <label>Chẩn đoán</label>
-              <textarea id="p_dx" rows="2"></textarea>
+        </div>
+    </div>
+
+    <footer>Design By Doctor Châu</footer>
+    <div id="toastContainer"></div>
+
+    <!-- Password Modal - Ẩn lúc đầu -->
+    <div id="passwordModal" class="overlay hidden">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header"><h3>Nhập mật khẩu để tiếp tục</h3></div>
+            <div class="modal-content">
+                <input type="password" id="passwordInput" placeholder="Mật khẩu" style="width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; border: 1px solid #ddd;">
             </div>
-			
-			<div>
-  <label>Phòng</label>
-  <input id="p_room" placeholder="" />
-</div>
+            <div class="modal-footer">
+                <button class="btn btn-success" id="passwordOk">OK</button>
+            </div>
         </div>
-<div style="flex:1;min-width:600px" class="section">
-  <div class="grid">
-    <div>
- <label id="gioKhamLabel"><b>Giờ khám</b> <span id="tenBenhNhanLabel" style="color:#ff6600;"></span></label>
-
-      <input id="exam_time" type="time" />
     </div>
-  </div>
-</div>
 
-      <div style="flex:1;min-width:320px" class="section">
-          <h3>Thuốc tân dược và chế phẩm <button class="btn secondary" id="addMedicineBtn" style="float:right">Thêm Thuốc</button></h3>
-          <div class="med-list" id="medList"></div>
+    <!-- Modal thêm/sửa bệnh nhân -->
+    <div id="patientModal" class="overlay hidden">
+        <div class="modal">
+            <div class="modal-header" id="modalTitle">Thêm bệnh nhân mới<button class="close-btn" id="closeModalBtn">×</button></div>
+            <div class="modal-content">
+                <form id="patientForm">
+                    <div class="patient-form">
+                        <div class="form-group"><label for="fullName">Họ tên *</label><input type="text" id="fullName" required></div>
+                        <div class="form-group"><label for="age">Tuổi *</label><input type="number" id="age" min="1" max="120" required></div>
+                        <div class="form-group"><label for="gender">Giới tính *</label><select id="gender" required><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select></div>
+                        <div class="form-group"><label for="diagnosis">Chẩn đoán *</label><input type="text" id="diagnosis" required></div>
+                        <div class="form-group"><label for="admissionDate">Ngày vào viện *</label><input type="date" id="admissionDate" required></div>
+                        <div class="form-group"><label for="admissionTime">Giờ vào viện *</label><input type="time" id="admissionTime" required></div>
+                        <div class="form-group"><label for="examinationTime">Giờ khám bệnh *</label><input type="time" id="examinationTime" required></div>
+                        <div class="form-group"><label for="room">Phòng *</label><select id="room" required><option value="9">Phòng 9</option><option value="11">Phòng 11</option></select></div>
+                        <div class="form-group"><label for="patientType">Loại bệnh nhân *</label><select id="patientType" required><option value="Nội trú">Nội trú</option><option value="Ngoại trú">Ngoại trú</option></select></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Đóng</button>
+                <button type="button" class="btn btn-success" id="savePatientBtn">Lưu thông tin</button>
+            </div>
         </div>
-
-</div>
-        <div style="flex:1;min-width:320px" class="section">
-          <h3>Thuốc sắc <button class="btn secondary" id="addThangBtn" style="float:right">Thêm Thuốc</button></h3>
-          <div class="thang-list" id="thangList"></div>
-        </div>
-<div style="flex:1;min-width:320px" class="section">
-  <h3>Thủ thuật <button class="btn secondary" id="addProcBtn" style="float:right">Thêm Thủ thuật</button></h3>
-  <div class="procedure-list" id="procList"></div>
-</div>
-
-        <div style="flex:1;min-width:320px" class="section">
-          <h3>Ngày vào / ra viện</h3>
-         <div class="grid">
-  <div>
-    <label>Ngày vào viện</label>
-    <input id="admit_date" type="date" />
-  </div>
-  <div>
-    <label>Giờ vào viện</label>
-    <input id="admit_time" type="time" />
-  </div>
-  <div>
-    <label>Ngày ra viện</label>
-    <input id="discharge_date" type="date" />
-  </div>
-  <div>
-    <label>Giờ ra viện</label>
-    <input id="discharge_time" type="time" />
-  </div>
-  <div style="grid-column:1/-1">
-    <label>Tổng số ngày nằm viện</label>
-    <input id="total_days" readonly />
-  </div>
-</div>
-        </div>
-   <div class="actions">
-        <button class="btn" id="saveWordBtn">Lưu Word</button>
-		<button class="btn secondary" id="deletePatientBtn" style="background:#ffeded;color:#c0392b;border:1px solid #ffcfcf;">🗑 Xóa</button>
-        <button class="btn secondary" id="cancelBtn">Hủy</button>
-        <button class="btn" id="savePatientBtn">Lưu bệnh nhân</button>
-      
-
-      </div> <footer>Design By Dr. Châu</footer>
-      </div>
-
-   
-  
     </div>
-  </main>
 
-
-<!-- modal thêm bệnh nhân -->
-<div class="modal" id="modal">
-  <div class="card">
-    <h3>Thêm bệnh nhân mới</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
-      <div>
-        <label>Tên</label>
-        <input id="new_name" />
-      </div>
-      <div>
-        <label>Tuổi</label>
-        <input id="new_age" type="number" />
-      </div>
-<div>
-        <label>Giới</label>
-        <select id="new_gender"><option>Nam</option><option>Nữ</option><option>Khác</option></select>
-     </div>
-
-      <div> <!-- Sửa thành chiếm 2 cột -->
-        <label>Chẩn đoán</label>
-        <textarea id="new_dx" rows="2"></textarea> <!-- Đổi id thành new_dx -->
-      </div>
-      <div> <!-- Địa chỉ cũng chiếm 2 cột -->
-        <label>Địa chỉ</label>
-        <input id="new_address" />
-      </div>
-	  <div>
-  <label>Phòng</label>
-  <input id="new_room" placeholder="" />
-</div>
-<div>
-  <label>Ngày vào viện</label>
-  <input id="new_admit_date" type="date" />
-</div>
-<div>
-  <label>Giờ vào viện</label>
-  <input id="new_admit_time" type="time" />
-</div>
-<div style="display:flex; justify-content:flex-end; align-items:center; margin-top:6px; grid-column:2;">
-  <input type="checkbox" id="new_outpatient"
-         style="width:16px; height:16px; margin:0 4px 0 0; cursor:pointer; accent-color:#ff7f32; vertical-align:middle;" />
-  <label for="new_outpatient" style="cursor:pointer; user-select:none; line-height:1;">Ngoại trú</label>
-</div>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-      <button class="btn secondary" id="modalClose">Đóng</button>
-      <button class="btn" id="modalSave">Thêm</button>
-    </div>
-  </div>
-</div><script>
-document.getElementById('new_name').addEventListener('input', function () {
-  const name = this.value.trim().toLowerCase();
-  const genderSelect = document.getElementById('new_gender');
-  if (name.includes('thị')) {
-    genderSelect.value = 'Nữ';
-  }
-});</script>
-<script>
-// Helper
-const medsSuggest = ['Dubemin','Kamelox','Mimosa','Amlodipin','Piracetam','Reumokam'];
-// ✅ HÀM DATE CHUẨN CHO VIỆT NAM
-function todayStr(){
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function addDays(dateStr, n){
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() + n);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function daysBetween(a,b){
-  if(!a||!b) return '';
-  // ✅ Sửa: dùng local date để tính
-  const A = new Date(a);
-  const B = new Date(b);
-  const diff = Math.round((B - A)/(1000 * 60 * 60 * 24));
-  return diff >= 0 ? diff : '';
-}
-
-// App state
-let patients = [];
-window.addEventListener('load', async () => {
-  // --- Hiện "Đang tải danh sách bệnh nhân..." ---
-  const patientListEl = document.getElementById('patientList');
-patientListEl.innerHTML = `
-  <div style="text-align:center;color:#ff7a18;padding:20px;font-weight:500;">
-    ⏳ <span class="loading-text">Đang tải danh sách bệnh nhân...</span>
-  </div>
-`;
-
-
-  // --- Hiện "Đang tải thông báo..." ---
-  const thongBaoChung = document.getElementById('thongBaoChung');
-  if (thongBaoChung) {
-    thongBaoChung.innerHTML = `
-  <div style="color:#b34700;padding:10px;text-align:center;">
-    ⏳ <span class="loading-text">Đang tải thông báo...</span>
-  </div>
-`;
-
-  }
-
-  // --- Bắt đầu tải dữ liệu ---
-  patients = await loadPatientsFromDropbox();
-
-  showAllPatients = false;
-  renderPatientList();
-
-  // Sau khi render xong danh sách -> cập nhật thông báo
-  capNhatThongBao();
-  canhBaoSoNgayNamVien();
-});
-
-
-let currentPatientId = null;
-let showAllPatients = false; // ✅ THÊM DÒNG NÀY - Biến để theo dõi có hiện tất cả bệnh nhân không
-// DOM
-const patientListEl = document.getElementById('patientList');
-const addPatientBtn = document.getElementById('addPatientBtn');
-const modal = document.getElementById('modal');
-const modalSave = document.getElementById('modalSave');
-const modalClose = document.getElementById('modalClose');
-const savePatientBtn = document.getElementById('savePatientBtn');
-const deletePatientBtn = document.getElementById('deletePatientBtn');
-const cancelBtn = document.getElementById('cancelBtn');
-cancelBtn.addEventListener('click', () => {
-  // Ẩn khu chi tiết bệnh nhân, hiện lại màn hình giới thiệu
-  document.getElementById('patientDetailArea').style.display = 'none';
-  const intro = document.getElementById('introScreen');
-  if (intro) intro.style.display = 'block';
-  currentPatientId = null;
-});
-const patientDetailArea = document.getElementById('patientDetailArea');
-const patientHeader = document.getElementById('patientHeader');
-const saveWordBtn = document.getElementById('saveWordBtn');
-
-const inputs = {
-  name: document.getElementById('p_name'),
-  age: document.getElementById('p_age'),
-  gender: document.getElementById('p_gender'),
-  address: document.getElementById('p_address'),
-  dx: document.getElementById('p_dx'),
-  admit: document.getElementById('admit_date'),
-  discharge: document.getElementById('discharge_date'),
-  total: document.getElementById('total_days')
-};
-
-const medList = document.getElementById('medList');
-const addMedBtn = document.getElementById('addMedicineBtn');
-const thangList = document.getElementById('thangList');
-const addThangBtn = document.getElementById('addThangBtn');
-const procList = document.getElementById('procList');
-const addProcBtn = document.getElementById('addProcBtn');
-addProcBtn.addEventListener('click', () => procList.appendChild(createProcRow({})));
-// init
-function renderPatientList(filter=''){
-  patientListEl.innerHTML='';
-  const now = new Date();
-  const currentDate = now.toISOString().slice(0,10);
-  const currentTime = now.toTimeString().slice(0,5);
-  
-  const arr = patients.filter(p=> {
-    // Lọc theo từ khóa tìm kiếm
-    const matchSearch = (p.name||'').toLowerCase().includes(filter.toLowerCase()) || 
-                       (''+p.age).includes(filter) || 
-                       (p.gender||'').toLowerCase().includes(filter.toLowerCase());
-    
-    if (!matchSearch) return false;
-    
-    // Nếu đang hiện tất cả (Ctrl+Q) hoặc chưa có ngày ra viện -> hiển thị
-    if (showAllPatients || !p.discharge) return true;
-    
-    // Kiểm tra điều kiện ẩn: có ngày ra viện VÀ đã tới ngày VÀ đã tới giờ
-    const dischargeDate = p.discharge;
-    const dischargeTime = p.discharge_time || '23:59'; // Mặc định cuối ngày nếu không có giờ
-    
-    if (dischargeDate > currentDate) return true;
-    if (dischargeDate === currentDate && dischargeTime > currentTime) return true;
-    return false;
-  });
-
-  // --- 🧩 Nhóm bệnh nhân theo phòng ---
-  const grouped = {};
-  arr.forEach(p => {
-    const room = p.room ? p.room.toString().trim() : 'Khác';
-    if (!grouped[room]) grouped[room] = [];
-    grouped[room].push(p);
-  });
-
-  // --- 🧩 Sắp xếp theo số phòng ---
-  const sortedRooms = Object.keys(grouped).sort((a, b) => {
-    const na = parseInt(a.replace(/\D/g, '')) || 0;
-    const nb = parseInt(b.replace(/\D/g, '')) || 0;
-    return na - nb;
-  });
-
-  // --- 🧩 Render ra danh sách ---
-  sortedRooms.forEach(room => {
-// Thêm tiêu đề phòng (dạng có nền mờ)
-// Thêm tiêu đề phòng có nền mờ
-const header = document.createElement('div');
-header.className = 'room-header';
-header.textContent = 'Phòng ' + room;
-patientListEl.appendChild(header);
-
-
-    // Render từng bệnh nhân (giữ nguyên code cũ)
-    grouped[room].forEach(p => {
-      const el = document.createElement('div');
-      el.className = 'patient-item';
-      el.innerHTML = `<div>
-      <div style="font-weight:600">${p.name || '(chưa có tên)'}${p.outpatient ? '*' : ''}</div>
-
-        <div class="patient-meta">Tuổi: ${p.age || ''} • ${p.gender || ''} • P${p.room || ''}</div>
-      </div>
-      <div style="text-align:right;min-width:80px"><div style="text-align:right;min-width:120px">
-        <div style="font-size:13px;color:#ff7a18;"><button class="btn secondary">
-          ${p.admit && !p.discharge ? `${daysBetween(p.admit, todayStr()) + 1}` : (p.total || '')}
-        </button></div>
-      </div></div>`;
-      el.addEventListener('click',()=>openPatient(p.id));
-      patientListEl.appendChild(el);
-    });
-  });
-
-  // Hiển thị thông báo nếu đang ẩn bệnh nhân
-  updateHiddenPatientsNotice();
-}
-
-function updateHiddenPatientsNotice() {
-  // Xóa thông báo cũ nếu có
-  const oldNotice = document.getElementById('hiddenPatientsNotice');
-  if (oldNotice) oldNotice.remove();
-  
-  if (!showAllPatients) {
-    const now = new Date();
-    const currentDate = now.toISOString().slice(0,10);
-    const currentTime = now.toTimeString().slice(0,5);
-    
-    const hiddenCount = patients.filter(p => {
-      if (!p.discharge) return false;
-      
-      const dischargeDate = p.discharge;
-      const dischargeTime = p.discharge_time || '23:59';
-      
-      return dischargeDate <= currentDate && 
-             (dischargeDate < currentDate || dischargeTime <= currentTime);
-    }).length;
-    
-    if (hiddenCount > 0) {
-      const notice = document.createElement('div');
-      notice.id = 'hiddenPatientsNotice';
-      notice.innerHTML = `
-        <div style="
-          background: #fff3cd;
-          border: 1px solid #ffeaa7;
-          border-radius: 8px;
-          padding: 8px 12px;
-          margin: 10px 0;
-          font-size: 13px;
-          color: #856404;
-          text-align: center;display:none
-        ">
-          🕒 Đang ẩn ${hiddenCount} bệnh nhân đã ra viện 
-          (Bấm <strong>Ctrl+Q</strong> để hiện tất cả)
+    <!-- Modal xác nhận xóa -->
+    <div id="confirmModal" class="overlay hidden">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">Xác nhận xóa<button class="close-btn" id="closeConfirmModalBtn">×</button></div>
+            <div class="modal-content"><p>Bạn có chắc chắn muốn xóa bệnh nhân này không? Hành động này không thể hoàn tác.</p></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Xóa</button>
+            </div>
         </div>
-      `;
-      patientListEl.parentNode.insertBefore(notice, patientListEl);
-    }
-  }
-}
-function openPatient(id){
-  const p = patients.find(x=>x.id===id); 
-  if(!p) return;
-  
-  const intro = document.getElementById('introScreen');
-  if(intro) intro.style.display = 'none';
-  currentPatientId=id;
-  patientDetailArea.style.display='block';
-  patientHeader.innerHTML = `<strong>${p.name||''}</strong><div class="patient-meta">Tuổi ${p.age||''} • ${p.gender||''}<br/> ${p.address||''}</div>`;
-  
-  // Hiển thị thông tin cơ bản
-  inputs.name.value = p.name||''; 
-  inputs.age.value = p.age||''; 
-  inputs.gender.value = p.gender||'Nam'; 
-  inputs.address.value = p.address||''; 
-  inputs.dx.value = p.dx||''; // ✅ Hiển thị chẩn đoán
-  document.getElementById('p_room').value = p.room || '';
-  document.getElementById('p_outpatient').checked = !!p.outpatient;
-
-  // Các phần khác...
-  medList.innerHTML=''; (p.meds||[]).forEach(m=>medList.appendChild(createMedRow(m)));
-  thangList.innerHTML=''; (p.thangs||[]).forEach(t=>thangList.appendChild(createThangRow(t)));
-  procList.innerHTML=''; (p.procs||[]).forEach(pr=>procList.appendChild(createProcRow(pr)));
-  inputs.admit.value = p.admit||''; 
-  inputs.discharge.value = p.discharge||''; 
-  inputs.total.value = p.total||'';
-  document.getElementById('admit_time').value = p.admit_time || '';
-  document.getElementById('discharge_time').value = p.discharge_time || '';
-  document.getElementById('exam_time').value = p.exam_time || '';
-  document.getElementById('tenBenhNhanLabel').textContent = '' + (p.name || '');
-}
-
-function createMedRow(model){
-  const row = document.createElement('div'); row.className='med-row';
-  row.innerHTML = `
-    <input list="mednames" class="med-name" placeholder="Tên thuốc..." />
-    <input class="med-qty" placeholder="Số lượng" />
-    <input class="med-times" placeholder="Số lần/ngày" />
-    <input class="med-timeinfo" placeholder="Thời gian dùng" />
-    <select class="med-route">
-      <option>Uống</option>
-      <option>Tiêm</option>
-      <option>Thuỷ châm</option>
-    </select>
-    <div style="display:flex;gap:6px">
-      <input type="date" class="med-start" />
-      <input type="date" class="med-end" style="display:none" />
-      <button class="btn secondary small stopBtn">Ngưng thuốc</button>
-      <button class="btn small removeMed">Xóa</button>
-    </div>`;
-
-  // attach datalist
-  if(!document.getElementById('mednames')){
-    const dl = document.createElement('datalist'); dl.id='mednames';
-    medsSuggest.forEach(m=>{
-      const o=document.createElement('option'); o.value=m; dl.appendChild(o);
-    });
-    document.body.appendChild(dl);
-  }
-
-  const nameIn = row.querySelector('.med-name');
-  const qtyIn = row.querySelector('.med-qty');
-  const timesIn = row.querySelector('.med-times');
-  const timeinfo = row.querySelector('.med-timeinfo');
-  const route = row.querySelector('.med-route');
-  const start = row.querySelector('.med-start');
-  const end = row.querySelector('.med-end');
-  const stopBtn = row.querySelector('.stopBtn');
-
-  start.value = model?.start || todayStr();
-  end.value = model?.end || '';
-  nameIn.value = model?.name || '';
-  qtyIn.value = model?.qty || '';
-  timesIn.value = model?.times || '';
-  timeinfo.value = model?.timeinfo || '';
-  route.value = model?.route || 'Uống';
-  if(end.value) end.style.display='block';
-
-  // preset logic on select name
-  nameIn.addEventListener('input',()=>{
-    const v = nameIn.value.trim().toLowerCase();
-    if(v==='dubemin'){
-      qtyIn.value=1;
-      timesIn.value=1;
-      timeinfo.value='Buổi sáng';
-      route.value='Thuỷ châm';
-      themLuaChonThuyCham(row); // ✅ tự hiện chọn Liên tiếp/Cách ngày
-    } else if(v==='mimosa'){
-      qtyIn.value=2; timesIn.value=1; timeinfo.value='20:00'; route.value='Uống';
-    } else if(v==='piracetam'){
-      qtyIn.value=3; timesIn.value=3; timeinfo.value='08:00-14:00-20:00'; route.value='Uống';
-    } else if(v==='kamelox'){
-      qtyIn.value=1; timesIn.value=1; timeinfo.value='18:00 sau ăn'; route.value='Uống';
-    } else if(v==='reumokam'){
-      qtyIn.value=1; timesIn.value=1; timeinfo.value='Buổi tối 18:00 sau ăn'; route.value='Tiêm';
-    }
-  });
-
-  stopBtn.addEventListener('click',()=>{ end.value = todayStr(); end.style.display='block'; });
-  row.querySelector('.removeMed').addEventListener('click',()=>{ row.remove(); });
-// ✅ Nếu thuốc đã có Thuỷ châm, khôi phục lựa chọn mode
-if(model?.route === 'Thuỷ châm') {
-  themLuaChonThuyCham(row); // thêm dropdown Liên tiếp / Cách ngày
-  const select = row.querySelector('.thuycham-mode');
-  if(select && model.mode) select.value = model.mode; // chọn lại giá trị đã lưu
-}
-  return row;
-}
-
-function createThangRow(model){
-  const row = document.createElement('div'); row.className='thang-row';
-  row.innerHTML = `
-    <input class="thang-name" placeholder="Tên thang..." />
-    <input type="date" class="thang-start" />
-    <input type="date" class="thang-end" />
-    <input class="thang-count" readonly placeholder="Số thang" />
-    <div style="display:flex;gap:6px">
-      <button class="btn small calcThang"style="display:none">Tính</button>
-      <button class="btn small removeThang">Xóa</button>
-    </div>`;
-  const name = row.querySelector('.thang-name'); const s = row.querySelector('.thang-start'); const e = row.querySelector('.thang-end'); const cnt = row.querySelector('.thang-count');
-  s.value = model?.start||''; e.value = model?.end||''; name.value = model?.name||'';
-  function calc(){ if(s.value && e.value){ const a=new Date(s.value), b=new Date(e.value); const diff = Math.round((b-a)/(1000*60*60*24))+1; cnt.value = diff>0? diff:0 } }
-  row.querySelector('.calcThang').addEventListener('click',calc);
-  [s,e].forEach(el=>el.addEventListener('change',calc));
-  row.querySelector('.removeThang').addEventListener('click',()=>row.remove());
-  return row;
-}
-
-function createProcRow(model){
-  const row = document.createElement('div'); row.className='proc-row';
-  row.innerHTML = `
-    <select class="proc-type"><option>Điện châm</option><option>Hồng ngoại</option><option>Xoa bóp</option><option>Thuỷ châm</option><option>Giác hơi</option></select>
-    <input type="date" class="proc-start" />
-    <input type="date" class="proc-end" />
-    <input class="proc-days" readonly placeholder="Số ngày" />
-    <div style="display:flex;gap:6px">
-      <button class="btn small calcProc"style="display:none">Tính</button>
-      <button class="btn small removeProc">Xóa</button>
-    </div>`;
-  const type = row.querySelector('.proc-type'); const s = row.querySelector('.proc-start'); const e = row.querySelector('.proc-end'); const days = row.querySelector('.proc-days');
-  s.value = model?.start||''; e.value = model?.end||''; type.value = model?.type||'Điện châm';
-  function calc(){ if(type.value==='Thuỷ châm'){ s.value = todayStr(); e.value = todayStr(); days.value=1; return;} if(type.value==='Giác hơi'){ s.value = todayStr(); e.value = addDays(s.value,4); days.value = 5; return;} if(s.value && e.value){ const d = daysBetween(s.value,e.value); days.value = d!==''? d+1 : '';} }
-  row.querySelector('.calcProc').addEventListener('click',calc);
-  type.addEventListener('change',calc);
-  [s,e].forEach(el=>el.addEventListener('change',()=>{ if(s.value && e.value){ const d = daysBetween(s.value,e.value); days.value = d!==''? d+1 : '';} }));
-  row.querySelector('.removeProc').addEventListener('click',()=>row.remove());
-  return row;
-}
-
-// events
-addPatientBtn.addEventListener('click', () => {
-  // ✅ kiểm tra đăng nhập
-  if (!localStorage.getItem('isLoggedIn')) {
-    pendingOpenId = null;
-    loginModal.style.display = 'flex';
-    loginPassword.value = '';
-    loginError.style.display = 'none';
-    setTimeout(() => loginPassword.focus(), 100);
-    return;
-  }
-
-  // ✅ Làm trống form thêm bệnh nhân
-  document.getElementById('new_name').value = '';
-  document.getElementById('new_age').value = '';
-  document.getElementById('new_gender').value = 'Nam';
-  document.getElementById('new_address').value = '';
-  document.getElementById('new_dx').value = '';
-document.getElementById('new_room').value = '';  // Làm trống chẩn đoán
-  // ✅ Lấy ngày giờ hiện tại
-  const now = new Date();
-  const today = now.toISOString().slice(0,10);
-  const time = now.toTimeString().slice(0,5);
-  document.getElementById('new_admit_date').value = today;
-  document.getElementById('new_admit_time').value = time;
-
-  // ✅ Hiển thị modal
-  modal.classList.add('open');
-});
-modalClose.addEventListener('click',()=>modal.classList.remove('open'));
-modalSave.addEventListener('click', async ()=>{
-  const name = document.getElementById('new_name').value.trim();
-  const age = document.getElementById('new_age').value; 
-  const gender = document.getElementById('new_gender').value; 
-  const address = document.getElementById('new_address').value;
-  const dx = document.getElementById('new_dx').value; // Lấy chẩn đoán từ new_dx
-  const room = document.getElementById('new_room').value;
-const admit_date = document.getElementById('new_admit_date').value;
-const admit_time = document.getElementById('new_admit_time').value;
-
-  if (!name) {
-    alert('Vui lòng nhập tên bệnh nhân');
-    return;
-  }
-  
-  const id = 'p_'+Date.now();
-  const p = {
-    id, 
-    name, 
-    age, 
-    gender, 
-	outpatient: document.getElementById('new_outpatient').checked,
-    address, 
-    dx, // Thêm chẩn đoán vào object bệnh nhân
-	room,
-    meds:[], 
-    thangs:[], 
-    procs:[], 
-	admit: admit_date,
-    admit_time: admit_time,
-    discharge:'', 
-    total:'',
-    discharge_time: '',
-    exam_time: '',
-	
-  };
-  
-  patients.push(p); 
-  await savePatientsToDropbox(patients); 
-  modal.classList.remove('open'); 
-  renderPatientList(); 
-  openPatient(id);
-});
-
-document.getElementById('search').addEventListener('input',e=>renderPatientList(e.target.value));
-
-addMedBtn.addEventListener('click',()=>{
-  const newRow = createMedRow({});
-  medList.prepend(newRow); // ✅ thêm thuốc mới lên trên cùng
-});
-addThangBtn.addEventListener('click',()=> thangList.appendChild(createThangRow({})));
-
-// add default one med/thang/proc when new open
-function ensureSections(){ if(medList.children.length===0) medList.appendChild(createMedRow({})); if(thangList.children.length===0) thangList.appendChild(createThangRow({})); if(procList.children.length===0) procList.appendChild(createProcRow({})); }
-
-savePatientBtn.addEventListener('click',()=>{
-  if(!currentPatientId) return alert('Chọn bệnh nhân trước');
-  const p = patients.find(x=>x.id===currentPatientId);
-  p.name = inputs.name.value.trim(); p.age = inputs.age.value; p.gender = inputs.gender.value; p.address = inputs.address.value; p.dx = inputs.dx.value;p.room = document.getElementById('p_room').value;p.outpatient = document.getElementById('p_outpatient').checked;
-
-
-  // meds
-  p.meds = Array.from(medList.children).map(r=>({
-    name: r.querySelector('.med-name').value,
-    qty: r.querySelector('.med-qty').value,
-    times: r.querySelector('.med-times').value,
-    timeinfo: r.querySelector('.med-timeinfo').value,
-    route: r.querySelector('.med-route').value,
-    start: r.querySelector('.med-start').value,
-  end: r.querySelector('.med-end').value,
-  mode: r.querySelector('.thuycham-mode') ? r.querySelector('.thuycham-mode').value : 'Liên tiếp'  // ✅ thêm dòng này
-})).filter(m=>m.name||m.qty||m.times);
-  // thangs
-  p.thangs = Array.from(thangList.children).map(r=>({
-    name: r.querySelector('.thang-name').value,
-    start: r.querySelector('.thang-start').value,
-    end: r.querySelector('.thang-end').value,
-    count: r.querySelector('.thang-count').value
-  })).filter(t=>t.name||t.start||t.end);
-  // procs
-  p.procs = Array.from(procList.children).map(r=>({
-    type: r.querySelector('.proc-type').value,
-    start: r.querySelector('.proc-start').value,
-    end: r.querySelector('.proc-end').value,
-    days: r.querySelector('.proc-days').value
-  })).filter(x=>x.type);
-  // dates
-  p.admit = inputs.admit.value; p.discharge = inputs.discharge.value;
-  p.admit_time = document.getElementById('admit_time').value;
-p.discharge_time = document.getElementById('discharge_time').value;
-p.exam_time = document.getElementById('exam_time').value;
-  if(p.admit && p.discharge){ const tot = parseInt(daysBetween(p.admit,p.discharge)); p.total = isNaN(tot)?'': tot+1; } else p.total=''; inputs.total.value = p.total;
-// persist list
-(async ()=>{
-  await savePatientsToDropbox(patients);
-  renderPatientList();
-  // Hiển thị thông báo lưu thành công
-const toast = document.getElementById('saveToast');
-toast.style.opacity = '1';
-setTimeout(()=>{ toast.style.opacity = '0'; }, 1000); // ẩn sau 1 giây
-
-})();
-  savePatientBtn.addEventListener('click',()=>{
-  if(!currentPatientId) return alert('Chọn bệnh nhân trước');
-  const p = patients.find(x=>x.id===currentPatientId);
-  p.name = inputs.name.value.trim(); 
-  p.age = inputs.age.value; 
-  p.gender = inputs.gender.value; 
-  p.address = inputs.address.value; 
-  p.dx = inputs.dx.value;
-  p.room = document.getElementById('p_room').value;
-  p.outpatient = document.getElementById('p_outpatient').checked;
-
-  // meds
-  p.meds = Array.from(medList.children).map(r=>({
-    name: r.querySelector('.med-name').value,
-    qty: r.querySelector('.med-qty').value,
-    times: r.querySelector('.med-times').value,
-    timeinfo: r.querySelector('.med-timeinfo').value,
-    route: r.querySelector('.med-route').value,
-    start: r.querySelector('.med-start').value,
-    end: r.querySelector('.med-end').value,
-    mode: r.querySelector('.thuycham-mode') ? r.querySelector('.thuycham-mode').value : 'Liên tiếp' // ✅ thêm dòng này nếu chưa có
-  })).filter(m=>m.name||m.qty||m.times);
-
-  // thangs
-  p.thangs = Array.from(thangList.children).map(r=>({
-    name: r.querySelector('.thang-name').value,
-    start: r.querySelector('.thang-start').value,
-    end: r.querySelector('.thang-end').value,
-    count: r.querySelector('.thang-count').value
-  })).filter(t=>t.name||t.start||t.end);
-
-  // procs
-  p.procs = Array.from(procList.children).map(r=>({
-    type: r.querySelector('.proc-type').value,
-    start: r.querySelector('.proc-start').value,
-    end: r.querySelector('.proc-end').value,
-    days: r.querySelector('.proc-days').value
-  })).filter(x=>x.type);
-
-  // dates
-  p.admit = inputs.admit.value; 
-  p.discharge = inputs.discharge.value;
-  p.admit_time = document.getElementById('admit_time').value;
-p.discharge_time = document.getElementById('discharge_time').value;
-p.exam_time = document.getElementById('exam_time').value;
-  if(p.admit && p.discharge){
-    const tot = parseInt(daysBetween(p.admit,p.discharge));
-    p.total = isNaN(tot)?'': tot+1;
-  } else p.total='';
-  inputs.total.value = p.total;
-
-// persist list
-(async ()=>{
-  await savePatientsToDropbox(patients);
-  renderPatientList();
-})();
-  capNhatThongBao();
-canhBaoSoNgayNamVien();
-
-});
-});
-
-saveWordBtn.addEventListener('click',()=>{
-  if(!currentPatientId) return alert('Chọn bệnh nhân trước');
-  const p = patients.find(x=>x.id===currentPatientId);
-  // build html content for doc
-  let html = `<html><head><meta charset="utf-8"><title>Hồ sơ ${p.name}</title></head><body>`;
-  html += `<h2>Hồ sơ bệnh nhân: ${p.name}</h2>`;
-  html += `<p>Tuổi: ${p.age} • Giới: ${p.gender}</p>`;
-  html += `<p>Địa chỉ: ${p.address||''}</p>`;
-  html += `<h3>Chẩn đoán</h3><p>${p.dx||''}</p>`;
-  html += `<h3>Thuốc tân dược</h3><ul>`;
-  (p.meds||[]).forEach(m=>{ html += `<li>${m.name} — SL:${m.qty} • lần/ngày:${m.times} • ${m.timeinfo} • đường: ${m.route} • ${m.start||''} → ${m.end||''}</li>`}); html += `</ul>`;
-  html += `<h3>Thuốc sắc</h3><ul>`; (p.thangs||[]).forEach(t=>{ html += `<li>${t.name} — ${t.start||''} → ${t.end||''} • ${t.count||''} thang</li>`}); html += `</ul>`;
-  html += `<h3>Thủ thuật</h3><ul>`; (p.procs||[]).forEach(pr=>{ html += `<li>${pr.type} — ${pr.start||''} → ${pr.end||''} • ${pr.days||''} ngày</li>`}); html += `</ul>`;
-html += `<p>Ngày vào: ${p.admit||''} ${p.admit_time ? '('+p.admit_time+')' : ''} • 
-Ngày ra: ${p.discharge||''} ${p.discharge_time ? '('+p.discharge_time+')' : ''} • 
-Tổng: ${p.total||''}</p>`;
-html += `<p>Giờ khám: ${p.exam_time||''}</p>`;
-  html += `</body></html>`;
-
-  // save into localStorage per patient
-  localStorage.setItem('patient_doc_'+p.id, html);
-  // create downloadable .doc
-  const blob = new Blob([html], {type:'application/msword'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download = `${p.name||'patient'}_${p.id}.doc`; a.click(); URL.revokeObjectURL(url);
-
-});
-
-
-
-// ====== NÚT XÓA BỆNH NHÂN (CÓ POPUP) ======
-window.addEventListener('load', () => {
-  const deleteModal = document.getElementById('deleteConfirm');
-  const deleteText = document.getElementById('deleteText');
-  const cancelDelete = document.getElementById('cancelDelete');
-  const confirmDelete = document.getElementById('confirmDelete');
-  const deletePatientBtn = document.getElementById('deletePatientBtn');
-
-  if (!deleteModal || !deletePatientBtn) return; // nếu popup chưa có thì thoát
-
-  deletePatientBtn.addEventListener('click', () => {
-    if (!currentPatientId) return alert('Chưa chọn bệnh nhân!');
-    const p = patients.find(x => x.id === currentPatientId);
-    if (!p) return;
-
-    deleteText.innerHTML = `Bạn có chắc muốn xóa <b>${p.name}</b> khỏi danh sách không?`;
-    deleteModal.style.display = 'flex';
-  });
-
-  // Hủy xóa
-  cancelDelete.addEventListener('click', () => {
-    deleteModal.style.display = 'none';
-  });
-
-  // Xác nhận xóa
-confirmDelete.addEventListener('click', async () => {
-    const p = patients.find(x => x.id === currentPatientId);
-    if (!p) return;
-
-    patients = patients.filter(x => x.id !== currentPatientId);
-await savePatientsToDropbox(patients);
-
-
-    deleteModal.style.display = 'none';
-    document.getElementById('patientDetailArea').style.display = 'none';
-    const intro = document.getElementById('introScreen');
-    if (intro) intro.style.display = 'block';
-    currentPatientId = null;
-    renderPatientList();
-  });
-});
-
-
-
-// when opening patient ensure sections exist
-document.addEventListener('click',(e)=>{
-  if(e.target && e.target.matches('.patient-item')){
-    const id = e.target.getAttribute('data-id'); if(id) openPatient(id);
-  }
-});
-
-// update total days when admit/discharge change
-inputs.admit.addEventListener('change',()=>{ if(inputs.admit.value && inputs.discharge.value){ const tot=daysBetween(inputs.admit.value, inputs.discharge.value); inputs.total.value = tot!==''? tot+1 : ''; } });
-inputs.discharge.addEventListener('change',()=>{ if(inputs.admit.value && inputs.discharge.value){ const tot=daysBetween(inputs.admit.value, inputs.discharge.value); inputs.total.value = tot!==''? tot+1 : ''; } });
-
-// initial render
-renderPatientList();
-// ✅ Hiển thị màn hình giới thiệu thay vì mở bệnh nhân đầu tiên
-// ✅ Tạo div riêng cho trang giới thiệu, thêm vào phía trên
-const introDiv = document.createElement("div");
-introDiv.id = "introScreen";
-introDiv.innerHTML = `
-  <div style="text-align:center;padding:60px 20px;color:#444;line-height:1.6">
-    <h1 style="color:#ff7a18;font-size:28px;margin-bottom:16px">🏥 Phần mềm Quản lý Bệnh nhân</h1>
-	  <h3 style="color:#ff7a18;font-size:28px;margin-bottom:16px">Bs.Châu - 079.567.9350</h3>
-    <p style="font-size:16px">
-      Chào mừng bạn đến với <strong>Doctor Châu Clinic System</strong> — nền tảng quản lý hồ sơ bệnh nhân hiện đại, tự động và thân thiện.<br>
-      Hệ thống hỗ trợ:
-    </p>
-    <ul style="text-align:left;display:inline-block;margin:16px auto;font-size:15px;line-height:1.8">
-      <li>🔹 Quản lý thông tin bệnh nhân, thuốc, thủ thuật, ngày vào – ra viện</li>
-      <li>🔹 Theo dõi và cảnh báo tự động Thủy châm, Tiêm</li>
-      <li>🔹 Lưu, xuất hồ sơ sang Word nhanh chóng</li>
-    </ul>
-    <p style="margin-top:20px;font-size:14px;color:#666">
-      👉 Hãy chọn bệnh nhân ở khung bên trái để bắt đầu xem và chỉnh sửa hồ sơ.
-    </p>
-  </div>   
-`;
-document.querySelector('.main').appendChild(introDiv);
-
-
-
-// open first patient by default
-//if(patients[0]) openPatient(patients[0].id); ensureSections();
-
-/* ====== THÔNG BÁO THUỶ CHÂM + TIÊM ====== */
-const thongBaoChung = document.createElement('div');
-thongBaoChung.id = 'thongBaoChung';
-thongBaoChung.style.cssText = `
-  background:#fff3e0;
-  border:1px solid #ffc085;
-  border-radius:10px;
-  padding:10px 14px;
-  margin-top:15px;
-  font-size:14px;
-  color:#b34700;
-  line-height:1.5;
-`;
-document.querySelector('.main').prepend(thongBaoChung);
-
-function laCuoiTuan(d){
-  const day = d.getDay();
-  return day===5 || day===6 || day===0; // T6-T7-CN
-}
-
-function tinhNgayCanLen(route, startDate, mode, dischargeDate, patient) {
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-  const danhSach = [];
-
-  if (route !== 'Thuỷ châm' && route !== 'Tiêm') return danhSach;
-  if (dischargeDate) {
-    const discharge = new Date(dischargeDate);
-    discharge.setHours(0,0,0,0);
-    if (discharge < today) return danhSach; // đã ra viện -> bỏ qua
-  }
-
-  // Xác định thuốc tham chiếu
-  const refMed = (patient.meds || []).find(m => m.start === startDate && m.route === route);
-  const refName = refMed?.name?.trim().toLowerCase();
-
-  // Lọc thuốc cùng tên + route
-  let medsCungLoai = [];
-  if (refName) {
-    medsCungLoai = (patient.meds || []).filter(m => 
-      m.route === route && 
-      (m.name || '').trim().toLowerCase() === refName
-    );
-  }
-
-  // Ngày start mới nhất
-  let lastDate;
-  if (medsCungLoai.length > 0) {
-    lastDate = medsCungLoai.reduce((a, b) => 
-      new Date(a.start || a) > new Date(b.start || b) ? a : b
-    );
-    lastDate = new Date(lastDate.start || lastDate);
-  } else {
-    lastDate = new Date(startDate);
-  }
-  lastDate.setHours(0,0,0,0);
-  if (isNaN(lastDate)) return danhSach;
-
-  // ---- Logic Thủy châm ----
-  if (route === 'Thuỷ châm') {
-    const isCachNgay = (mode === 'Cách ngày');
-    const nextDate = new Date(lastDate);
-    nextDate.setDate(nextDate.getDate() + (isCachNgay ? 2 : 1));
-
-    // Nếu rơi vào T7/CN -> dời sang T2
-    const day = nextDate.getDay(); // CN=0, T2=1,...,T7=6
-    if (day === 6) nextDate.setDate(nextDate.getDate() + 2); // T7 → +2 → T2
-    else if (day === 0) nextDate.setDate(nextDate.getDate() + 1); // CN → +1 → T2
-    nextDate.setHours(0,0,0,0);
-
-    // Nếu hôm nay hoặc ngày mai là ngày cần lên → báo
-    if (
-      nextDate.toDateString() === today.toDateString() ||
-      nextDate.toDateString() === tomorrow.toDateString()
-    ) {
-      danhSach.push(nextDate);
-    }
-    // Nếu hôm nay là T6 và lịch bị dời sang T2 -> báo sớm
-    else if (today.getDay() === 5 && nextDate.getDay() === 1) {
-      const diffDays = Math.round((nextDate - today) / (1000*60*60*24));
-      if (diffDays <= 3 && diffDays >= 1) {
-        danhSach.push(nextDate);
-      }
-    }
-  }
-
-  // ---- Logic Tiêm ----
-  else if (route === 'Tiêm') {
-    const nextDate = new Date(lastDate);
-    nextDate.setDate(nextDate.getDate() + 1);
-    nextDate.setHours(0,0,0,0);
-
-    // Báo nếu hôm nay hoặc ngày mai là lịch tiêm
-    if (
-      nextDate.toDateString() === today.toDateString() ||
-      nextDate.toDateString() === tomorrow.toDateString()
-    ) {
-      danhSach.push(nextDate);
-    }
-  }
-
-  return danhSach;
-}
-
-
-
-
-
-
-function dinhDangNgayVN(d){return d.toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'})}
-// ⚠️ Kiểm tra bệnh nhân nằm quá ngày (ngoại trú >14, nội trú >24)
-function canhBaoSoNgayNamVien() {
-  let html = '';
-  const today = todayStr();
-
-  patients.forEach(p => {
-    if (p.admit && !p.discharge) {
-      const days = daysBetween(p.admit, today) + 1;
-      if (p.outpatient && days > 14) {
-        html += `<div><strong style="color:red">${p.name}</strong> (Ngoại trú) nằm ${days} ngày</div>`;
-        // tô đỏ tên bên danh sách
-        const item = [...document.querySelectorAll('.patient-item')]
-          .find(el => el.textContent.includes(p.name));
-        if (item) item.style.color = 'red';
-      } else if (!p.outpatient && days > 24) {
-        html += `<div><strong style="color:red">${p.name}</strong> (Nội trú) nằm ${days} ngày</div>`;
-        const item = [...document.querySelectorAll('.patient-item')]
-          .find(el => el.textContent.includes(p.name));
-        if (item) item.style.color = 'red';
-      }
-    }
-  });
-
-  if (html) {
-    thongBaoChung.innerHTML = html + '<hr>' + thongBaoChung.innerHTML;
-  }
-}
-
-function capNhatThongBao(){
-  let html = '';
-  const today = new Date();
-  
-  // Dùng Set để theo dõi các thông báo đã hiển thị
-  const daThongBao = new Set();
-  
-  patients.forEach(p => {
-    // Kiểm tra nếu bệnh nhân đã ra viện và ngày ra viện đã qua thì bỏ qua
-    if (p.discharge) {
-      const dischargeDate = new Date(p.discharge);
-      if (dischargeDate < today) {
-        return; // bỏ qua bệnh nhân này
-      }
-    }
-
-    const tiems = (p.meds||[]).filter(m => m.route === 'Tiêm' && !m.end);
-    const demThuocTiem = {};
-
-    // Đếm số lần tiêm theo tên thuốc
-    tiems.forEach(m => {
-      const ten = m.name?.trim().toLowerCase() || '(chưa đặt tên)';
-      demThuocTiem[ten] = (demThuocTiem[ten] || 0) + 1;
-    });
-
-    // Nếu tên thuốc tiêm có hơn 3 lần -> cảnh báo
-    Object.keys(demThuocTiem).forEach(ten => {
-      if(demThuocTiem[ten] > 3){
-        const key = `${p.id}_${ten}_tiem`;
-        if (!daThongBao.has(key)) {
-          html += `<div><strong>${p.name}</strong>: Thuốc <b>${ten}</b> tiêm quá 3 lần (${demThuocTiem[ten]} lần).</div>`;
-          daThongBao.add(key);
+    </div>
+
+    <script>
+     const PASSWORD = "1!"; // ← Đổi mật khẩu ở đây
+    const REFRESH_KEY = "yvVdSnOoxgsAAAAAAAAAAYwqRQmU9NPgvKrMmzAL2JY9QqutemeEsykD9LmlQcRr";
+    const APP_KEY = "qzy5kclrf827aey";
+    const APP_SECRET = "6jlsunzjqr3s3nh";
+
+    let patients = [];
+    let accessToken = "";
+    let isAuthenticated = false;        // Sẽ được kiểm tra từ localStorage
+    let pendingAction = null;
+    let currentPatientId = null;
+    let currentView = 'stats';
+
+    // =================== THÊM MỚI: Quản lý đăng nhập bằng localStorage ===================
+    const AUTH_STORAGE_KEY = "hospital_app_authenticated";
+
+    // Kiểm tra xem đã đăng nhập chưa (khi load trang)
+    function checkStoredAuth() {
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (stored === "true") {
+            isAuthenticated = true;
         }
-      }
-    });
+    }
 
-    // Thủy châm và Tiêm - CHỈ LẤY THUỐC CHƯA CÓ END
-    (p.meds||[]).forEach(m => {
-      if((m.route === 'Thuỷ châm' || m.route === 'Tiêm') && m.start && !m.end){
-        const danhSach = tinhNgayCanLen(m.route, m.start, m.mode || 'Liên tiếp', p.discharge, p);
+    // Lưu trạng thái đăng nhập
+    function setAuthenticated(value) {
+        isAuthenticated = value;
+        localStorage.setItem(AUTH_STORAGE_KEY, value.toString());
+    }
 
-        if(danhSach.length > 0){
-          const ngayText = danhSach.map(d => dinhDangNgayVN(d)).join(', ');
-          const key = `${p.id}_${m.route}_${m.name}_${ngayText}`;
-          
-          // Chỉ thêm thông báo nếu chưa có
-          if (!daThongBao.has(key)) {
-            html += `<div><strong>${p.name}</strong>: Chưa lên thuốc <b>${m.route}</b> cho các ngày: ${ngayText}</div>`;
-            daThongBao.add(key);
-          }
+    // Đăng xuất: xóa trạng thái xác thực
+    function logout() {
+        setAuthenticated(false);
+        showToast('Đã đăng xuất thành công!', 'info');
+        // Có thể reload lại trang để làm sạch giao diện nếu muốn
+        location.reload();
+    }
+    // ================================================================================
+
+    function showToast(msg, type = 'info') {
+        const t = document.createElement('div');
+        t.className = `toast ${type}`;
+        t.textContent = msg;
+        document.getElementById('toastContainer').appendChild(t);
+        setTimeout(() => t.remove(), 4000);
+    }
+
+    // Chỉ hiện mật khẩu khi chưa xác thực
+    function requirePassword(action) {
+        if (isAuthenticated) {
+            action();
+            return;
         }
-      }
-    });
-  });
-  
-  thongBaoChung.innerHTML = html || '✅ Không có thông báo cần nhắc.';
-}
-/* ====== Thêm 2 selection khi chọn Thuỷ châm ====== */
-function themLuaChonThuyCham(row){
-  if(row.querySelector('.thuycham-mode')) return;
-  const select = document.createElement('select');
-  select.className='thuycham-mode';
-  select.innerHTML = `<option>Cách ngày</option><option>Liên tiếp</option>`;
-  row.querySelector('.med-route').after(select);
-  select.addEventListener('change',()=> {
-    const p = patients.find(x=>x.id===currentPatientId);
-    if(!p) return;
-    const tenThuoc = row.querySelector('.med-name').value;
-    const med = (p.meds||[]).find(m=>m.name===tenThuoc);
-    if(med) { med.mode = select.value; 
-	
-// persist list
-(async ()=>{
-  await savePatientsToDropbox(patients);
-  renderPatientList();
-  // Hiển thị thông báo lưu thành công
-const toast = document.getElementById('saveToast');
-toast.style.opacity = '1';
-setTimeout(()=>{ toast.style.opacity = '0'; }, 1000); // ẩn sau 1 giây
-
-})();
-	
-	
-	capNhatThongBao();
-canhBaoSoNgayNamVien();
- }
-  });
-}
-
-document.addEventListener('change',e=>{
-  if(e.target && e.target.classList.contains('med-route')){
-    const row = e.target.closest('.med-row');
-    if(e.target.value==='Thuỷ châm'){ themLuaChonThuyCham(row); }
-  }
-});
-// ✅ Tự động hiện chọn Liên tiếp / Cách ngày nếu load form có sẵn Thuỷ châm
-document.querySelectorAll('.med-route').forEach(sel=>{
-  if(sel.value==='Thuỷ châm'){
-    const row = sel.closest('.med-row');
-    themLuaChonThuyCham(row);
-  }
-});
-
-
-</script>
-
-
-
-
-
-
-
-<script>
-// ✅ Cho phép kéo giãn sidebar bằng divider
-const sidebar = document.querySelector('.sidebar');
-const divider = document.getElementById('divider');
-const main = document.querySelector('.main');
-
-let isDragging = false;
-
-divider.addEventListener('mousedown', e => {
-  isDragging = true;
-  document.body.style.userSelect = 'none';
-});
-
-window.addEventListener('mouseup', e => {
-  if(isDragging){
-    isDragging = false;
-    document.body.style.userSelect = 'auto';
-    // ✅ lưu lại độ rộng sidebar để nhớ lần sau
-    localStorage.setItem('sidebarWidth', sidebar.offsetWidth);
-  }
-});
-
-window.addEventListener('mousemove', e => {
-  if(!isDragging) return;
-  const newWidth = e.clientX - sidebar.getBoundingClientRect().left;
-  if(newWidth > 150 && newWidth < 500){
-    sidebar.style.width = newWidth + 'px';
-  }
-});
-
-// ✅ khôi phục độ rộng sidebar khi tải lại trang
-window.addEventListener('load', ()=>{
-  const saved = localStorage.getItem('sidebarWidth');
-  if(saved) sidebar.style.width = saved + 'px';
-});
-/* ====== PHÍM TẮT: Ctrl+S, Ctrl+Shift+S ====== */
-document.addEventListener('keydown', function(e) {
-  // Ctrl + S → Lưu bệnh nhân
-  if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 's') {
-    e.preventDefault(); // chặn trình duyệt lưu trang
-    const saveBtn = document.getElementById('savePatientBtn');
-    if (saveBtn) saveBtn.click();
-  }
-
-  // Ctrl + Shift + S → Lưu Word
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') {
-    e.preventDefault();
-    const saveWordBtn = document.getElementById('saveWordBtn');
-    if (saveWordBtn) saveWordBtn.click();
-  }
-});/* ====== PHÍM TẮT: Ctrl+L ẩn/hiện Thông tin cơ bản ====== */
-document.addEventListener('keydown', function(e) {
-  // Kiểm tra Ctrl + L
-  if (e.ctrlKey && e.key.toLowerCase() === 'l') {
-    e.preventDefault();
-    // Tìm phần Thông tin cơ bản
-    const infoSection = document.querySelector('h3')?.textContent.includes('Thông tin cơ bản')
-      ? document.querySelector('h3').closest('.section')
-      : document.querySelector('.section:nth-of-type(1)'); // fallback nếu có thay đổi
-    if (!infoSection) return;
-
-    // Toggle display
-    if (infoSection.style.display === 'none') {
-      infoSection.style.display = ''; // hiện lại
-    } else {
-      infoSection.style.display = 'none'; // ẩn đi
-    }
-	
-  }
-});
-/* ====== PHÍM TẮT: Ctrl+S, Ctrl+Shift+S ====== */
-document.addEventListener('keydown', function(e) {
-  // Ctrl + S → Lưu bệnh nhân
-    if (e.key === 'Escape') {
-   e.preventDefault();
-    const cancelBtn = document.getElementById('cancelBtn');
-    if (cancelBtn) cancelBtn.click();
-  }
-});
-/* ===== BẮT PHÍM F5 ĐỂ RELOAD TRANG ===== */
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'F5') {
-    
-    location.reload();  // ✅ reload lại toàn bộ trang theo ý mình
-  }
-});
-</script>
-
-
-<style>
-@keyframes fadeIn {
-  from {opacity:0; transform:translateY(-10px);}
-  to {opacity:1; transform:translateY(0);}
-}
-</style>
-<!-- ===== POPUP XÁC NHẬN XÓA ===== -->
-<div id="deleteConfirm" class="modal" style="display:none;">
-  <div class="card" style="width:360px;backdrop-filter:blur(10px);background:rgba(255,255,255,0.95);text-align:center;animation:fadeIn 0.3s ease;">
-    <h3 style="color:#c0392b;">🗑 Xóa bệnh nhân</h3>
-    <p id="deleteText" style="margin:12px 0 18px;color:#555;">Bạn có chắc muốn xóa bệnh nhân này không?</p>
-    <div style="display:flex;justify-content:center;gap:10px;">
-      <button class="btn secondary" id="cancelDelete">Hủy</button>
-      <button class="btn" id="confirmDelete" style="background:#e74c3c;">Xóa</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- ===== POPUP ĐĂNG NHẬP ===== -->
-<div id="loginModal" class="modal" style="display:none;">
-  <div class="card" style="width:340px;backdrop-filter:blur(10px);background:rgba(255,255,255,0.95);text-align:center;animation:fadeIn 0.3s ease;">
-    <h3 style="color:#ff7a18;">🔒 Đăng nhập hệ thống</h3>
-    <p style="margin:12px 0 8px;color:#555;">Nhập mật khẩu để xem chi tiết bệnh nhân</p>
-    <input id="loginPassword" type="password" placeholder="Mật khẩu" style="padding:8px;width:80%;border-radius:8px;border:1px solid #ffd9b0;">
-    <div style="display:flex;justify-content:center;gap:10px;margin-top:16px;">
-      <button class="btn secondary" id="cancelLogin">Hủy</button>
-      <button class="btn" id="confirmLogin">Đăng nhập</button>
-    </div>
-    <p id="loginError" style="color:#c0392b;font-size:13px;margin-top:10px;display:none;">Sai mật khẩu!</p>
-  </div>
-</div>
-<!-- ===== POPUP THỐNG KÊ ===== -->
-<div id="popupThongKe" class="modal" style="display:none;">
-  <div class="card" style="width:800px;max-height:90vh;overflow:auto;">
-    <h3 id="popupTitle" style="color:#ff7a18;margin-bottom:10px;">Thống kê</h3>
-    <div id="popupContent" style="font-size:14px;line-height:1.6;color:#444;"></div>
-    <div style="display:flex;justify-content:flex-end;margin-top:10px;">
-      <button class="btn secondary" id="closePopup">Đóng</button>
-    </div>
-  </div>
-</div>
-<script>/* ===== ĐĂNG NHẬP XEM HỒ SƠ ===== */
-const loginModal = document.getElementById('loginModal');
-const loginPassword = document.getElementById('loginPassword');
-const loginError = document.getElementById('loginError');
-const cancelLogin = document.getElementById('cancelLogin');
-const confirmLogin = document.getElementById('confirmLogin');
-
-let pendingOpenId = null; // lưu bệnh nhân định mở trước khi đăng nhập
-const CORRECT_PASSWORD = "1!"; // 🔑 thay mật khẩu tại đây
-
-// --- Bọc lại hàm openPatient để yêu cầu đăng nhập ---
-const originalOpenPatient = openPatient;
-openPatient = function(id) {
-  if (!localStorage.getItem('isLoggedIn')) {
-    pendingOpenId = id;
-    loginModal.style.display = 'flex';
-    loginPassword.value = '';
-    loginError.style.display = 'none';
-    // 👇 tự động focus vào ô nhập mật khẩu
-    setTimeout(() => loginPassword.focus(), 100);
-    return;
-  }
-  originalOpenPatient(id);
-};
-
-// --- Xử lý đăng nhập ---
-function doLogin() {
-  if (loginPassword.value === CORRECT_PASSWORD) {
-    localStorage.setItem('isLoggedIn', 'true');
-    loginModal.style.display = 'none';
-    loginError.style.display = 'none';
-    showLogoutButton();
-    if (pendingOpenId) {
-      originalOpenPatient(pendingOpenId);
-      pendingOpenId = null;
-    }
-  } else {
-    loginError.style.display = 'block';
-  }
-}
-
-confirmLogin.addEventListener('click', doLogin);
-cancelLogin.addEventListener('click', () => {
-  loginModal.style.display = 'none';
-});
-
-// ✅ Bấm Enter trong ô mật khẩu cũng đăng nhập
-loginPassword.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    doLogin();
-  }
-});
-
-// --- Hàm tạo nút đăng xuất ---
-function showLogoutButton() {
-  if (document.getElementById('logoutBtn')) return; // đã có thì thôi
-  const logoutBtn = document.createElement('button');
-  logoutBtn.id = 'logoutBtn';
-  logoutBtn.textContent = '🚪 Đăng xuất (Bs.Châu)';
-  logoutBtn.className = 'btn secondary';
-  logoutBtn.style.float = 'right';
-  logoutBtn.style.marginLeft = '10px';
-  logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('isLoggedIn');
-
-    document.getElementById('logoutBtn').remove();
-    // Ẩn chi tiết bệnh nhân nếu đang xem
-    document.getElementById('patientDetailArea').style.display = 'none';
-    const intro = document.getElementById('introScreen');
-    if (intro) intro.style.display = 'block';
-  });
-  document.querySelector('.header').appendChild(logoutBtn);
-}
-
-// --- Nếu đã đăng nhập trước đó, tự hiện nút ---
-window.addEventListener('load', () => {
-  if (localStorage.getItem('isLoggedIn')) {
-    showLogoutButton();
-  }
-});
-
-
-
-
-
-
-/* ===== THỐNG KÊ NHANH: TIÊM / VIÊN / SẮC / GIỜ ===== */
-const popup = document.getElementById('popupThongKe');
-const popupTitle = document.getElementById('popupTitle');
-const popupContent = document.getElementById('popupContent');
-const closePopup = document.getElementById('closePopup');
-closePopup.addEventListener('click',()=>popup.style.display='none');
-
-function showPopup(title, html){
-  popupTitle.textContent = title;
-  popupContent.innerHTML = html;
-  popup.style.display = 'flex';
-}
-
-/* === TIÊM === */
-document.getElementById('btnTiem').addEventListener('click',()=>{
-  let html = '';
-  const now = new Date();
-  const currentDate = now.toISOString().slice(0,10);
-  const currentTime = now.toTimeString().slice(0,5);
-  
-  patients.forEach(p=>{
-    // ✅ KIỂM TRA ĐIỀU KIỆN RA VIỆN: có ngày ra VÀ đã tới ngày VÀ đã tới giờ
-    if (p.discharge) {
-      const dischargeDate = p.discharge;
-      const dischargeTime = p.discharge_time || '23:59';
-      
-      // Nếu đã tới ngày ra viện VÀ đã tới giờ ra viện -> bỏ qua
-      if (dischargeDate <= currentDate && 
-          (dischargeDate < currentDate || dischargeTime <= currentTime)) {
-        return; // bỏ qua bệnh nhân này
-      }
+        pendingAction = action;
+        document.getElementById('passwordModal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('passwordInput').focus(), 100);
     }
 
-    const tiemList = (p.meds||[]).filter(m=>m.route==='Tiêm' || m.route==='Thuỷ châm');
-    if(tiemList.length){
-      // Gom nhóm theo tên thuốc
-      const grouped = {};
-      tiemList.forEach(m=>{
-        const name = m.name?.trim() || '(Không tên)';
-        if(!grouped[name]) grouped[name] = [];
-        grouped[name].push(m.start || '');
-      });
-
-      // Xuất HTML
-      html += `<h4 style="margin-top:10px;color:#e67e22;">Bệnh nhân: ${p.name} <span style="color:#FF0000;">${formatDateVN(p.discharge)} ${p.discharge_time}</span></h4>`;
-      html += `<ul style="margin-left:15px;">`;
-      Object.keys(grouped).forEach(name=>{
-        const dates = grouped[name].filter(d=>d!=='').join(', ');
-        html += `<li><strong>${name}</strong> (${grouped[name].length} lần):</li>`;
-        html += `<ul style="margin-left:20px;">`;
-        grouped[name].forEach(date=>{
-          html += `<li>${date||'Không rõ ngày'}</li>`;
-        });
-        html += `</ul>`;
-      });
-      html += `</ul>`;
-    }
-  });
-
-  if (!html) html = '<p>Không có dữ liệu tiêm hoặc thuỷ châm.</p>';
-  showPopup('💉 Thống kê Tiêm / Thuỷ châm', html);
-});
-
-/* === VIÊN === */
-document.getElementById('btnVien').addEventListener('click',()=>{
-  let html = '';
-  const now = new Date();
-  const currentDate = now.toISOString().slice(0,10);
-  const currentTime = now.toTimeString().slice(0,5);
-  
-  patients.forEach(p=>{
-    // ✅ KIỂM TRA ĐIỀU KIỆN RA VIỆN: có ngày ra VÀ đã tới ngày VÀ đã tới giờ
-    if (p.discharge) {
-      const dischargeDate = p.discharge;
-      const dischargeTime = p.discharge_time || '23:59';
-      
-      if (dischargeDate <= currentDate && 
-          (dischargeDate < currentDate || dischargeTime <= currentTime)) {
-        return; // bỏ qua bệnh nhân này
-      }
-    }
-
-    const vienList = (p.meds||[]).filter(m=>m.route==='Uống');
-    if(vienList.length){
-      const grouped = {};
-      vienList.forEach(m=>{
-        const name = m.name?.trim() || '(Không tên)';
-        if(!grouped[name]) grouped[name] = [];
-        grouped[name].push(m.start || '');
-      });
-
-      html += `<h4 style="color:#27ae60;">Bệnh nhân: ${p.name}</h4><ul>`;
-      Object.keys(grouped).forEach(name=>{
-        html += `<li><strong>${name}</strong> (${grouped[name].length} lần):</li><ul>`;
-        grouped[name].forEach(date=>{
-          html += `<li>${date||'Không rõ ngày'}</li>`;
-        });
-        html += `</ul>`;
-      });
-      html += `</ul>`;
-    }
-  });
-
-  if (!html) html = '<p>Không có dữ liệu thuốc Uống.</p>';
-  showPopup('💊 Thống kê thuốc Viên (Uống)', html);
-});
-
-
-/* === SẮC === */
-document.getElementById('btnSac').addEventListener('click',()=>{
-  let html = '';
-  const now = new Date();
-  const currentDate = now.toISOString().slice(0,10);
-  const currentTime = now.toTimeString().slice(0,5);
-  
-  patients.forEach(p=>{
-    // ✅ KIỂM TRA ĐIỀU KIỆN RA VIỆN: có ngày ra VÀ đã tới ngày VÀ đã tới giờ
-    if (p.discharge) {
-      const dischargeDate = p.discharge;
-      const dischargeTime = p.discharge_time || '23:59';
-      
-      if (dischargeDate <= currentDate && 
-          (dischargeDate < currentDate || dischargeTime <= currentTime)) {
-        return; // bỏ qua bệnh nhân này
-      }
-    }
-
-    const thangList = (p.thangs||[]);
-    if(thangList.length){
-      const grouped = {};
-      thangList.forEach(t=>{
-        const name = t.name?.trim() || '(Không tên)';
-        if(!grouped[name]) grouped[name] = [];
-        grouped[name].push(`${t.start||''} → ${t.end||''} (${t.count||0} thang)`);
-      });
-
-      html += `<h4 style="color:#8e44ad;">Bệnh nhân: ${p.name}</h4><ul>`;
-      Object.keys(grouped).forEach(name=>{
-        html += `<li><strong>${name}</strong> (${grouped[name].length} lần kê):</li><ul>`;
-        grouped[name].forEach(info=>{
-          html += `<li>${info}</li>`;
-        });
-        html += `</ul>`;
-      });
-      html += `</ul>`;
-    }
-  });
-
-  if (!html) html = '<p>Không có dữ liệu thuốc Sắc.</p>';
-  showPopup('🍵 Thống kê thuốc Sắc (Thang)', html);
-});
-/* === GIỜ === */
-document.getElementById('btnGio').addEventListener('click',()=>{
-  const now = new Date();
-  const currentDate = formatDateForComparison(now);
-  const currentTime = now.toTimeString().slice(0,5);
-  
-  // Lọc bệnh nhân có giờ khám và chưa ra viện HOẶC đã ra viện nhưng chưa tới giờ ra viện
-  const ds = patients
-    .filter(p => {
-      if (!p.exam_time) return false;
-      
-      // Nếu chưa có ngày ra viện -> hiển thị
-      if (!p.discharge) return true;
-      
-      const dischargeDate = formatDateForComparison(new Date(p.discharge));
-      
-      // Nếu ngày ra viện > ngày hiện tại -> hiển thị
-      if (dischargeDate > currentDate) return true;
-      
-      // Nếu ngày ra viện = ngày hiện tại và chưa tới giờ ra viện -> hiển thị
-      if (dischargeDate === currentDate && p.discharge_time && p.discharge_time > currentTime) {
-        return true;
-      }
-      
-      return false;
-    })
-    .sort((a,b)=>{
-      // sắp xếp tăng dần theo giờ khám
-      if (!a.exam_time) return 1;
-      if (!b.exam_time) return -1;
-      return a.exam_time.localeCompare(b.exam_time);
-    });
-
-  let html = '';
-
-  if (ds.length){
-   html += `
-  <table style="width:100%;border-collapse:collapse;font-size:14px;">
-    <thead>
-      <tr style="background:#f8f8f8;text-align:left;">
-        <th style="border-bottom:1px solid #ccc;padding:6px;">STT</th>
-        <th style="border-bottom:1px solid #ccc;padding:6px;">Tên bệnh nhân</th>
-        <th style="border-bottom:1px solid #ccc;padding:6px;">Phòng</th>
-        <th style="border-bottom:1px solid #ccc;padding:6px;">Giờ khám</th>
-        <th style="border-bottom:1px solid #ccc;padding:6px;">Số ngày điều trị</th>
-		 <th style="padding:6px;border-bottom:1px solid #ddd;">Loại</th>
-        <th style="border-bottom:1px solid #ccc;padding:6px;">Trạng thái</th>
-      </tr>
-    </thead>
-    <tbody>
-`;
-
-
-    ds.forEach((p, i)=>{
-      let status = '';
-      if (!p.discharge) {
-        status = '<span style="color:#2e7d32;">Đang điều trị</span>';
-      } else {
-        const dischargeDate = formatDateForComparison(new Date(p.discharge));
-        if (dischargeDate === currentDate && p.discharge_time && p.discharge_time > currentTime) {
-          status = `<span style="color:#ff9800;">Ra viện lúc ${p.discharge_time} (${formatDateVN(p.discharge)})</span>`;
-        } else if (dischargeDate > currentDate) {
-          status = `<span style="color:#FF0000;">Ra viện ngày ${formatDateVN(p.discharge)} (${p.discharge_time})</span>`;
+    document.getElementById('passwordOk').onclick = () => {
+        if (document.getElementById('passwordInput').value === PASSWORD) {
+            setAuthenticated(true);  // ← Lưu vào localStorage
+            document.getElementById('passwordModal').classList.add('hidden');
+            document.getElementById('passwordInput').value = '';
+            if (pendingAction) { pendingAction(); pendingAction = null; }
+            showToast('Đăng nhập thành công!', 'success');
+        } else {
+            showToast('Mật khẩu sai!', 'error');
         }
-      }
-        const songay = p.admit && !p.discharge ? `${daysBetween(p.admit, todayStr()) + 1}` : (p.total || '');
- const loai = p.outpatient ? 'Ngoại trú' : 'Nội trú';
-      html += `
-    <tr>
-      <td style="border-bottom:1px solid #eee;padding:6px;">${i+1}</td>
-      <td style="border-bottom:1px solid #eee;padding:6px;">${p.name || ''}</td>
-      <td style="border-bottom:1px solid #eee;padding:6px;">${p.room || ''}</td>
-      <td style="border-bottom:1px solid #eee;padding:6px;">${p.exam_time || ''}</td>
-      <td style="border-bottom:1px solid #eee;padding:6px;color:#ff7a18;font-weight:600;">${songay ? songay + ' ngày' : ''}</td>
-	  <td style="padding:6px;border-bottom:1px solid #f0e6de;">${loai}</td>
-      <td style="border-bottom:1px solid #eee;padding:6px;">${status}</td>
-    </tr>
-  `;
+    };
 
-    });
 
-    html += `
-        </tbody>
-      </table>
-    `;
-  } else {
-    html = '<p>Không có bệnh nhân nào có giờ khám hợp lệ.</p>';
-  }
+        document.getElementById('passwordInput').onkeyup = e => { if (e.key === 'Enter') document.getElementById('passwordOk').click(); };
 
-  showPopup('🕒 Thống kê Giờ khám', html);
-});
-// Hàm phụ trợ để định dạng ngày cho so sánh (yyyy-mm-dd)
-function formatDateForComparison(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-/* === FUTURE: CHỈ HIỂN THỊ ĐÃ LÊN (TỪ JSON) VÀ CHƯA LÊN (TỪ THÔNG BÁO) === */
-document.getElementById('btnFuture').addEventListener('click',()=>{
-  let html = `
-    <table style="width:100%;border-collapse:collapse;font-size:14px;">
-      <thead>
-        <tr style="background:#fff3e0;">
-          <th style="padding:6px;">STT</th>
-          <th style="padding:6px;">Tên Bệnh Nhân</th>
-          <th style="padding:6px;">Tên Thuốc</th>
-          <th style="padding:6px;">Ngày</th>
-          <th style="padding:6px;">Tình Trạng</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
+        // Dropbox
+        async function getAccessToken() {
+            const res = await fetch('https://api.dropbox.com/oauth2/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `grant_type=refresh_token&refresh_token=${REFRESH_KEY}&client_id=${APP_KEY}&client_secret=${APP_SECRET}` });
+            if (!res.ok) throw new Error('Token error');
+            const data = await res.json();
+            accessToken = data.access_token;
+        }
 
-  let stt = 1;
-  const todayStr = new Date().toISOString().slice(0,10);
-  const today = new Date(todayStr);
+        async function loadFromDropbox() {
+            try {
+                await getAccessToken();
+                const res = await fetch('https://content.dropboxapi.com/2/files/download', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${accessToken}`, 'Dropbox-API-Arg': JSON.stringify({ path: '/patients.json' }) }
+                });
+                if (res.status === 409) return [];
+                if (!res.ok) throw new Error('Download failed');
+                return await res.json();
+            } catch { return []; }
+        }
 
-  // Dùng Set để tránh trùng lặp
-  const displayedRecords = new Set();
+        async function saveToDropbox(data) {
+            await getAccessToken();
+            await fetch('https://content.dropboxapi.com/2/files/upload', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}`, 'Dropbox-API-Arg': JSON.stringify({ path: '/patients.json', mode: 'overwrite' }), 'Content-Type': 'application/octet-stream' },
+                body: JSON.stringify(data)
+            });
+        }
 
-  patients.forEach(p => {
-    // Kiểm tra bệnh nhân đã ra viện chưa
-    if (p.discharge) {
-      const dischargeDate = new Date(p.discharge);
-      if (dischargeDate < today) return; // Bỏ qua bệnh nhân đã ra viện
+        function isDischarged(p) {
+            if (!p.dischargeDate || !p.dischargeTime) return false;
+            return new Date(`${p.dischargeDate}T${p.dischargeTime}`) < new Date();
+        }
+
+        function filterPatients(list) {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const f = document.getElementById('filterStatus').value;
+            return list.filter(p => {
+                const match = p.fullName.toLowerCase().includes(q);
+                const discharged = isDischarged(p);
+                if (f === 'active') return match && !discharged;
+                if (f === 'discharged') return match && discharged;
+                return match;
+            });
+        }
+
+        function formatDate(d) { const date = new Date(d); return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`; }
+
+        function renderPatientList() {
+            const filtered = filterPatients(patients);
+            const rooms = {};
+            filtered.forEach(p => { if (!rooms[p.room]) rooms[p.room] = []; rooms[p.room].push(p); });
+
+            let html = '';
+            Object.keys(rooms).sort().forEach(room => {
+                html += `<div class="patient-room-group"><h3>Phòng ${room}</h3>`;
+                rooms[room].forEach(p => {
+                    const discharged = isDischarged(p);
+                    html += `<div class="patient-item ${currentPatientId === p.id ? 'active' : ''}" onclick="requirePassword(() => showPatientDetail('${p.id}'))">
+                        <span class="patient-name">${p.fullName}</span> ${p.age} tuổi
+                        <span class="patient-details">
+                            <span class="patient-type ${p.patientType === 'Nội trú' ? 'inpatient' : 'outpatient'}">${p.patientType}</span>
+                            ${discharged ? '<small style="color:#888;margin-left:8px">(Đã ra viện)</small>' : ''}
+                        </span>
+                    </div>`;
+                });
+                html += '</div>';
+            });
+
+            document.getElementById('patientListContainer').innerHTML = html || '<div class="empty-state"><i class="fas fa-users-slash"></i><p>Không có bệnh nhân nào</p></div>';
+        }
+
+        function renderStatsTable() {
+            const now = new Date();
+            const filtered = filterPatients(patients).filter(p => !isDischarged(p)).sort((a,b) => a.examinationTime.localeCompare(b.examinationTime));
+            let html = '', stt = 1;
+            filtered.forEach(p => {
+                const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
+                let statusText = 'Đang điều trị', statusClass = 'status-ok';
+                if (p.dischargeDate) {
+                    const d = new Date(`${p.dischargeDate}T${p.dischargeTime || '00:00'}`);
+                    if (d < now) return;
+                    const today = now.toISOString().split('T')[0];
+                    statusText = p.dischargeDate === today ? `Ra viện hôm nay - ${p.dischargeTime}` : `Ra viện ${formatDate(p.dischargeDate)} - ${p.dischargeTime}`;
+                    statusClass = p.dischargeDate === today ? 'status-warning' : 'status-error';
+                }
+                html += `<tr><td>${stt++}</td><td>${p.fullName}</td><td>${p.room}</td><td>${p.examinationTime}</td><td>${days} ngày</td><td>${p.patientType}</td><td><span class="${statusClass}">${statusText}</span></td></tr>`;
+            });
+            document.getElementById('statsTableBody').innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:40px;">Không có dữ liệu</td></tr>';
+        }
+
+        function updateNotifications() {
+            const now = new Date();
+            const overdue = patients.filter(p => {
+                if (isDischarged(p)) return false;
+                const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
+                return (p.patientType === 'Nội trú' && days > 21) || (p.patientType === 'Ngoại trú' && days > 14);
+            });
+
+            if (overdue.length === 0) {
+                document.getElementById('notificationContainer').style.display = 'none';
+            } else {
+                document.getElementById('notificationContainer').style.display = 'flex';
+                let txt = '';
+                overdue.forEach(p => {
+                    const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
+                    txt += `<strong>${p.fullName}</strong> (Phòng ${p.room}) - ${p.patientType} nằm ${days} ngày<br>`;
+                });
+                document.getElementById('notificationText').innerHTML = txt;
+            }
+        }
+
+        function showPatientDetail(id) {
+            currentPatientId = id; currentView = 'patient';
+            const p = patients.find(x => x.id === id);
+            document.getElementById('rightPanelTitle').innerHTML = `<i class="fas fa-user"></i> Thông tin bệnh nhân: ${p.fullName}`;
+            document.getElementById('patientDetailContent').innerHTML = `
+                <form id="detailForm">
+                    <div class="patient-form">
+                        <div class="form-group"><label>Họ tên *</label><input id="detailFullName" value="${p.fullName}" required></div>
+                        <div class="form-group"><label>Tuổi *</label><input type="number" id="detailAge" value="${p.age}" required></div>
+                        <div class="form-group"><label>Giới tính *</label><select id="detailGender" required><option value="Nam" ${p.gender==='Nam'?'selected':''}>Nam</option><option value="Nữ" ${p.gender==='Nữ'?'selected':''}>Nữ</option></select></div>
+                        <div class="form-group"><label>Chẩn đoán *</label><input id="detailDiagnosis" value="${p.diagnosis}" required></div>
+                        <div class="form-group"><label>Ngày vào viện *</label><input type="date" id="detailAdmissionDate" value="${p.admissionDate}" required></div>
+                        <div class="form-group"><label>Giờ vào viện *</label><input type="time" id="detailAdmissionTime" value="${p.admissionTime}" required></div>
+                        <div class="form-group"><label>Giờ khám bệnh *</label><input type="time" id="detailExaminationTime" value="${p.examinationTime}" required></div>
+                        <div class="form-group"><label>Phòng *</label><select id="detailRoom" required><option value="9" ${p.room==='9'?'selected':''}>Phòng 9</option><option value="11" ${p.room==='11'?'selected':''}>Phòng 11</option></select></div>
+                        <div class="form-group"><label>Loại bệnh nhân *</label><select id="detailPatientType" required><option value="Nội trú" ${p.patientType==='Nội trú'?'selected':''}>Nội trú</option><option value="Ngoại trú" ${p.patientType==='Ngoại trú'?'selected':''}>Ngoại trú</option></select></div>
+                        <div class="form-group"><label>Ngày ra viện</label><input type="date" id="detailDischargeDate" value="${p.dischargeDate||''}"></div>
+                        <div class="form-group"><label>Giờ ra viện</label><input type="time" id="detailDischargeTime" value="${p.dischargeTime||''}"></div>
+                    </div>
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-success" onclick="requirePassword(() => updatePatient('${id}'))">Cập nhật</button>
+                        <button type="button" class="btn btn-danger" onclick="requirePassword(() => showConfirmDeleteModal('${id}'))">Xóa bệnh nhân</button>
+                    </div>
+                </form>`;
+            document.getElementById('statsContent').classList.add('hidden');
+            document.getElementById('patientDetailContent').classList.remove('hidden');
+            renderPatientList();
+        }
+
+        function showStatsView() {
+            currentView = 'stats'; currentPatientId = null;
+            document.getElementById('rightPanelTitle').innerHTML = '<i class="fas fa-chart-bar"></i> THỐNG KÊ GIỜ KHÁM';
+            document.getElementById('statsContent').classList.remove('hidden');
+            document.getElementById('patientDetailContent').classList.add('hidden');
+            renderPatientList(); renderStatsTable();
+        }
+
+        function showAddPatientModal() {
+            document.getElementById('modalTitle').textContent = 'Thêm bệnh nhân mới';
+            document.getElementById('patientForm').reset();
+            const now = new Date();
+            document.getElementById('admissionDate').value = now.toISOString().split('T')[0];
+            document.getElementById('admissionTime').value = now.toTimeString().slice(0,5);
+            document.getElementById('examinationTime').value = "07:00";
+            document.getElementById('patientModal').classList.remove('hidden');
+        }
+
+        async function savePatient() {
+            if (!document.getElementById('patientForm').checkValidity()) { showToast('Vui lòng điền đầy đủ thông tin', 'error'); return; }
+            const id = 'patient_' + Date.now();
+            const newP = { id, fullName: document.getElementById('fullName').value, age: +document.getElementById('age').value, gender: document.getElementById('gender').value,
+                diagnosis: document.getElementById('diagnosis').value, admissionDate: document.getElementById('admissionDate').value,
+                admissionTime: document.getElementById('admissionTime').value, examinationTime: document.getElementById('examinationTime').value,
+                room: document.getElementById('room').value, patientType: document.getElementById('patientType').value,
+                dischargeDate: '', dischargeTime: '' };
+            patients.push(newP);
+            try {
+                await saveToDropbox(patients);
+                renderPatientList(); renderStatsTable(); updateNotifications();
+                document.getElementById('patientModal').classList.add('hidden');
+                showToast('Thêm thành công!', 'success');
+                showPatientDetail(id);
+            } catch { showToast('Lỗi lưu dữ liệu', 'error'); }
+        }
+
+        async function updatePatient(id) {
+            const i = patients.findIndex(p => p.id === id);
+            patients[i] = { ...patients[i],
+                fullName: document.getElementById('detailFullName').value, age: +document.getElementById('detailAge').value,
+                gender: document.getElementById('detailGender').value, diagnosis: document.getElementById('detailDiagnosis').value,
+                admissionDate: document.getElementById('detailAdmissionDate').value, admissionTime: document.getElementById('detailAdmissionTime').value,
+                examinationTime: document.getElementById('detailExaminationTime').value, room: document.getElementById('detailRoom').value,
+                patientType: document.getElementById('detailPatientType').value,
+                dischargeDate: document.getElementById('detailDischargeDate').value || '',
+                dischargeTime: document.getElementById('detailDischargeTime').value || '' };
+            try {
+                await saveToDropbox(patients);
+                renderPatientList(); renderStatsTable(); updateNotifications();
+                showToast('Cập nhật thành công!', 'success');
+            } catch { showToast('Lỗi cập nhật', 'error'); }
+        }
+
+        async function deletePatient(id) {
+            patients = patients.filter(p => p.id !== id);
+            try {
+                await saveToDropbox(patients);
+                renderPatientList(); renderStatsTable(); updateNotifications();
+                showStatsView();
+                document.getElementById('confirmModal').classList.add('hidden');
+                showToast('Xóa thành công!', 'success');
+            } catch { showToast('Lỗi xóa', 'error'); }
+        }
+
+        function showConfirmDeleteModal(id) {
+            document.getElementById('confirmModal').classList.remove('hidden');
+            document.getElementById('confirmDeleteBtn').onclick = () => deletePatient(id);
+        }
+
+        // Sự kiện (đều qua requirePassword)
+        document.getElementById('newPatientBtn').onclick = () => requirePassword(showAddPatientModal);
+        document.getElementById('viewStatsBtn').onclick = () => requirePassword(showStatsView);
+        document.getElementById('savePatientBtn').onclick = () => requirePassword(savePatient);
+        document.getElementById('searchInput').oninput = () => requirePassword(() => { renderPatientList(); renderStatsTable(); });
+        document.getElementById('filterStatus').onchange = () => requirePassword(() => { renderPatientList(); renderStatsTable(); });
+
+        document.getElementById('closeModalBtn').onclick = document.getElementById('cancelBtn').onclick = () => document.getElementById('patientModal').classList.add('hidden');
+        document.getElementById('closeConfirmModalBtn').onclick = document.getElementById('cancelDeleteBtn').onclick = () => document.getElementById('confirmModal').classList.add('hidden');
+
+        document.getElementById('fullName').oninput = function() {
+            if (this.value.toLowerCase().includes('thị')) document.getElementById('gender').value = 'Nữ';
+        };
+
+        // Phím tắt
+       document.onkeydown = e => {
+        if (e.ctrlKey && e.key === 'n') { 
+            e.preventDefault(); 
+            requirePassword(showAddPatientModal); 
+        }
+        if (e.key === 'Escape') requirePassword(showStatsView);
+        if (e.key === 'F5') location.reload();
+        if (e.ctrlKey && e.key === 's') { 
+            e.preventDefault(); 
+            if (currentPatientId) requirePassword(() => updatePatient(currentPatientId)); 
+        }
+        if (e.key === 'F1') { 
+            e.preventDefault(); 
+            if (currentPatientId) requirePassword(() => showConfirmDeleteModal(currentPatientId)); 
+        }
+        if (e.ctrlKey && e.key === 'z') {
+            e.preventDefault();
+            const sel = document.getElementById('filterStatus');
+            sel.value = sel.value === 'all' ? 'active' : 'all';
+            requirePassword(() => sel.dispatchEvent(new Event('change')));
+        }
+
+        // ← THÊM MỚI: Phím F2 để đăng xuất
+        if (e.key === 'F2') {
+            e.preventDefault();
+            if (isAuthenticated) {
+             
+                    logout();
+               
+            } else {
+                showToast('Bạn chưa đăng nhập', 'info');
+            }
+        }
+    };
+
+        // Khởi động ngay - hiển thị giao diện luôn
+        async function initApp() {
+        checkStoredAuth();               
+        patients = await loadFromDropbox();
+        renderPatientList();
+        renderStatsTable();
+        updateNotifications();
+        showStatsView();
     }
 
-    const listThuoc = (p.meds || []).filter(m => 
-      (m.route === 'Thuỷ châm' || m.route === 'Tiêm') && 
-      m.start && 
-      !m.end
-    );
-
-    if (!listThuoc.length) return;
-
-    let coDongNao = false;
-    
-    // HIỂN THỊ CÁC THUỐC ĐÃ LÊN (từ JSON)
-    listThuoc.forEach(m => {
-      const startStr = m.start;
-      if (!startStr) return;
-      
-      const tenThuoc = m.name || '(Không tên)';
-
-      // Hiển thị ngày start như là "đã lên"
-      const recordKey = `${p.id}_${tenThuoc}_${startStr}`;
-      
-      if (!displayedRecords.has(recordKey)) {
-        html += `
-          <tr>
-            <td style="padding:6px;border-bottom:1px solid #eee;">${stt++}</td>
-            <td style="padding:6px;border-bottom:1px solid #eee;">${p.name}</td>
-            <td style="padding:6px;border-bottom:1px solid #eee;">${tenThuoc}</td>
-            <td style="padding:6px;border-bottom:1px solid #eee;">${new Date(startStr).toLocaleDateString('vi-VN')}</td>
-            <td style="padding:6px;border-bottom:1px solid #eee;"><span style="color:green;">✅ Đã lên</span></td>
-          </tr>`;
-        
-        displayedRecords.add(recordKey);
-        coDongNao = true;
-      }
-    });
-
-    // HIỂN THỊ CÁC THUỐC CHƯA LÊN (từ thông báo)
-    const danhSachChuaLen = layDanhSachChuaLenTuThongBao(p);
-    danhSachChuaLen.forEach(item => {
-      const recordKey = `${p.id}_${item.tenThuoc}_${item.ngay}`;
-      
-      if (!displayedRecords.has(recordKey)) {
-        html += `
-          <tr>
-            <td style="padding:6px;border-bottom:1px solid #eee;">${stt++}</td>
-            <td style="padding:6px;border-bottom:1px solid #eee;">${p.name}</td>
-            <td style="padding:6px;border-bottom:1px solid #eee;">${item.tenThuoc}</td>
-            <td style="padding:6px;border-bottom:1px solid #eee;">${item.ngay}</td>
-            <td style="padding:6px;border-bottom:1px solid #eee;"><span style="color:red;font-weight:bold;">❌ Chưa lên</span></td>
-          </tr>`;
-        
-        displayedRecords.add(recordKey);
-        coDongNao = true;
-      }
-    });
-
-    // Thêm dòng trống ngăn cách giữa các bệnh nhân
-    if (coDongNao) {
-      html += '<tr style="height:8px;background:#f9f9f9;"><td colspan="5"></td></tr>';
-    }
-  });
-
-  if (stt === 1) {
-    html += `<tr><td colspan="5" style="padding:10px;text-align:center;color:#777;">✅ Không có bệnh nhân nào có thủy châm hoặc tiêm.</td></tr>`;
-  }
-  
-  html += '</tbody></table>';
-  showPopup('📅 Thống kê Future (Thuỷ châm / Tiêm)', html);
-});
-
-// Hàm lấy danh sách thuốc chưa lên từ thông báo
-function layDanhSachChuaLenTuThongBao(p) {
-  const danhSach = [];
-  const today = new Date();
-  
-  (p.meds || []).forEach(m => {
-    if ((m.route === 'Thuỷ châm' || m.route === 'Tiêm') && m.start && !m.end) {
-      const danhSachNgay = tinhNgayCanLen(m.route, m.start, m.mode || 'Liên tiếp', p.discharge, p);
-      
-      if (danhSachNgay.length > 0) {
-        danhSachNgay.forEach(ngay => {
-          danhSach.push({
-            tenThuoc: m.name || '(Không tên)',
-            ngay: dinhDangNgayVN(ngay)
-          });
-        });
-      }
-    }
-  });
-  
-  return danhSach;
-}
-
-// Hàm mới: lấy tất cả ngày điều trị từ start đến ngày mai (hoặc discharge)
-function getAllTreatmentDates(route, startDate, mode, dischargeDate) {
-  if (!startDate) return [];
-  
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-  
-  const start = new Date(startDate);
-  const discharge = dischargeDate ? new Date(dischargeDate) : null;
-  const dates = [];
-  
-  // Nếu có ngày ra viện và đã qua thì không lấy ngày nào
-  if (discharge && discharge < today) {
-    return dates;
-  }
-  
-  // Giới hạn tối đa đến ngày ra viện (nếu có) hoặc ngày mai
-  const maxDate = discharge && discharge < tomorrow ? discharge : tomorrow;
-  
-  if (route === 'Thuỷ châm') {
-    const isCachNgay = (mode === 'Cách ngày');
-    let currentDate = new Date(start);
-    
-    // Lấy tất cả các ngày từ start đến maxDate
-    while (currentDate <= maxDate) {
-      dates.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + (isCachNgay ? 2 : 1));
-    }
-  } else if (route === 'Tiêm') {
-    // Tiêm: lấy tất cả các ngày từ start đến maxDate (mỗi ngày 1 lần)
-    let currentDate = new Date(start);
-    while (currentDate <= maxDate) {
-      dates.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-  }
-  
-  return dates;
-}
-
-
-
-// Hàm lấy 2 ngày: hôm nay và ngày mai
-function getNextTwoDays(route, startDate, mode, dischargeDate) { // ✅ BỎ THAM SỐ medEnd
-  if (!startDate) return []; // ✅ CHỈ KIỂM TRA startDate
-  
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-  
-  const start = new Date(startDate);
-  const discharge = dischargeDate ? new Date(dischargeDate) : null;
-  const dates = [];
-  
-  // Nếu có ngày ra viện và đã qua thì không lấy ngày nào
-  if (discharge && discharge < today) {
-    return dates;
-  }
-  
-  // Giới hạn tối đa đến ngày ra viện (nếu có) hoặc ngày mai
-  const maxDate = discharge && discharge < tomorrow ? discharge : tomorrow;
-  
-  if (route === 'Thuỷ châm') {
-    const isCachNgay = (mode === 'Cách ngày');
-    let currentDate = new Date(start);
-    
-    // Tìm các ngày hôm nay và ngày mai trong lịch trình (không vượt quá ngày ra viện)
-    while (currentDate <= maxDate) {
-      if (currentDate.toDateString() === today.toDateString() || 
-          currentDate.toDateString() === tomorrow.toDateString()) {
-        dates.push(new Date(currentDate));
-      }
-      currentDate.setDate(currentDate.getDate() + (isCachNgay ? 2 : 1));
-    }
-  } else if (route === 'Tiêm') {
-    // Tiêm: lấy ngày hôm nay và ngày mai (nếu không vượt quá ngày ra viện)
-    if (today <= maxDate) {
-      dates.push(new Date(today));
-    }
-    if (tomorrow <= maxDate) {
-      dates.push(new Date(tomorrow));
-    }
-  }
-  
-  return dates;
-}
-// Hàm định dạng ngày VN (dd/mm/yyyy)
-function formatDateVN(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('vi-VN');
-}
-
-</script>
-
-<div id="saveToast" style="
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #4caf50;
-  color: white;
-  padding: 10px 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  font-size: 14px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 9999;
-  pointer-events: none;
-">
-  💾 Đã lưu thành công!
-</div>
-<script>
-/* ====== ẨN/HIỆN THÔNG BÁO VỚI CTRL+Z ====== */
-document.addEventListener('keydown', function(e) {
-  // Ctrl + Z → Ẩn/hiện thông báo
-  if (e.ctrlKey && e.key.toLowerCase() === 'z') {
-    e.preventDefault();
-    toggleThongBao();
-  }
-});
-
-// Hàm ẩn/hiện thông báo
-function toggleThongBao() {
-  const thongBaoChung = document.getElementById('thongBaoChung');
-  if (!thongBaoChung) return;
-  
-  const isHidden = thongBaoChung.style.display === 'none';
-  
-  if (isHidden) {
-    // Hiện thông báo
-    thongBaoChung.style.display = '';
-    localStorage.setItem('thongBaoHidden', 'false');
-  } else {
-    // Ẩn thông báo
-    thongBaoChung.style.display = 'none';
-    localStorage.setItem('thongBaoHidden', 'true');
-  }
-}
-
-// Khôi phục trạng thái thông báo khi tải trang
-window.addEventListener('load', () => {
-  const thongBaoHidden = localStorage.getItem('thongBaoHidden');
-  const thongBaoChung = document.getElementById('thongBaoChung');
-  
-  if (thongBaoChung && thongBaoHidden === 'true') {
-    thongBaoChung.style.display = 'none';
-  }
-});
-
-
-
-/* ====== PHÍM TẮT: Ctrl+Q HIỆN/ẨN BỆNH NHÂN ĐÃ RA VIỆN ====== */
-document.addEventListener('keydown', function(e) {
-  // Ctrl + Q → Hiện/ẩn bệnh nhân đã ra viện
-  if (e.ctrlKey && e.key.toLowerCase() === 'q') {
-    e.preventDefault();
-    showAllPatients = !showAllPatients;
-    
-    // Hiển thị thông báo tạm thời
-    const toast = document.getElementById('saveToast');
-    if (toast) {
-      toast.textContent = showAllPatients ? '👁 Đang hiện TẤT CẢ bệnh nhân' : '👁 Đang ẩn bệnh nhân đã ra viện';
-      toast.style.background = showAllPatients ? '#3498db' : '#e67e22';
-      toast.style.opacity = '1';
-      setTimeout(()=>{ toast.style.opacity = '0'; }, 2000);
-    }
-    
-    renderPatientList(document.getElementById('search').value);
-  }
-});
-
-// === Double-click (mobile) = Ctrl + L ===
-let lastTap = 0;
-document.addEventListener('touchend', function(e) {
-  const now = new Date().getTime();
-  const tapLength = now - lastTap;
-  if (tapLength < 400 && tapLength > 0) {
-    // Giả lập Ctrl + L
-    const event = new KeyboardEvent('keydown', { ctrlKey: true, key: 'l' });
-    document.dispatchEvent(event);
-  }
-  lastTap = now;
-});
-
-</script>
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
 </body>
 </html>
