@@ -361,7 +361,11 @@
                         <div class="form-group"><label for="gender">Giới tính *</label><select id="gender" required><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select></div>
                         <div class="form-group"><label for="diagnosis">Chẩn đoán *</label><input type="text" id="diagnosis" required></div>
                        <div class="form-group">
-					  <label for="admissionDate">Ngày vào viện *</label>
+					  <label for="admissionDate">Ngày vào viện *
+					  <small id="admissionLunar" style="margin-left:6px;color:#009688;font-weight:600"></small>
+
+					  
+					  </label>
                         
 
     <div class="date-wrapper">
@@ -595,7 +599,10 @@
                         <div class="form-group"><label>Giới tính *</label><select id="detailGender" required><option value="Nam" ${p.gender==='Nam'?'selected':''}>Nam</option><option value="Nữ" ${p.gender==='Nữ'?'selected':''}>Nữ</option></select></div>
                         <div class="form-group"><label>Chẩn đoán *</label><input id="detailDiagnosis" value="${p.diagnosis}" required></div>
                         <div class="form-group">
-    <label>Ngày vào viện *</label>
+    <label>Ngày vào viện *
+     <small id="detailAdmissionLunar" style="margin-left:6px;color:#009688;font-weight:600"></small>
+    
+    </label>
     <div class="date-wrapper">
         <input type="date" id="detailAdmissionDate" value="${p.admissionDate}" required>
         <span id="detailAdmissionWeekday"></span>
@@ -608,7 +615,10 @@
                         <div class="form-group"><label>Phòng *</label><select id="detailRoom" required><option value="9" ${p.room==='9'?'selected':''}>Phòng 9</option><option value="11" ${p.room==='11'?'selected':''}>Phòng 11</option></select></div>
                         <div class="form-group"><label>Loại bệnh nhân *</label><select id="detailPatientType" required><option value="Nội trú" ${p.patientType==='Nội trú'?'selected':''}>Nội trú</option><option value="Ban ngày" ${p.patientType==='Ban ngày'?'selected':''}>Ban ngày</option></select></div>
                        <div class="form-group">
-    <label>Ngày ra viện</label>
+    <label>Ngày ra viện
+    <small id="detailDischargeLunar" style="margin-left:6px;color:#009688;font-weight:600"></small>
+    
+    </label>
     <div class="date-wrapper">
         <input type="date" id="detailDischargeDate" value="${p.dischargeDate||''}">
         <span id="detailDischargeWeekday"></span>
@@ -630,11 +640,21 @@
 				// Đặt giá trị ban đầu cho ô Tổng ngày
 				document.getElementById("totalDays").value = calcHospitalDays(p.admissionDate, p.dischargeDate);
 // Gắn sự kiện tự động cập nhật thứ trong			
-			setTimeout(()=>{
-    bindWeekdayAutoUpdate("detailAdmissionDate","detailAdmissionWeekday");
-    bindWeekdayAutoUpdate("detailDischargeDate","detailDischargeWeekday");
-},100);
+setTimeout(() => {
 
+    bindWeekdayAutoUpdate(
+        "detailAdmissionDate",
+        "detailAdmissionWeekday",
+        "detailAdmissionLunar"
+    );
+
+    bindWeekdayAutoUpdate(
+        "detailDischargeDate",
+        "detailDischargeWeekday",
+        "detailDischargeLunar"
+    );
+
+}, 100);
 // === THÊM MỚI: Tự động tính tổng ngày khi thay đổi ngày vào hoặc ngày ra ===
     const admissionDateInput = document.getElementById('detailAdmissionDate');
     const dischargeDateInput = document.getElementById('detailDischargeDate');
@@ -666,16 +686,23 @@
         }
 
         function showAddPatientModal() {
-            document.getElementById('modalTitle').textContent = 'Thêm bệnh nhân mới';
-            document.getElementById('patientForm').reset();
-            const now = new Date();
-            document.getElementById('admissionDate').value = now.toISOString().split('T')[0];
-            document.getElementById('admissionTime').value = now.toTimeString().slice(0,5);
-            document.getElementById('examinationTime').value = "07:00";
-            document.getElementById('patientModal').classList.remove('hidden');
-			bindWeekdayAutoUpdate("admissionDate", "admissionWeekday");
-bindWeekdayAutoUpdate("dischargeDate", "dischargeWeekday");
-        }
+    document.getElementById('modalTitle').textContent = 'Thêm bệnh nhân mới';
+    document.getElementById('patientForm').reset();
+
+    const now = new Date();
+    document.getElementById('admissionDate').value = now.toISOString().split('T')[0];
+    document.getElementById('admissionTime').value = now.toTimeString().slice(0,5);
+    document.getElementById('examinationTime').value = "07:00";
+
+    document.getElementById('patientModal').classList.remove('hidden');
+
+    // ✅ GỌI HÀM TẠI ĐÂY
+    bindWeekdayAutoUpdate(
+        "admissionDate",
+        "admissionWeekday",
+        "admissionLunar"
+    );
+}
 
         async function savePatient() {
             if (!document.getElementById('patientForm').checkValidity()) { showToast('Vui lòng điền đầy đủ thông tin', 'error'); return; }
@@ -815,19 +842,20 @@ function getVNWeekday(dateStr){
     return days[d.getDay()];
 }
 
-function bindWeekdayAutoUpdate(inputId, spanId){
+function bindWeekdayAutoUpdate(inputId, spanId, lunarId){
     const input = document.getElementById(inputId);
     const span = document.getElementById(spanId);
-    if(!input || !span) return;
+    const lunar = document.getElementById(lunarId);
+    if(!input) return;
 
     function update(){
-        span.textContent = getVNWeekday(input.value);
+        if(span) span.textContent = getVNWeekday(input.value);
+        if(lunar) lunar.textContent = getLunarText(input.value);
     }
 
     input.addEventListener("input", update);
-    update(); // chạy ngay lần đầu khi mở bệnh án
+    update();
 }
-
 function formatHourHM(timeStr){
     if(!timeStr) return "";
     const [h, m] = timeStr.split(":");
@@ -840,6 +868,81 @@ function calcHospitalDays(admit, discharge){
     const diff = Math.round((r - a) / (1000*60*60*24));
     return diff + " ngày";
 }
-    </script>
+/* ====== AM LICH VIET NAM - HO NGOC DUC (CHUAN) ====== */
+const CAN = ["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"];
+const CHI = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+
+function jdFromDate(dd, mm, yy) {
+    const a = Math.floor((14 - mm) / 12);
+    const y = yy + 4800 - a;
+    const m = mm + 12 * a - 3;
+    return dd + Math.floor((153 * m + 2) / 5)
+        + 365 * y + Math.floor(y / 4)
+        - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+}
+
+function getNewMoonDay(k, tz) {
+    const T = k / 1236.85;
+    const T2 = T * T;
+    const dr = Math.PI / 180;
+    let jd = 2415020.75933 + 29.53058868 * k
+        + 0.0001178 * T2
+        - 0.000000155 * T * T2;
+    jd += 0.00033 * Math.sin((166.56 + 132.87 * T) * dr);
+    const M = 359.2242 + 29.10535608 * k;
+    const Mpr = 306.0253 + 385.81691806 * k;
+    jd += (0.1734 - 0.000393 * T) * Math.sin(M * dr)
+        - 0.4068 * Math.sin(Mpr * dr);
+    return Math.floor(jd + 0.5 + tz / 24);
+}
+
+function getLunarMonth11(yy, tz) {
+    const off = jdFromDate(31, 12, yy) - 2415021;
+    const k = Math.floor(off / 29.530588853);
+    let nm = getNewMoonDay(k, tz);
+    if (nm > jdFromDate(31, 12, yy)) nm = getNewMoonDay(k - 1, tz);
+    return nm;
+}
+
+function getLunarDate(dd, mm, yy) {
+    const tz = 7;
+    const jd = jdFromDate(dd, mm, yy);
+    let k = Math.floor((jd - 2415021) / 29.530588853);
+    let monthStart = getNewMoonDay(k + 1, tz);
+    if (monthStart > jd) monthStart = getNewMoonDay(k, tz);
+
+    const lunarDay = jd - monthStart + 1;
+
+    let a11 = getLunarMonth11(yy, tz);
+    let b11 = a11;
+    let lunarYear;
+
+    if (monthStart >= a11) {
+        lunarYear = yy;
+        a11 = getLunarMonth11(yy - 1, tz);
+    } else {
+        lunarYear = yy - 1;
+        b11 = getLunarMonth11(yy + 1, tz);
+    }
+
+    const lunarMonth = Math.abs(
+    Math.floor((monthStart - a11) / 29.530588853) + 1
+);
+
+    return {
+        day: lunarDay,
+        month: lunarMonth,
+        year: lunarYear,
+        canChi: `${CAN[(lunarYear + 6) % 10]} ${CHI[(lunarYear + 8) % 12]}`
+    };
+}
+
+function getLunarText(dateStr) {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    const l = getLunarDate(d.getDate(), d.getMonth() + 1, d.getFullYear());
+    return `${l.day}/${l.month}/${l.year} (${l.canChi})`;
+}
+</script>
 </body>
 </html>
