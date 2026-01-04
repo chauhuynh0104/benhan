@@ -87,7 +87,7 @@
         .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2); }
 
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal { background-color: white; border-radius: var(--radius); width: 90%; max-width: 700px; max-height: 90vh; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
+        .modal { background-color: white; border-radius: var(--radius); width: 90%; max-width: 900px; max-height: 90vh; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
         .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: bold; }
         .modal-content { padding: 20px; overflow-y: auto; flex: 1; }
         .modal-footer { padding: 15px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
@@ -284,17 +284,22 @@
 <body>
     <div class="header">
         <div>
-            <h1><i class="fas fa-heartbeat"></i> HỆ THỐNG QUẢN LÝ BỆNH ÁN</h1>
-            <p>Quản lý thông tin bệnh nhân và theo dõi quá trình điều trị</p>
+            <h1><i class="fas fa-heartbeat"></i>Electronic Medical Record</h1>
+            <p>Dr.Chau</p>
         </div>
         <button id="newPatientBtn" class="btn btn-primary">
             <i class="fas fa-plus-circle"></i> Thêm bệnh nhân mới
         </button>
     </div>
 
-    <div class="notification-bar" id="notificationContainer">
-        <div><i class="fas fa-bell"></i><span id="notificationText">Không có thông báo nào</span></div>
+ <div class="notification-bar hidden" id="notificationContainer">
+    <div id="notificationContent">
+        <i class="fas fa-bell"></i><span id="notificationText">Không có thông báo nào</span>
     </div>
+    <div id="notificationLoading" class="hidden" style="align-items:center; gap:10px; color:#ff9800;">
+        <i class="fas fa-spinner fa-spin"></i><p>Đang tải thông báo...</p>
+    </div>
+</div>
 
     <div class="container">
         <div class="left-panel">
@@ -308,7 +313,7 @@
                      
                     </select>
                 </div>
-                <div id="patientListContainer"><div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Đang tải dữ liệu...</p></div></div>
+                <div id="patientListContainer"><div class="loading"><center><i class="fas fa-spinner fa-spin"></i><p>Đang tải dữ liệu...</p></center></div></div>
             </div>
         </div>
 
@@ -319,21 +324,27 @@
             </div>
             <div class="panel-content" id="rightPanelContent">
                 <div id="statsContent">
-                    <table class="stats-table">
-                        <thead>
-                            <tr>
-                                <th>STT</th><th>Tên</th><th>Phòng</th><th>Giờ khám</th><th>Số ngày</th><th>Loại</th><th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody id="statsTableBody"></tbody>
-                    </table>
-                </div>
+    <div id="statsTableContainer">
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>STT</th><th>Tên</th><th>Phòng</th><th>Giờ khám</th><th>Số ngày</th><th>Loại</th><th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody id="statsTableBody"></tbody>
+        </table>
+    </div>
+    <div id="statsLoading" style="text-align:center; padding:40px; color:#666;">
+        <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+        <p>Đang tải dữ liệu thống kê...</p>
+    </div>
+</div>
                 <div id="patientDetailContent" class="hidden"></div>
             </div>
         </div>
     </div>
 
-    <footer>Design By Doctor Châu</footer>
+    <footer>© 2014-2026 By Dr.Châu</footer>
     <div id="toastContainer"></div>
 
     <!-- Password Modal - Ẩn lúc đầu -->
@@ -362,7 +373,7 @@
                         <div class="form-group"><label for="diagnosis">Chẩn đoán *</label><input type="text" id="diagnosis" required></div>
                        <div class="form-group">
 					  <label for="admissionDate">Ngày vào viện *
-					  <small id="admissionLunar" style="margin-left:6px;color:#009688;font-weight:600"></small>
+					  <span id="admissionLunar" style="margin-left:6px;color:#009688;font-weight:600"></span>
 
 					  
 					  </label>
@@ -534,7 +545,7 @@
                 rooms[room].forEach(p => {
                     const discharged = isDischarged(p);
                     html += `<div class="patient-item ${currentPatientId === p.id ? 'active' : ''}" onclick="requirePassword(() => showPatientDetail('${p.id}'))">
-                        <span class="patient-name">${p.fullName}</span> ${p.age} tuổi
+                        <span class="patient-name">${p.fullName}</span> ${p.age} tuổi  
                         <span class="patient-details">
                             <span class="patient-type ${p.patientType === 'Nội trú' ? 'inpatient' : 'outpatient'}">${p.patientType}</span>
                             ${discharged ? '<small style="color:#888;margin-left:8px">(Đã ra viện)</small>' : ''}
@@ -548,6 +559,7 @@
         }
 
         function renderStatsTable() {
+		showStatsLoading(true);
             const now = new Date();
             const filtered = filterPatients(patients).filter(p => !isDischarged(p)).sort((a,b) => a.examinationTime.localeCompare(b.examinationTime));
             let html = '', stt = 1;
@@ -561,31 +573,39 @@
                     statusText = p.dischargeDate === today ? `Ra viện hôm nay - ${p.dischargeTime}` : `Ra viện ${formatDate(p.dischargeDate)} - ${p.dischargeTime}`;
                     statusClass = p.dischargeDate === today ? 'status-warning' : 'status-error';
                 }
-                html += `<tr><td>${stt++}</td><td>${p.fullName}</td><td>${p.room}</td><td>${formatHourHM(p.examinationTime)}</td><td>${days} ngày</td><td>${p.patientType}</td><td><span class="${statusClass}">${statusText}</span></td></tr>`;
+                html += `<tr style="cursor: pointer;" onclick="requirePassword(() => showPatientDetail('${p.id}'))"><td>${stt++}</td><td>${p.fullName}</td><td>${p.room}</td><td>${formatHourHM(p.examinationTime)}</td><td>${days} ngày</td><td>${p.patientType}</td><td><span class="${statusClass}">${statusText}</span></td></tr>`;
             });
             document.getElementById('statsTableBody').innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:40px;">Không có dữ liệu</td></tr>';
-        }
+        showStatsLoading(false);
+		}
 
-        function updateNotifications() {
-            const now = new Date();
-            const overdue = patients.filter(p => {
-                if (isDischarged(p)) return false;
-                const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
-                return (p.patientType === 'Nội trú' && days > 21) || (p.patientType === 'Ban ngày' && days > 14);
-            });
+function updateNotifications() {
+    showNotificationLoading(true);  // Bắt đầu loading
 
-            if (overdue.length === 0) {
-                document.getElementById('notificationContainer').style.display = 'none';
-            } else {
-                document.getElementById('notificationContainer').style.display = 'flex';
-                let txt = '';
-                overdue.forEach(p => {
-                    const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
-                    txt += `<strong>${p.fullName}</strong> (Phòng ${p.room}) - ${p.patientType} nằm ${days} ngày<br>`;
-                });
-                document.getElementById('notificationText').innerHTML = txt;
-            }
-        }
+    const now = new Date();
+    const overdue = patients.filter(p => {
+        if (isDischarged(p)) return false;
+        const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
+        return (p.patientType === 'Nội trú' && days > 21) || (p.patientType === 'Ban ngày' && days > 14);
+    });
+
+    // Xử lý kết quả
+    if (overdue.length === 0) {
+        // Không có cảnh báo → ẩn toàn bộ bar
+        document.getElementById('notificationContainer').classList.add('hidden');
+    } else {
+        // Có cảnh báo → hiện nội dung
+        let txt = '<strong>Cảnh báo quá ngày nằm viện:</strong><br>';
+        overdue.forEach(p => {
+            const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
+            txt += `• <strong>${p.fullName}</strong> (Phòng ${p.room}) - ${p.patientType} nằm ${days} ngày<br>`;
+        });
+        document.getElementById('notificationText').innerHTML = txt;
+    }
+
+    // Luôn ẩn loading khi xong (dù có hay không có cảnh báo)
+    showNotificationLoading(false);
+}
 
         function showPatientDetail(id) {
             currentPatientId = id; currentView = 'patient';
@@ -600,7 +620,7 @@
                         <div class="form-group"><label>Chẩn đoán *</label><input id="detailDiagnosis" value="${p.diagnosis}" required></div>
                         <div class="form-group">
     <label>Ngày vào viện *
-     <small id="detailAdmissionLunar" style="margin-left:6px;color:#009688;font-weight:600"></small>
+     <span id="detailAdmissionLunar" style="margin-left:6px;color:#009688;font-weight:600"></span>
     
     </label>
     <div class="date-wrapper">
@@ -616,7 +636,7 @@
                         <div class="form-group"><label>Loại bệnh nhân *</label><select id="detailPatientType" required><option value="Nội trú" ${p.patientType==='Nội trú'?'selected':''}>Nội trú</option><option value="Ban ngày" ${p.patientType==='Ban ngày'?'selected':''}>Ban ngày</option></select></div>
                        <div class="form-group">
     <label>Ngày ra viện
-    <small id="detailDischargeLunar" style="margin-left:6px;color:#009688;font-weight:600"></small>
+    <span id="detailDischargeLunar" style="margin-left:6px;color:#009688;font-weight:600"></span>
     
     </label>
     <div class="date-wrapper">
@@ -677,13 +697,16 @@ setTimeout(() => {
             renderPatientList();
         }
 
-        function showStatsView() {
-            currentView = 'stats'; currentPatientId = null;
-            document.getElementById('rightPanelTitle').innerHTML = '<i class="fas fa-chart-bar"></i> THỐNG KÊ GIỜ KHÁM';
-            document.getElementById('statsContent').classList.remove('hidden');
-            document.getElementById('patientDetailContent').classList.add('hidden');
-            renderPatientList(); renderStatsTable();
-        }
+    function showStatsView() {
+    currentView = 'stats'; currentPatientId = null;
+    document.getElementById('rightPanelTitle').innerHTML = '<i class="fas fa-chart-bar"></i> THỐNG KÊ GIỜ KHÁM';
+    document.getElementById('statsContent').classList.remove('hidden');
+    document.getElementById('patientDetailContent').classList.add('hidden');
+    
+    showStatsLoading(true);  // <<< THÊM
+    renderStatsTable();      // renderStatsTable đã tự ẩn loading khi xong
+    renderPatientList();
+}
 
         function showAddPatientModal() {
     document.getElementById('modalTitle').textContent = 'Thêm bệnh nhân mới';
@@ -821,14 +844,17 @@ setTimeout(() => {
     };
 
         // Khởi động ngay - hiển thị giao diện luôn
-        async function initApp() {
-        checkStoredAuth();               
-        patients = await loadFromDropbox();
-        renderPatientList();
-        renderStatsTable();
-        updateNotifications();
-        showStatsView();
-    }
+async function initApp() {
+    checkStoredAuth();               
+    showStatsLoading(true);
+    showNotificationLoading(true);
+    
+    patients = await loadFromDropbox();
+    renderPatientList();
+    renderStatsTable();       // sẽ tự ẩn loading
+    updateNotifications();    // sẽ tự ẩn loading
+    showStatsView();
+}
 
         document.addEventListener('DOMContentLoaded', initApp);
 		
@@ -872,63 +898,131 @@ function calcHospitalDays(admit, discharge){
 const CAN = ["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"];
 const CHI = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
 
+function INT(d) {
+    return Math.floor(d);
+}
+
 function jdFromDate(dd, mm, yy) {
-    const a = Math.floor((14 - mm) / 12);
-    const y = yy + 4800 - a;
-    const m = mm + 12 * a - 3;
-    return dd + Math.floor((153 * m + 2) / 5)
-        + 365 * y + Math.floor(y / 4)
-        - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+    var a = INT((14 - mm) / 12);
+    var y = yy + 4800 - a;
+    var m = mm + 12 * a - 3;
+    var jd = dd + INT((153 * m + 2) / 5) + 365 * y + INT(y / 4) - INT(y / 100) + INT(y / 400) - 32045;
+    if (jd < 2299161) {
+        jd = dd + INT((153 * m + 2) / 5) + 365 * y + INT(y / 4) - 32083;
+    }
+    return jd;
 }
 
-function getNewMoonDay(k, tz) {
-    const T = k / 1236.85;
-    const T2 = T * T;
-    const dr = Math.PI / 180;
-    let jd = 2415020.75933 + 29.53058868 * k
-        + 0.0001178 * T2
-        - 0.000000155 * T * T2;
-    jd += 0.00033 * Math.sin((166.56 + 132.87 * T) * dr);
-    const M = 359.2242 + 29.10535608 * k;
-    const Mpr = 306.0253 + 385.81691806 * k;
-    jd += (0.1734 - 0.000393 * T) * Math.sin(M * dr)
-        - 0.4068 * Math.sin(Mpr * dr);
-    return Math.floor(jd + 0.5 + tz / 24);
+function NewMoon(k) {
+    var T = k / 1236.85;
+    var T2 = T * T;
+    var T3 = T2 * T;
+    var dr = Math.PI / 180;
+    var Jd1 = 2415020.75933 + 29.53058868 * k + 0.0001178 * T2 - 0.000000155 * T3;
+    Jd1 += 0.00033 * Math.sin((166.56 + 132.87 * T - 0.009173 * T2) * dr);
+    var M = 359.2242 + 29.10535608 * k - 0.0000333 * T2 - 0.00000347 * T3;
+    var Mpr = 306.0253 + 385.81691806 * k + 0.0107306 * T2 + 0.00001236 * T3;
+    var F = 21.2964 + 390.67050646 * k - 0.0016528 * T2 - 0.00000239 * T3;
+    var C1 = (0.1734 - 0.000393 * T) * Math.sin(M * dr) + 0.0021 * Math.sin(2 * dr * M);
+    C1 -= 0.4068 * Math.sin(Mpr * dr) + 0.0161 * Math.sin(dr * 2 * Mpr);
+    C1 -= 0.0004 * Math.sin(dr * 3 * Mpr);
+    C1 += 0.0104 * Math.sin(dr * 2 * F) - 0.0051 * Math.sin(dr * (M + Mpr));
+    C1 -= 0.0074 * Math.sin(dr * (M - Mpr)) + 0.0004 * Math.sin(dr * (2 * F + M));
+    C1 -= 0.0004 * Math.sin(dr * (2 * F - M)) - 0.0006 * Math.sin(dr * (2 * F + Mpr));
+    C1 += 0.0010 * Math.sin(dr * (2 * F - Mpr)) + 0.0005 * Math.sin(dr * (2 * Mpr + M));
+    var deltat;
+    if (T < -11) {
+        deltat = 0.001 + 0.000839 * T + 0.0002261 * T2 - 0.00000845 * T3 - 0.000000081 * T * T3;
+    } else {
+        deltat = -0.000278 + 0.000265 * T + 0.000262 * T2;
+    }
+    var JdNew = Jd1 + C1 - deltat;
+    return JdNew;
 }
 
-function getLunarMonth11(yy, tz) {
-    const off = jdFromDate(31, 12, yy) - 2415021;
-    const k = Math.floor(off / 29.530588853);
-    let nm = getNewMoonDay(k, tz);
-    if (nm > jdFromDate(31, 12, yy)) nm = getNewMoonDay(k - 1, tz);
+function SunLongitude(jdn) {
+    var T = (jdn - 2451545.0) / 36525;
+    var T2 = T * T;
+    var dr = Math.PI / 180;
+    var M = 357.52910 + 35999.05030 * T - 0.0001559 * T2 - 0.00000048 * T * T2;
+    var L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2;
+    var DL = (1.914600 - 0.004817 * T - 0.000014 * T2) * Math.sin(dr * M);
+    DL += (0.019993 - 0.000101 * T) * Math.sin(dr * 2 * M) + 0.000290 * Math.sin(dr * 3 * M);
+    var L = L0 + DL;
+    L = L * dr;
+    L = L - Math.PI * 2 * (INT(L / (Math.PI * 2)));
+    return L;
+}
+
+function getSunLongitude(dayNumber, timeZone) {
+    return INT(SunLongitude(dayNumber - 0.5 - timeZone / 24) / Math.PI * 6);
+}
+
+function getNewMoonDay(k, timeZone) {
+    return INT(NewMoon(k) + 0.5 + timeZone / 24);
+}
+
+function getLunarMonth11(yy, timeZone) {
+    var off = jdFromDate(31, 12, yy) - 2415021;
+    var k = INT(off / 29.530588853);
+    var nm = getNewMoonDay(k, timeZone);
+    var sunLong = getSunLongitude(nm, timeZone);
+    if (sunLong >= 9) {
+        nm = getNewMoonDay(k - 1, timeZone);
+    }
     return nm;
 }
 
+function getLeapMonthOffset(a11, timeZone) {
+    var k = INT((a11 - 2415021.076998695) / 29.530588853 + 0.5);
+    var last = 0;
+    var i = 1;
+    var arc = getSunLongitude(getNewMoonDay(k + i, timeZone), timeZone);
+    do {
+        last = arc;
+        i++;
+        arc = getSunLongitude(getNewMoonDay(k + i, timeZone), timeZone);
+    } while (arc != last && i < 14);
+    return i - 1;
+}
+
 function getLunarDate(dd, mm, yy) {
-    const tz = 7;
-    const jd = jdFromDate(dd, mm, yy);
-    let k = Math.floor((jd - 2415021) / 29.530588853);
-    let monthStart = getNewMoonDay(k + 1, tz);
-    if (monthStart > jd) monthStart = getNewMoonDay(k, tz);
-
-    const lunarDay = jd - monthStart + 1;
-
-    let a11 = getLunarMonth11(yy, tz);
-    let b11 = a11;
-    let lunarYear;
-
-    if (monthStart >= a11) {
+    const tz = 7; // Timezone cho Việt Nam (UTC+7)
+    var dayNumber = jdFromDate(dd, mm, yy);
+    var k = INT((dayNumber - 2415021.076998695) / 29.530588853);
+    var monthStart = getNewMoonDay(k + 1, tz);
+    if (monthStart > dayNumber) {
+        monthStart = getNewMoonDay(k, tz);
+    }
+    var a11 = getLunarMonth11(yy, tz);
+    var b11 = a11;
+    var lunarYear;
+    if (a11 >= monthStart) {
         lunarYear = yy;
         a11 = getLunarMonth11(yy - 1, tz);
     } else {
-        lunarYear = yy - 1;
+        lunarYear = yy + 1;
         b11 = getLunarMonth11(yy + 1, tz);
     }
-
-    const lunarMonth = Math.abs(
-    Math.floor((monthStart - a11) / 29.530588853) + 1
-);
-
+    var lunarDay = dayNumber - monthStart + 1;
+    var diff = INT((monthStart - a11) / 29);
+    var lunarLeap = 0;
+    var lunarMonth = diff + 11;
+    if (b11 - a11 > 365) {
+        var leapMonthDiff = getLeapMonthOffset(a11, tz);
+        if (diff >= leapMonthDiff) {
+            lunarMonth = diff + 10;
+            if (diff == leapMonthDiff) {
+                lunarLeap = 1;
+            }
+        }
+    }
+    if (lunarMonth > 12) {
+        lunarMonth -= 12;
+    }
+    if (lunarMonth >= 11 && diff < 4) {
+        lunarYear -= 1;
+    }
     return {
         day: lunarDay,
         month: lunarMonth,
@@ -941,7 +1035,38 @@ function getLunarText(dateStr) {
     if (!dateStr) return "";
     const d = new Date(dateStr);
     const l = getLunarDate(d.getDate(), d.getMonth() + 1, d.getFullYear());
-    return `${l.day}/${l.month}/${l.year} (${l.canChi})`;
+
+    // Thêm số 0 vào ngày và tháng nếu < 10
+    const dayStr = l.day.toString().padStart(2, '0');
+    const monthStr = l.month.toString().padStart(2, '0');
+
+    return `${dayStr}/${monthStr}/${l.year} (${l.canChi})`;
+}
+
+
+function showStatsLoading(show = true) {
+    if (show) {
+        document.getElementById('statsTableContainer').classList.add('hidden');
+        document.getElementById('statsLoading').classList.remove('hidden');
+    } else {
+        document.getElementById('statsTableContainer').classList.remove('hidden');
+        document.getElementById('statsLoading').classList.add('hidden');
+    }
+}
+
+function showNotificationLoading(show = true) {
+    const container = document.getElementById('notificationContainer');
+    const content = document.getElementById('notificationContent');
+    const loading = document.getElementById('notificationLoading');
+
+    if (show) {
+        container.classList.remove('hidden');
+        content.style.display = 'none';  // Ẩn content
+        loading.style.display = 'flex';  // Hiện loading với flex
+    } else {
+        loading.style.display = 'none';  // Ẩn loading
+        content.style.display = '';      // Hiện content (trở về mặc định, thường là block hoặc flex tùy CSS)
+    }
 }
 </script>
 </body>
