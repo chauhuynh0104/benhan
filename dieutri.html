@@ -461,7 +461,7 @@ function getPatientInfo(html) {
     // ===== 6. Cận lâm sàng =====
     for (let i = 0; i < validDays.length - 1; i++) {
         const d = validDays[i];
-        if (d.content.includes("đếm tổng trở") || d.content.includes("Chẩn đo&aacute;n h&igrave;nh ảnh")) {
+        if (d.content.includes("đếm tổng trở") || d.content.includes("Chẩn đo&aacute;n h&igrave;nh ảnh:")) {
             let j = i + 1;
             while (j < validDays.length && (hasText(validDays[j].content, "Thứ bảy") || hasText(validDays[j].content, "Chủ nhật"))) {
                 j++;
@@ -635,6 +635,7 @@ document.getElementById("fileInput").addEventListener("change", function () {
 
 </body>
 </html>
+
 
 
 
