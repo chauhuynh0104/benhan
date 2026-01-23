@@ -631,10 +631,18 @@ document.getElementById("fileInput").addEventListener("change", function () {
         runCheck();
     }
 });
+
+document.addEventListener("keydown", function (e) {
+    if (e.key === "F5") {
+        e.preventDefault();   // chặn hành vi mặc định
+        location.reload();    // reload lại app
+    }
+});
 </script>
 
 </body>
 </html>
+
 
 
 
