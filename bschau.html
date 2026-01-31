@@ -1,3 +1,4 @@
+
 <!-- 
 
 ///////////////////////////////////////////////
@@ -279,6 +280,57 @@
     margin-top: 20px;
     justify-content: flex-end; /* Đẩy toàn bộ nút sang bên phải */
 }
+/* Dropdown thống kê tổng – giống filterStatus */
+#totalYearSelect {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    min-width: 160px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+/* Khi focus – giống các select khác */
+#totalYearSelect:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+}
+#dateRangeBox {
+    display: none;          /* ← MẶC ĐỊNH ẨN */
+    gap: 10px;
+    width: 100%;
+}
+/* Khoảng ngày giống filterStatus */
+#dateRangeBox input[type="date"] {
+    flex: unset;          /* bỏ flex:1 */
+    width: 200px;         /* giống select */
+    min-width: 160px;
+}
+
+.patient-item-left {
+    justify-content: flex-start !important;
+    gap: 10px; /* khoảng cách giữa checkbox và chữ */
+}
+input[type="number"],
+.bschau {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    min-width: 160px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+/* Khi focus – giống các select khác */
+input[type="number"]:focus,
+.bschau:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+}
     </style>
 </head>
 <body>
@@ -307,11 +359,18 @@
             <div class="panel-content">
                 <div class="search-filter">
                     <input type="text" id="searchInput" placeholder="Tìm kiếm bệnh nhân...">
-                    <select id="filterStatus">   <option value="all">Tất cả</option><option value="discharged">Đã ra viện</option>
-                        <option value="active"selected>Chưa ra viện</option>
-                        
-                     
-                    </select>
+                    <select id="filterStatus">
+    <option value="all">Tất cả</option>
+    <option value="active" selected>Chưa ra viện</option>
+    <option value="discharged">Đã ra viện</option>
+    <option value="range">Khoảng thời gian</option>
+</select>
+<div id="dateRangeBox">
+    <input type="date" id="searchFrom">
+    <input type="date" id="searchTo">
+</div>
+
+
                 </div>
                 <div id="patientListContainer"><div class="loading"><center><i class="fas fa-spinner fa-spin"></i><p>Đang tải dữ liệu...</p></center></div></div>
             </div>
@@ -321,26 +380,53 @@
             <div class="panel-header">
                 <h2 id="rightPanelTitle"><i class="fas fa-chart-bar"></i> THỐNG KÊ GIỜ KHÁM</h2>
                 <button id="viewStatsBtn" class="btn btn-secondary"><i class="fas fa-chart-bar"></i> Xem thống kê</button>
+				<button id="totalStatsBtn" class="btn btn-primary"><i class="fas fa-chart-pie"></i> Thống kê tổng</button>
             </div>
-            <div class="panel-content" id="rightPanelContent">
-                <div id="statsContent">
-    <div id="statsTableContainer">
+          <div class="panel-content" id="rightPanelContent">
+
+    <!-- ====== THỐNG KÊ GIỜ KHÁM (CŨ) ====== -->
+    <div id="statsContent">
+        <div id="statsTableContainer">
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên</th>
+                        <th>Phòng</th>
+                        <th>Giờ khám</th>
+                        <th>Số ngày</th>
+                        <th>Loại</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="statsTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="statsLoading" style="text-align:center; padding:40px; color:#666;">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Đang tải dữ liệu thống kê...</p>
+        </div>
+    </div>
+
+    <!-- ====== 👉 THỐNG KÊ TỔNG (THÊM MỚI – DÁN VÀO ĐÂY) ====== -->
+    <div id="totalStatsContent" class="hidden">
+
+        <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap">
+            <select id="totalYearSelect"></select>
+            <button class="btn btn-success" onclick="renderTotalStats()">Xem</button>
+        </div>
+
         <table class="stats-table">
-            <thead>
-                <tr>
-                    <th>STT</th><th>Tên</th><th>Phòng</th><th>Giờ khám</th><th>Số ngày</th><th>Loại</th><th>Trạng thái</th>
-                </tr>
-            </thead>
-            <tbody id="statsTableBody"></tbody>
+            <tbody id="totalStatsBody"></tbody>
         </table>
+
     </div>
-    <div id="statsLoading" style="text-align:center; padding:40px; color:#666;">
-        <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
-        <p>Đang tải dữ liệu thống kê...</p>
-    </div>
+
+    <!-- ====== CHI TIẾT BỆNH NHÂN ====== -->
+    <div id="patientDetailContent" class="hidden"></div>
+
 </div>
-                <div id="patientDetailContent" class="hidden"></div>
-            </div>
         </div>
     </div>
 
@@ -389,7 +475,13 @@
                         <div class="form-group"><label for="examinationTime">Giờ khám bệnh *</label><input type="time" id="examinationTime" required></div>
                         <div class="form-group"><label for="room">Phòng *</label><select id="room" required><option value="9">Phòng 9</option><option value="11">Phòng 11</option></select></div>
                         <div class="form-group"><label for="patientType">Loại bệnh nhân *</label><select id="patientType" required><option value="Nội trú">Nội trú</option><option value="Ban ngày">Ban ngày</option></select></div>
-                    </div>
+						<div class="form-group"><label>Xét nghiệm</label><input type="text" id="labInput" readonly placeholder="Chọn xét nghiệm" onclick="openLabModal()"></div>
+						<div class="form-group"><label>Hình ảnh</label><input type="text" id="imagingInput" readonly placeholder="Chọn hình ảnh" onclick="openImagingModal()"></div>
+						<div class="form-group"><label>Thủ thuật</label><input type="text" id="procedureInput" readonly placeholder="Chọn thủ thuật" onclick="openProcedureModal()"></div>
+
+
+
+				  </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -423,6 +515,9 @@
     let pendingAction = null;
     let currentPatientId = null;
     let currentView = 'stats';
+	let tempLab = "";
+	let tempImaging = "";
+	let tempProcedure = "";
 
     // =================== THÊM MỚI: Quản lý đăng nhập bằng localStorage ===================
     const AUTH_STORAGE_KEY = "hospital_app_authenticated";
@@ -520,17 +615,30 @@
             return new Date(`${p.dischargeDate}T${p.dischargeTime}`) < new Date();
         }
 
-        function filterPatients(list) {
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            const f = document.getElementById('filterStatus').value;
-            return list.filter(p => {
-                const match = p.fullName.toLowerCase().includes(q);
-                const discharged = isDischarged(p);
-                if (f === 'active') return match && !discharged;
-                if (f === 'discharged') return match && discharged;
-                return match;
-            });
+function filterPatients(list) {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const f = document.getElementById('filterStatus').value;
+    const from = document.getElementById('searchFrom').value;
+    const to = document.getElementById('searchTo').value;
+
+    return list.filter(p => {
+        const match = p.fullName.toLowerCase().includes(q);
+        const discharged = isDischarged(p);
+
+        let dateOk = true;
+        if (f === 'range') {
+            if (from) dateOk = new Date(p.admissionDate) >= new Date(from);
+            if (to) dateOk = dateOk && new Date(p.admissionDate) <= new Date(to);
         }
+
+        if (f === 'active') return match && !discharged;
+        if (f === 'discharged') return match && discharged;
+        if (f === 'range') return match && dateOk;
+
+        return match;
+    });
+}
+
 
         function formatDate(d) { const date = new Date(d); return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`; }
 
@@ -540,7 +648,10 @@
             filtered.forEach(p => { if (!rooms[p.room]) rooms[p.room] = []; rooms[p.room].push(p); });
 
             let html = '';
-            Object.keys(rooms).sort().forEach(room => {
+           Object.keys(rooms)
+    .sort((a, b) => Number(a) - Number(b)) // nhỏ → lớn
+    .forEach(room => {
+
                 html += `<div class="patient-room-group"><h3>Phòng ${room}</h3>`;
                 rooms[room].forEach(p => {
                     const discharged = isDischarged(p);
@@ -634,7 +745,32 @@ function updateNotifications() {
                         <div class="form-group"><label>Giờ khám bệnh *</label><input type="time" id="detailExaminationTime" value="${p.examinationTime}" required></div>
                         <div class="form-group"><label>Phòng *</label><select id="detailRoom" required><option value="9" ${p.room==='9'?'selected':''}>Phòng 9</option><option value="11" ${p.room==='11'?'selected':''}>Phòng 11</option></select></div>
                         <div class="form-group"><label>Loại bệnh nhân *</label><select id="detailPatientType" required><option value="Nội trú" ${p.patientType==='Nội trú'?'selected':''}>Nội trú</option><option value="Ban ngày" ${p.patientType==='Ban ngày'?'selected':''}>Ban ngày</option></select></div>
-                       <div class="form-group">
+                      
+<div class="form-group">
+    <label>Xét nghiệm</label>
+    <input type="text" id="detailLabInput" readonly
+       value="${p.lab || ''}"
+       onclick="openLabModal(true)">
+
+</div>
+
+<div class="form-group">
+    <label>Hình ảnh</label>
+    <input type="text" id="detailImagingInput" readonly
+       value="${p.imaging || ''}"
+       onclick="openImagingModal(true)">
+</div>
+
+<div class="form-group">
+    <label>Thủ thuật</label>
+   <input type="text" id="detailProcedureInput" readonly
+       value="${formatProcedureText(p.procedure || '')}"
+       onclick="openProcedureModal(true)">
+</div>
+
+
+
+					  <div class="form-group">
     <label>Ngày ra viện
     <span id="detailDischargeLunar" style="margin-left:6px;color:#009688;font-weight:600"></span>
     
@@ -699,6 +835,7 @@ setTimeout(() => {
 
     function showStatsView() {
     currentView = 'stats'; currentPatientId = null;
+	document.getElementById('totalStatsContent').classList.add('hidden');
     document.getElementById('rightPanelTitle').innerHTML = '<i class="fas fa-chart-bar"></i> THỐNG KÊ GIỜ KHÁM';
     document.getElementById('statsContent').classList.remove('hidden');
     document.getElementById('patientDetailContent').classList.add('hidden');
@@ -727,40 +864,109 @@ setTimeout(() => {
     );
 }
 
-        async function savePatient() {
-            if (!document.getElementById('patientForm').checkValidity()) { showToast('Vui lòng điền đầy đủ thông tin', 'error'); return; }
-            const id = 'patient_' + Date.now();
-            const newP = { id, fullName: document.getElementById('fullName').value, age: +document.getElementById('age').value, gender: document.getElementById('gender').value,
-                diagnosis: document.getElementById('diagnosis').value, admissionDate: document.getElementById('admissionDate').value,
-                admissionTime: document.getElementById('admissionTime').value, examinationTime: document.getElementById('examinationTime').value,
-                room: document.getElementById('room').value, patientType: document.getElementById('patientType').value,
-                dischargeDate: '', dischargeTime: '' };
-            patients.push(newP);
-            try {
-                await saveToDropbox(patients);
-                renderPatientList(); renderStatsTable(); updateNotifications();
-                document.getElementById('patientModal').classList.add('hidden');
-                showToast('Thêm thành công!', 'success');
-                showPatientDetail(id);
-            } catch { showToast('Lỗi lưu dữ liệu', 'error'); }
-        }
+async function savePatient() {
+    if (!document.getElementById('patientForm').checkValidity()) {
+        showToast('Vui lòng điền đầy đủ thông tin', 'error');
+        return;
+    }
 
-        async function updatePatient(id) {
-            const i = patients.findIndex(p => p.id === id);
-            patients[i] = { ...patients[i],
-                fullName: document.getElementById('detailFullName').value, age: +document.getElementById('detailAge').value,
-                gender: document.getElementById('detailGender').value, diagnosis: document.getElementById('detailDiagnosis').value,
-                admissionDate: document.getElementById('detailAdmissionDate').value, admissionTime: document.getElementById('detailAdmissionTime').value,
-                examinationTime: document.getElementById('detailExaminationTime').value, room: document.getElementById('detailRoom').value,
-                patientType: document.getElementById('detailPatientType').value,
-                dischargeDate: document.getElementById('detailDischargeDate').value || '',
-                dischargeTime: document.getElementById('detailDischargeTime').value || '' };
-            try {
-                await saveToDropbox(patients);
-                renderPatientList(); renderStatsTable(); updateNotifications();
-                showToast('Cập nhật thành công!', 'success');
-            } catch { showToast('Lỗi cập nhật', 'error'); }
-        }
+    const id = 'patient_' + Date.now();
+
+    const newP = {
+        id,
+        fullName: document.getElementById('fullName').value,
+        age: +document.getElementById('age').value,
+        gender: document.getElementById('gender').value,
+        diagnosis: document.getElementById('diagnosis').value,
+        admissionDate: document.getElementById('admissionDate').value,
+        admissionTime: document.getElementById('admissionTime').value,
+        examinationTime: document.getElementById('examinationTime').value,
+        room: document.getElementById('room').value,
+        patientType: document.getElementById('patientType').value,
+
+        // ✅ CLS – chỉ lưu khi bấm LƯU
+        lab: tempLab || "",
+        imaging: tempImaging || "",
+        procedure: tempProcedure || "",
+
+        dischargeDate: '',
+        dischargeTime: ''
+    };
+
+    patients.push(newP);
+
+    try {
+        await saveToDropbox(patients);
+
+        // reset dữ liệu tạm sau khi đã lưu
+        tempLab = "";
+        tempImaging = "";
+        tempProcedure = "";
+
+        renderPatientList();
+        renderStatsTable();
+        updateNotifications();
+
+        document.getElementById('patientModal').classList.add('hidden');
+        showToast('Thêm thành công!', 'success');
+        showPatientDetail(id);
+
+    } catch {
+        showToast('Lỗi lưu dữ liệu', 'error');
+    }
+}
+
+
+       async function updatePatient(id) {
+    const i = patients.findIndex(p => p.id === id);
+    if (i === -1) {
+        showToast('Không tìm thấy bệnh nhân', 'error');
+        return;
+    }
+
+    patients[i] = {
+        ...patients[i],
+
+        fullName: document.getElementById('detailFullName').value,
+        age: +document.getElementById('detailAge').value,
+        gender: document.getElementById('detailGender').value,
+        diagnosis: document.getElementById('detailDiagnosis').value,
+
+        admissionDate: document.getElementById('detailAdmissionDate').value,
+        admissionTime: document.getElementById('detailAdmissionTime').value,
+        examinationTime: document.getElementById('detailExaminationTime').value,
+
+        room: document.getElementById('detailRoom').value,
+        patientType: document.getElementById('detailPatientType').value,
+
+        // ✅ CLS – chỉ ghi khi bấm CẬP NHẬT
+        lab: tempLab || patients[i].lab,
+        imaging: tempImaging || patients[i].imaging,
+        procedure: tempProcedure || patients[i].procedure,
+
+        dischargeDate: document.getElementById('detailDischargeDate').value || '',
+        dischargeTime: document.getElementById('detailDischargeTime').value || ''
+    };
+
+    try {
+        await saveToDropbox(patients);
+
+        // ✅ reset dữ liệu tạm
+        tempLab = "";
+        tempImaging = "";
+        tempProcedure = "";
+
+        renderPatientList();
+        renderStatsTable();
+        updateNotifications();
+
+        showToast('Cập nhật thành công!', 'success');
+
+    } catch {
+        showToast('Lỗi cập nhật', 'error');
+    }
+}
+
 
         async function deletePatient(id) {
             patients = patients.filter(p => p.id !== id);
@@ -782,8 +988,63 @@ setTimeout(() => {
         document.getElementById('newPatientBtn').onclick = () => requirePassword(showAddPatientModal);
         document.getElementById('viewStatsBtn').onclick = () => requirePassword(showStatsView);
         document.getElementById('savePatientBtn').onclick = () => requirePassword(savePatient);
+		
+		
+		document.getElementById('totalStatsBtn').onclick = () => requirePassword(() => {
+
+    currentView = 'totalStats';
+
+    // Ẩn các view khác
+    document.getElementById('statsContent').classList.add('hidden');
+    document.getElementById('patientDetailContent').classList.add('hidden');
+
+    // Hiện thống kê tổng
+    document.getElementById('totalStatsContent').classList.remove('hidden');
+
+    // Cập nhật tiêu đề bên phải
+    document.getElementById('rightPanelTitle').innerHTML =
+        '<i class="fas fa-chart-pie"></i> THỐNG KÊ TỔNG';
+
+    // Đổ danh sách năm
+    const yearSelect = document.getElementById('totalYearSelect');
+    const years = getAvailableYears();
+
+    yearSelect.innerHTML =
+        `<option value="all">Tất cả năm</option>` +
+        years.map(y => `<option value="${y}">${y}</option>`).join('');
+
+    renderTotalStats();
+});
+
+		
+		
+		
         document.getElementById('searchInput').oninput = () => requirePassword(() => { renderPatientList(); renderStatsTable(); });
-        document.getElementById('filterStatus').onchange = () => requirePassword(() => { renderPatientList(); renderStatsTable(); });
+// ===== BƯỚC 3: Ẩn/hiện khoảng ngày theo filterStatus =====
+const filterStatus = document.getElementById('filterStatus');
+const dateRangeBox = document.getElementById('dateRangeBox');
+
+filterStatus.onchange = () => requirePassword(() => {
+
+    if (filterStatus.value === 'range') {
+        dateRangeBox.style.display = 'flex';   // HIỆN
+    } else {
+        dateRangeBox.style.display = 'none';   // ẨN
+        document.getElementById('searchFrom').value = '';
+        document.getElementById('searchTo').value = '';
+    }
+
+    renderPatientList();
+    renderStatsTable();
+});
+// ===== BỔ SUNG: đổi ngày là lọc ngay =====
+document.getElementById('searchFrom').onchange =
+document.getElementById('searchTo').onchange = () =>
+    requirePassword(() => {
+        renderPatientList();
+        renderStatsTable();
+    });
+
 
         document.getElementById('closeModalBtn').onclick = document.getElementById('cancelBtn').onclick = () => document.getElementById('patientModal').classList.add('hidden');
         document.getElementById('closeConfirmModalBtn').onclick = document.getElementById('cancelDeleteBtn').onclick = () => document.getElementById('confirmModal').classList.add('hidden');
@@ -1068,6 +1329,405 @@ function showNotificationLoading(show = true) {
         content.style.display = '';      // Hiện content (trở về mặc định, thường là block hoặc flex tùy CSS)
     }
 }
+function getAvailableYears() {
+    const years = new Set();
+    patients.forEach(p => {
+        if (p.admissionDate) {
+            years.add(new Date(p.admissionDate).getFullYear());
+        }
+    });
+    return Array.from(years).sort((a,b)=>b-a);
+}
+function renderTotalStats() {
+    const year = document.getElementById("totalYearSelect").value;
+    const now = new Date();
+
+    const list = patients.filter(p => {
+        if (year === "all") return true;
+        return new Date(p.admissionDate).getFullYear() == year;
+    });
+
+    let total = list.length;
+    let noiTru = 0;
+    let banNgay = 0;
+    let noiTru20 = 0;
+    let banNgay14 = 0;
+
+    list.forEach(p => {
+        const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
+        if (p.patientType === "Nội trú") {
+            noiTru++;
+            if (days > 20) noiTru20++;
+        }
+        if (p.patientType === "Ban ngày") {
+            banNgay++;
+            if (days > 14) banNgay14++;
+        }
+    });
+
+    document.getElementById("totalStatsBody").innerHTML = `
+        <tr><th>Tổng số bệnh nhân điều trị</th><td>${total}</td></tr>
+        <tr><th>Bệnh nhân nội trú</th><td>${noiTru}</td></tr>
+        <tr><th>Bệnh nhân ban ngày</th><td>${banNgay}</td></tr>
+        <tr><th>Nội trú nằm > 20 ngày</th><td>${noiTru20}</td></tr>
+        <tr><th>Ban ngày > 14 ngày</th><td>${banNgay14}</td></tr>
+    `;
+}
+let currentTarget = null;
+
+function openLabModal(detail=false){
+  currentTarget = detail ? "detailLabInput" : "labInput";
+
+  const value = detail && currentPatientId
+      ? patients.find(p=>p.id===currentPatientId).lab
+      : tempLab;
+
+  document.querySelectorAll("#labModal input[type=checkbox]").forEach(cb=>{
+      cb.checked = value?.includes(cb.value);
+  });
+
+  document.getElementById("labModal").classList.remove("hidden");
+}
+
+function closeLabModal(){
+  document.getElementById("labModal").classList.add("hidden");
+}
+function saveLab(){
+  tempLab = [...document.querySelectorAll("#labModal input:checked")]
+      .map(i => i.value)
+      .join(", ");
+
+  document.getElementById(currentTarget).value = tempLab;
+  closeLabModal();
+}
+
+
+
+function openImagingModal(detail = false) {
+    currentTarget = detail ? "detailImagingInput" : "imagingInput";
+
+    const value = detail && currentPatientId
+        ? patients.find(p => p.id === currentPatientId)?.imaging
+        : tempImaging;
+
+    // reset trước
+    document.querySelectorAll("#imagingModal input[type=checkbox]").forEach(cb => cb.checked = false);
+    document.querySelectorAll("#imagingModal select").forEach(s => s.value = "");
+
+    if (!value) {
+        document.getElementById("imagingModal").classList.remove("hidden");
+        return;
+    }
+
+    // ==== XQUANG ====
+    chkXrayNeck.checked = value.includes("Xquang cổ");
+    chkXrayBack.checked = value.includes("Xquang lưng");
+
+    if (value.includes("Xquang gối")) {
+        chkXrayKnee.checked = true;
+        xrayKnee.value = value.includes("(Trái)") ? "Trái"
+                         : value.includes("(Phải)") ? "Phải" : "";
+    }
+
+    if (value.includes("Xquang vai")) {
+        chkXrayShoulder.checked = true;
+        xrayShoulder.value = value.includes("(Trái)") ? "Trái"
+                             : value.includes("(Phải)") ? "Phải" : "";
+    }
+
+    // ==== SIÊU ÂM ====
+    chkUSAbdomen.checked = value.includes("Siêu âm ổ bụng");
+
+    if (value.includes("Siêu âm khớp gối")) {
+        chkUSKnee.checked = true;
+        usKnee.value = value.includes("(Trái)") ? "Trái"
+                     : value.includes("(Phải)") ? "Phải" : "";
+    }
+
+    if (value.includes("Siêu âm khớp vai")) {
+        chkUSShoulder.checked = true;
+        usShoulder.value = value.includes("(Trái)") ? "Trái"
+                           : value.includes("(Phải)") ? "Phải" : "";
+    }
+
+    document.getElementById("imagingModal").classList.remove("hidden");
+}
+
+
+function closeImagingModal(){
+  document.getElementById("imagingModal").classList.add("hidden");
+}
+function saveImaging(){
+    let arr = [];
+
+    if (chkXrayNeck.checked) arr.push("Xquang cổ");
+    if (chkXrayBack.checked) arr.push("Xquang lưng");
+
+    if (chkXrayKnee.checked && xrayKnee.value)
+        arr.push(`Xquang gối (${xrayKnee.value})`);
+
+    if (chkXrayShoulder.checked && xrayShoulder.value)
+        arr.push(`Xquang vai (${xrayShoulder.value})`);
+
+    if (chkUSAbdomen.checked) arr.push("Siêu âm ổ bụng");
+
+    if (chkUSKnee.checked && usKnee.value)
+        arr.push(`Siêu âm khớp gối (${usKnee.value})`);
+
+    if (chkUSShoulder.checked && usShoulder.value)
+        arr.push(`Siêu âm khớp vai (${usShoulder.value})`);
+
+    tempImaging = arr.join(", ");
+    document.getElementById(currentTarget).value = tempImaging;
+    closeImagingModal();
+}
+
+
+
+
+function openProcedureModal(detail = false){
+  currentTarget = detail ? "detailProcedureInput" : "procedureInput";
+
+  const oldData = detail && currentPatientId
+    ? patients.find(p => p.id === currentPatientId)?.procedure || {}
+    : tempProcedure || {};
+
+  document.querySelectorAll('#procedureModal input[type=checkbox]').forEach(cb => {
+    const key = cb.dataset.key;
+    const qtyInput = document.querySelector(
+      `#procedureModal input[data-qty="${key}"]`
+    );
+
+    // === set trạng thái ban đầu ===
+    if (oldData[key]) {
+      cb.checked = true;
+      qtyInput.value = oldData[key];   // giữ số cũ
+    } else {
+      cb.checked = false;
+      qtyInput.value = 0;
+    }
+
+    // === 🔥 QUAN TRỌNG: tích → tự set = 1 ===
+    cb.onchange = () => {
+      if (cb.checked) {
+        if (!qtyInput.value || qtyInput.value == 0) {
+          qtyInput.value = 1;          // ✅ auto 1
+        }
+      } else {
+        qtyInput.value = 0;            // ❌ bỏ tích → 0
+      }
+    };
+  });
+
+  document.getElementById("procedureModal").classList.remove("hidden");
+}
+
+
+function closeProcedureModal(){
+  document.getElementById("procedureModal").classList.add("hidden");
+}
+function saveProcedure(){
+  const data = {};
+  const lines = [];
+
+  document.querySelectorAll('#procedureModal input[type=checkbox]').forEach(cb=>{
+    const key = cb.dataset.key;
+    const qtyInput = document.querySelector(`#procedureModal input[data-qty="${key}"]`);
+    const qty = parseInt(qtyInput.value) || 0;
+
+    if(cb.checked && qty > 0){
+      data[key] = qty;
+      lines.push(`${cb.parentElement.innerText.trim()} (${qty})`);
+    }
+  });
+
+  tempProcedure = data;
+  document.getElementById(currentTarget).value = lines.join(', ');
+  closeProcedureModal();
+}
+
+
+
+function bindImagingCheckbox(chkId, selectId) {
+    const chk = document.getElementById(chkId);
+    const sel = document.getElementById(selectId);
+    if (!chk || !sel) return;
+
+    chk.onchange = () => {
+        sel.disabled = !chk.checked;
+        if (!chk.checked) sel.value = "";
+    };
+}
+
+// gọi khi mở modal
+function initImagingModal() {
+    bindImagingCheckbox("chkXrayKnee", "xrayKnee");
+    bindImagingCheckbox("chkXrayShoulder", "xrayShoulder");
+    bindImagingCheckbox("chkUSKnee", "usKnee");
+    bindImagingCheckbox("chkUSShoulder", "usShoulder");
+}
+function formatProcedureText(p){
+  if(!p) return '';
+  const map = {
+    dienCham: 'Điện châm',
+    chieuDen: 'Chiếu đèn',
+    xoaBop: 'Xoa bóp',
+    kyThuatXoaBop: 'KT xoa bóp',
+    thuyCham: 'Thuỷ châm',
+    giacHoi: 'Giác hơi'
+  };
+
+  return Object.keys(p)
+    .filter(k => p[k] > 0)
+    .map(k => `${map[k]} (${p[k]})`)
+    .join(', ');
+}
+
 </script>
-</body>
-</html>
+<div id="labModal" class="overlay hidden">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      Xét nghiệm
+      <button class="close-btn" onclick="closeLabModal()">×</button>
+    </div>
+    <div class="modal-content">
+      <label class="patient-item patient-item-left"><input type="checkbox" value="Tổng phân tích"> Tổng phân tích</label><br>
+      <label class="patient-item patient-item-left"><input type="checkbox" value="Sinh hoá"> Sinh hoá</label><br>
+      <label class="patient-item patient-item-left"><input type="checkbox" value="Nước tiểu"> Nước tiểu</label><br>
+      <label class="patient-item patient-item-left"><input type="checkbox" value="Vi sinh"> Vi sinh</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success" onclick="saveLab()">OK</button>
+    </div>
+  </div>
+</div>
+<div id="imagingModal" class="overlay hidden">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      Hình ảnh
+      <button class="close-btn" onclick="closeImagingModal()">×</button>
+    </div>
+    <div class="modal-content">
+
+<label class="patient-item patient-item-left">
+  <input type="checkbox" id="chkXrayNeck" value="Xquang cổ">
+  Xquang cổ
+</label><br>
+
+<label class="patient-item patient-item-left">
+  <input type="checkbox" id="chkXrayBack" value="Xquang lưng">
+  Xquang lưng
+</label class="patient-item"><br>
+
+<label class="patient-item patient-item-left">
+  <input type="checkbox" id="chkXrayKnee">
+  Xquang gối
+
+<select id="xrayKnee" class="bschau" disabled>
+  <option>Trái</option>
+  <option>Phải</option>
+  <option>2 bên</option>
+</select></label>
+<br>
+<label class="patient-item patient-item-left">
+  <input type="checkbox" id="chkXrayShoulder">
+  Xquang vai
+
+<select id="xrayShoulder" class="bschau" disabled>
+  <option>Thẳng</option>
+  <option>Nghiêng</option>
+  <option>Cả 2</option>
+</select></label><br>
+
+
+     <label class="patient-item patient-item-left">
+  <input type="checkbox" id="chkUSAbdomen" value="Siêu âm ổ bụng">
+  Siêu âm ổ bụng
+</label><br>
+
+<label class="patient-item patient-item-left">
+  <input type="checkbox" id="chkUSKnee">
+  Siêu âm khớp gối
+
+<select id="usKnee" class="bschau" disabled>
+  <option>Trái</option>
+  <option>Phải</option>
+  <option>2 bên</option>
+</select></label><br>
+
+<label class="patient-item patient-item-left">
+  <input type="checkbox" id="chkUSShoulder">
+  Siêu âm khớp vai
+
+<select id="usShoulder" class="bschau" disabled>
+  <option>Trái</option>
+  <option>Phải</option>
+  <option>2 bên</option>
+</select></label>
+
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success" onclick="saveImaging()">OK</button>
+    </div>
+  </div>
+</div>
+<div id="procedureModal" class="overlay hidden">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      Thủ thuật
+      <button class="close-btn" onclick="closeProcedureModal()">×</button>
+    </div>
+   <div class="modal-content">
+
+  <div class="patient-item patient-item-left">
+    <label style="flex:1">
+      <input type="checkbox" data-key="dienCham"> Điện châm
+    </label>
+    <input type="number" min="1" value="0" data-qty="dienCham" style="width:70px">
+  </div>
+
+  <div class="patient-item patient-item-left">
+    <label style="flex:1">
+      <input type="checkbox" data-key="chieuDen"> Chiếu đèn hồng ngoại
+    </label>
+    <input type="number" min="1" value="0" data-qty="chieuDen" style="width:70px">
+  </div>
+
+  <div class="patient-item patient-item-left">
+    <label style="flex:1">
+      <input type="checkbox" data-key="xoaBop"> Xoa bóp bấm huyệt bằng tay
+    </label>
+    <input type="number" min="1" value="0" data-qty="xoaBop" style="width:70px">
+  </div>
+
+  <div class="patient-item patient-item-left">
+    <label style="flex:1">
+      <input type="checkbox" data-key="kyThuatXoaBop"> Kỹ thuật xoa bóp vùng
+    </label>
+    <input type="number" min="1" value="0" data-qty="kyThuatXoaBop" style="width:70px">
+  </div>
+
+  <div class="patient-item patient-item-left">
+    <label style="flex:1">
+      <input type="checkbox" data-key="thuyCham"> Thuỷ châm
+    </label>
+    <input type="number" min="1" value="0" data-qty="thuyCham" style="width:70px">
+  </div>
+
+  <div class="patient-item patient-item-left">
+    <label style="flex:1">
+      <input type="checkbox" data-key="giacHoi"> Giác hơi
+    </label>
+    <input type="number" min="1" value="0" data-qty="giacHoi" style="width:70px">
+  </div>
+
+</div>
+
+    <div class="modal-footer">
+      <button class="btn btn-success" onclick="saveProcedure()">OK</button>
+    </div>
+  </div>
+</div>
+
+</body></html>
