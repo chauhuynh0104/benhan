@@ -1404,6 +1404,7 @@ function saveLab(){
 
 
 function openImagingModal(detail = false) {
+ initImagingModal();
     currentTarget = detail ? "detailImagingInput" : "imagingInput";
 
     const value = detail && currentPatientId
