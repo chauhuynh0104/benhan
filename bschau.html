@@ -1,4 +1,5 @@
 
+
 <!-- 
 
 ///////////////////////////////////////////////
@@ -414,7 +415,7 @@ input[type="number"]:focus,
 
         <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap">
             <select id="totalYearSelect"></select>
-            <button class="btn btn-success" onclick="renderTotalStats()">Xem</button>
+        
         </div>
 
         <table class="stats-table">
@@ -1149,12 +1150,20 @@ function formatHourHM(timeStr){
     return `${h.padStart(2,'0')}:${m.padStart(2,'0')}`;
 }
 function calcHospitalDays(admit, discharge){
-    if(!admit || !discharge) return "";
+    if (!admit) return "";
+
     const a = new Date(admit);
-    const r = new Date(discharge);
-    const diff = Math.round((r - a) / (1000*60*60*24));
-    return diff + " ngày";
+    a.setHours(0,0,0,0);
+
+    // nếu chưa có ngày ra viện → lấy hôm nay
+    const r = discharge ? new Date(discharge) : new Date();
+    r.setHours(0,0,0,0);
+
+    const diff = Math.floor((r - a) / 86400000);
+
+    return diff >= 0 ? diff + " ngày" : "";
 }
+
 /* ====== AM LICH VIET NAM - HO NGOC DUC (CHUAN) ====== */
 const CAN = ["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"];
 const CHI = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
@@ -1329,6 +1338,67 @@ function showNotificationLoading(show = true) {
         content.style.display = '';      // Hiện content (trở về mặc định, thường là block hoặc flex tùy CSS)
     }
 }
+
+
+const LAB_KEYS = ["Tổng phân tích","Sinh hoá","Nước tiểu","Vi sinh"];
+
+const IMAGING_KEYS = [
+  "Xquang cổ",
+  "Xquang lưng",
+  "Xquang gối",
+  "Xquang vai",
+  "Xquang khớp háng",
+  "Siêu âm ổ bụng",
+  "Siêu âm khớp gối",
+  "Siêu âm khớp vai"
+];
+
+const PROCEDURE_MAP = {
+  dienCham: "Điện châm",
+  chieuDen: "Chiếu đèn hồng ngoại",
+  xoaBop: "Xoa bóp bấm huyệt bằng tay",
+  kyThuatXoaBop: "Kỹ thuật xoa bóp vùng",
+  thuyCham: "Thuỷ châm",
+  giacHoi: "Giác hơi"
+};
+
+function calcMedicalStats(patients){
+  const stat = { lab:{}, imaging:{}, procedure:{} };
+
+  LAB_KEYS.forEach(k=>stat.lab[k]=0);
+  IMAGING_KEYS.forEach(k=>stat.imaging[k]=0);
+  Object.values(PROCEDURE_MAP).forEach(k=>stat.procedure[k]=0);
+
+  patients.forEach(p=>{
+    // XÉT NGHIỆM
+    if(p.lab){
+      LAB_KEYS.forEach(k=>{
+        if(p.lab.includes(k)) stat.lab[k]++;
+      });
+    }
+
+    // HÌNH ẢNH
+    if(p.imaging){
+      IMAGING_KEYS.forEach(k=>{
+        if(p.imaging.includes(k)) stat.imaging[k]++;
+      });
+    }
+
+    // THỦ THUẬT
+    if(p.procedure){
+      for(const key in p.procedure){
+        const name = PROCEDURE_MAP[key];
+        if(name) stat.procedure[name]+=Number(p.procedure[key]||0);
+      }
+    }
+  });
+
+  return stat;
+}
+
+
+
+
 function getAvailableYears() {
     const years = new Set();
     patients.forEach(p => {
@@ -1372,6 +1442,53 @@ function renderTotalStats() {
         <tr><th>Nội trú nằm > 20 ngày</th><td>${noiTru20}</td></tr>
         <tr><th>Ban ngày > 14 ngày</th><td>${banNgay14}</td></tr>
     `;
+	
+	  /* ===== THỐNG KÊ CẬN LÂM SÀNG – THỦ THUẬT ===== */
+  const m = calcMedicalStats(patients);
+
+  let extraHTML = "<hr>";
+
+// XÉT NGHIỆM
+const labTotal = Object.values(m.lab).reduce((a,b)=>a+b,0);
+
+extraHTML += `<div class="bschau">`;
+extraHTML += `<b>- Xét nghiệm: ${labTotal}</b><br>`;
+
+for(const k in m.lab){
+  extraHTML += `+ ${k}: ${m.lab[k]}<br>`;
+}
+
+extraHTML += `</div>`;
+
+
+ // HÌNH ẢNH
+const imgTotal = Object.values(m.imaging).reduce((a,b)=>a+b,0);
+
+extraHTML += `<div class="bschau">`;
+extraHTML += `<b>- Hình ảnh: ${imgTotal}</b><br>`;
+
+for(const k in m.imaging){
+  extraHTML += `+ ${k}: ${m.imaging[k]}<br>`;
+}
+
+extraHTML += `</div>`;
+
+// THỦ THUẬT
+const proTotal = Object.values(m.procedure).reduce((a,b)=>a+b,0);
+
+extraHTML += `<div class="bschau">`;
+extraHTML += `<b>- Thủ thuật: ${proTotal}</b><br>`;
+
+for(const k in m.procedure){
+  extraHTML += `+ ${k}: ${m.procedure[k]}<br>`;
+}
+
+extraHTML += `</div>`;
+
+  document.getElementById("totalStatsContent").innerHTML += extraHTML;
+
+	
+	
 }
 let currentTarget = null;
 
@@ -1435,7 +1552,7 @@ function openImagingModal(detail = false) {
         xrayShoulder.value = value.includes("(Trái)") ? "Trái"
                              : value.includes("(Phải)") ? "Phải" : "";
     }
-
+ chkXrayHip.checked = value.includes("Xquang khớp háng");
     // ==== SIÊU ÂM ====
     chkUSAbdomen.checked = value.includes("Siêu âm ổ bụng");
 
@@ -1469,6 +1586,8 @@ function saveImaging(){
 
     if (chkXrayShoulder.checked && xrayShoulder.value)
         arr.push(`Xquang vai (${xrayShoulder.value})`);
+ 
+ if (chkXrayHip.checked) arr.push("Xquang khớp háng");
 
     if (chkUSAbdomen.checked) arr.push("Siêu âm ổ bụng");
 
@@ -1583,6 +1702,12 @@ function formatProcedureText(p){
     .map(k => `${map[k]} (${p[k]})`)
     .join(', ');
 }
+document.addEventListener("change", function (e) {
+    if (e.target && e.target.id === "totalYearSelect") {
+        renderTotalStats();
+    }
+});
+
 
 </script>
 <div id="labModal" class="overlay hidden">
@@ -1639,7 +1764,10 @@ function formatProcedureText(p){
   <option>Nghiêng</option>
   <option>Cả 2</option>
 </select></label><br>
-
+<label class="patient-item patient-item-left">
+  <input type="checkbox" id="chkXrayHip" value="Xquang khớp háng">
+  Xquang khớp háng
+</label class="patient-item"><br>
 
      <label class="patient-item patient-item-left">
   <input type="checkbox" id="chkUSAbdomen" value="Siêu âm ổ bụng">
