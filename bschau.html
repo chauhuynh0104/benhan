@@ -474,7 +474,7 @@ input[type="number"]:focus,
 
                         <div class="form-group"><label for="admissionTime">Giờ vào viện *</label><input type="time" id="admissionTime" required></div>
                         <div class="form-group"><label for="examinationTime">Giờ khám bệnh *</label><input type="time" id="examinationTime" required></div>
-                        <div class="form-group"><label for="room">Phòng *</label><select id="room" required><option value="9">Phòng 9</option><option value="11">Phòng 11</option></select></div>
+                        <div class="form-group"><label for="room">Phòng *</label><select id="room" required><option value="9">Phòng 9</option><option value="11">Phòng 11</option><option value="1">Phòng 1</option><option value="2">Phòng 2</option><option value="10">Phòng 10</option></select></div>
                         <div class="form-group"><label for="patientType">Loại bệnh nhân *</label><select id="patientType" required><option value="Nội trú">Nội trú</option><option value="Ban ngày">Ban ngày</option></select></div>
 						<div class="form-group"><label>Xét nghiệm</label><input type="text" id="labInput" readonly placeholder="Chọn xét nghiệm" onclick="openLabModal()"></div>
 						<div class="form-group"><label>Hình ảnh</label><input type="text" id="imagingInput" readonly placeholder="Chọn hình ảnh" onclick="openImagingModal()"></div>
@@ -744,7 +744,7 @@ function updateNotifications() {
 
                         <div class="form-group"><label>Giờ vào viện *</label><input type="time" id="detailAdmissionTime" value="${p.admissionTime}" required></div>
                         <div class="form-group"><label>Giờ khám bệnh *</label><input type="time" id="detailExaminationTime" value="${p.examinationTime}" required></div>
-                        <div class="form-group"><label>Phòng *</label><select id="detailRoom" required><option value="9" ${p.room==='9'?'selected':''}>Phòng 9</option><option value="11" ${p.room==='11'?'selected':''}>Phòng 11</option></select></div>
+                        <div class="form-group"><label>Phòng *</label><select id="detailRoom" required><option value="9" ${p.room==='9'?'selected':''}>Phòng 9</option><option value="11" ${p.room==='11'?'selected':''}>Phòng 11</option><option value="1" ${p.room==='1'?'selected':''}>Phòng 1</option><option value="2" ${p.room==='2'?'selected':''}>Phòng 2</option><option value="10" ${p.room==='10'?'selected':''}>Phòng 10</option></select></div>
                         <div class="form-group"><label>Loại bệnh nhân *</label><select id="detailPatientType" required><option value="Nội trú" ${p.patientType==='Nội trú'?'selected':''}>Nội trú</option><option value="Ban ngày" ${p.patientType==='Ban ngày'?'selected':''}>Ban ngày</option></select></div>
                       
 <div class="form-group">
