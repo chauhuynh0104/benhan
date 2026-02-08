@@ -682,32 +682,61 @@ function filterPatients(list) {
 
         function formatDate(d) { const date = new Date(d); return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`; }
 
-        function renderPatientList() {
-            const filtered = filterPatients(patients);
-            const rooms = {};
-            filtered.forEach(p => { if (!rooms[p.room]) rooms[p.room] = []; rooms[p.room].push(p); });
+      function renderPatientList() {
+    const filtered = filterPatients(patients);
+    const rooms = {};
+    const isNarrow = window.innerWidth < 410;
 
-            let html = '';
-           Object.keys(rooms)
-    .sort((a, b) => Number(a) - Number(b)) // nhỏ → lớn
-    .forEach(room => {
+    filtered.forEach(p => {
+        if (!rooms[p.room]) rooms[p.room] = [];
+        rooms[p.room].push(p);
+    });
 
-                html += `<div class="patient-room-group"><h3>Phòng ${room}</h3>`;
-                rooms[room].forEach(p => {
-                    const discharged = isDischarged(p);
-                    html += `<div class="patient-item ${currentPatientId === p.id ? 'active' : ''}" onclick="requirePassword(() => showPatientDetail('${p.id}'))">
-                        <span class="patient-name">${p.fullName}</span> ${p.age} tuổi  
-                        <span class="patient-details">
-                            <span class="patient-type ${p.patientType === 'Nội trú' ? 'inpatient' : 'outpatient'}">${p.patientType}</span>
-                            ${discharged ? '<small style="color:#888;margin-left:8px">(Đã ra viện)</small>' : ''}
-                        </span>
-                    </div>`;
-                });
-                html += '</div>';
+    let html = '';
+
+    Object.keys(rooms)
+        .sort((a, b) => Number(a) - Number(b))
+        .forEach(room => {
+
+            html += `<div class="patient-room-group"><h3>Phòng ${room}</h3>`;
+
+            rooms[room].forEach(p => {
+                const discharged = isDischarged(p);
+
+                // ===== LOẠI BỆNH NHÂN =====
+                let patientTypeText = p.patientType;
+                let patientTypeTooltip = '';
+
+                if (isNarrow) {
+                    if (p.patientType === 'Nội trú') patientTypeText = 'NT';
+                    if (p.patientType === 'Ban ngày') patientTypeText = 'BN';
+                    patientTypeTooltip = `title="${p.patientType}"`;
+                }
+
+                html += `
+<div class="patient-item ${currentPatientId === p.id ? 'active' : ''}"
+     onclick="requirePassword(() => showPatientDetail('${p.id}'))">
+
+    <span class="patient-name">${p.fullName}</span>
+    <span class="patient-age">${p.age} tuổi</span>
+
+    <span class="patient-details">
+        <span class="patient-type ${p.patientType === 'Nội trú' ? 'inpatient' : 'outpatient'}"
+              ${patientTypeTooltip}>
+            ${patientTypeText}
+        </span>
+        ${discharged ? '<small style="color:#888;margin-left:8px">(Đã ra viện)</small>' : ''}
+    </span>
+</div>`;
             });
 
-            document.getElementById('patientListContainer').innerHTML = html || '<div class="empty-state"><center><p><i class="fas fa-users-slash"></i>Không có bệnh nhân nào</p></center></div>';
-        }
+            html += '</div>';
+        });
+
+    document.getElementById('patientListContainer').innerHTML =
+        html || '<div class="empty-state"><center><p><i class="fas fa-users-slash"></i>Không có bệnh nhân nào</p></center></div>';
+}
+
 
      function renderStatsTable() {
     showStatsLoading(true);
