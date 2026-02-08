@@ -332,6 +332,39 @@ input[type="number"]:focus,
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
 }
+@media (max-width: 480px) {
+    .patient-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .patient-name {
+        flex: 1;
+        min-width: 0;              /* 🔥 BẮT BUỘC cho mobile */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 14px;
+    }
+
+    .patient-age {
+        white-space: nowrap;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .patient-details {
+        flex-shrink: 0;            /* không cho badge rớt */
+    }
+
+    .patient-type {
+        white-space: nowrap;
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
     </style>
 </head>
 <body>
