@@ -670,26 +670,87 @@ function filterPatients(list) {
             document.getElementById('patientListContainer').innerHTML = html || '<div class="empty-state"><center><p><i class="fas fa-users-slash"></i>Không có bệnh nhân nào</p></center></div>';
         }
 
-        function renderStatsTable() {
-		showStatsLoading(true);
-            const now = new Date();
-            const filtered = filterPatients(patients).filter(p => !isDischarged(p)).sort((a,b) => a.examinationTime.localeCompare(b.examinationTime));
-            let html = '', stt = 1;
-            filtered.forEach(p => {
-                const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
-                let statusText = 'Đang điều trị', statusClass = 'status-ok';
-                if (p.dischargeDate) {
-                    const d = new Date(`${p.dischargeDate}T${p.dischargeTime || '00:00'}`);
-                    if (d < now) return;
-                    const today = now.toISOString().split('T')[0];
-                    statusText = p.dischargeDate === today ? `Ra viện hôm nay - ${p.dischargeTime}` : `Ra viện ${formatDate(p.dischargeDate)} - ${p.dischargeTime}`;
-                    statusClass = p.dischargeDate === today ? 'status-warning' : 'status-error';
-                }
-                html += `<tr style="cursor: pointer;" onclick="requirePassword(() => showPatientDetail('${p.id}'))"><td>${stt++}</td><td>${p.fullName}</td><td>${p.room}</td><td>${formatHourHM(p.examinationTime)}</td><td>${days} ngày</td><td>${p.patientType}</td><td><span class="${statusClass}">${statusText}</span></td></tr>`;
-            });
-            document.getElementById('statsTableBody').innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:40px;">Không có dữ liệu</td></tr>';
-        showStatsLoading(false);
-		}
+     function renderStatsTable() {
+    showStatsLoading(true);
+
+    const now = new Date();
+    const isNarrow = window.innerWidth < 410;
+
+    const filtered = filterPatients(patients)
+        .filter(p => !isDischarged(p))
+        .sort((a,b) => a.examinationTime.localeCompare(b.examinationTime));
+
+    let html = '', stt = 1;
+
+    filtered.forEach(p => {
+        const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
+
+        // ===== TÊN =====
+        let displayName = p.fullName;
+        let nameTooltip = '';
+
+        if (isNarrow && p.fullName) {
+            const parts = p.fullName.trim().split(/\s+/);
+            displayName = parts[parts.length - 1];
+            nameTooltip = `title="${p.fullName}"`;
+        }
+
+        // ===== LOẠI BỆNH NHÂN =====
+        let patientTypeText = p.patientType;
+        let patientTypeTooltip = '';
+
+        if (isNarrow) {
+            if (p.patientType === 'Ban ngày') patientTypeText = 'BN';
+            if (p.patientType === 'Nội trú') patientTypeText = 'NT';
+            patientTypeTooltip = `title="${p.patientType}"`;
+        }
+
+        // ===== TRẠNG THÁI =====
+        let statusText = 'Đang điều trị';
+        let statusClass = 'status-ok';
+        let statusTooltip = '';
+
+        if (p.dischargeDate) {
+            const d = new Date(`${p.dischargeDate}T${p.dischargeTime || '00:00'}`);
+            if (d < now) return;
+
+            const today = now.toISOString().split('T')[0];
+            const fullText = p.dischargeDate === today
+                ? `Ra viện hôm nay - ${p.dischargeTime}`
+                : `Ra viện ${formatDate(p.dischargeDate)} - ${p.dischargeTime}`;
+
+            if (isNarrow) {
+                statusText = p.dischargeDate === today ? 'RVHN' : 'RV';
+                statusTooltip = `title="${fullText}"`;
+            } else {
+                statusText = fullText;
+            }
+
+            statusClass = p.dischargeDate === today ? 'status-warning' : 'status-error';
+        } else if (isNarrow) {
+            statusText = 'ĐT';
+            statusTooltip = 'title="Đang điều trị"';
+        }
+
+        html += `
+<tr style="cursor:pointer" onclick="requirePassword(() => showPatientDetail('${p.id}'))">
+    <td>${stt++}</td>
+    <td ${nameTooltip}>${displayName}</td>
+    <td>${p.room}</td>
+    <td>${formatHourHM(p.examinationTime)}</td>
+    <td>${isNarrow ? days : days + ' ngày'}</td>
+    <td ${patientTypeTooltip}>${patientTypeText}</td>
+    <td><span class="${statusClass}" ${statusTooltip}>${statusText}</span></td>
+</tr>`;
+    });
+
+    document.getElementById('statsTableBody').innerHTML =
+        html || '<tr><td colspan="7" style="text-align:center;padding:40px;">Không có dữ liệu</td></tr>';
+
+    showStatsLoading(false);
+}
+
+
 
 function updateNotifications() {
     showNotificationLoading(true);  // Bắt đầu loading
@@ -1436,23 +1497,23 @@ function renderTotalStats() {
     });
 
     document.getElementById("totalStatsBody").innerHTML = `
-        <tr><th>Tổng số bệnh nhân điều trị</th><td>${total}</td></tr>
-        <tr><th>Bệnh nhân nội trú</th><td>${noiTru}</td></tr>
-        <tr><th>Bệnh nhân ban ngày</th><td>${banNgay}</td></tr>
-        <tr><th>Nội trú nằm > 20 ngày</th><td>${noiTru20}</td></tr>
-        <tr><th>Ban ngày > 14 ngày</th><td>${banNgay14}</td></tr>
+       <div class="patient-item">Tổng số bệnh nhân điều trị<b>${total}</b></div>
+       <div class="patient-item">Bệnh nhân nội trú<b>${noiTru}</b></div>
+       <div class="patient-item">Bệnh nhân ban ngày<b>${banNgay}</b></div>
+       <div class="patient-item">Nội trú nằm > 20 ngày<b>${noiTru20}</b></div>
+       <div class="patient-item">Ban ngày > 14 ngày<b>${banNgay14}</b></div>
     `;
 	
 	  /* ===== THỐNG KÊ CẬN LÂM SÀNG – THỦ THUẬT ===== */
   const m = calcMedicalStats(patients);
 
-  let extraHTML = "<hr>";
+  let extraHTML = "";
 
 // XÉT NGHIỆM
 const labTotal = Object.values(m.lab).reduce((a,b)=>a+b,0);
 
-extraHTML += `<div class="bschau">`;
-extraHTML += `<b>- Xét nghiệm: ${labTotal}</b><br>`;
+extraHTML += `<div class="patient-item"">`;
+extraHTML += `Xét nghiệm: ${labTotal}<br>`;
 
 for(const k in m.lab){
   extraHTML += `+ ${k}: ${m.lab[k]}<br>`;
@@ -1464,8 +1525,8 @@ extraHTML += `</div>`;
  // HÌNH ẢNH
 const imgTotal = Object.values(m.imaging).reduce((a,b)=>a+b,0);
 
-extraHTML += `<div class="bschau">`;
-extraHTML += `<b>- Hình ảnh: ${imgTotal}</b><br>`;
+extraHTML += `<div class="patient-item"">`;
+extraHTML += `Hình ảnh: ${imgTotal}<br>`;
 
 for(const k in m.imaging){
   extraHTML += `+ ${k}: ${m.imaging[k]}<br>`;
@@ -1476,8 +1537,8 @@ extraHTML += `</div>`;
 // THỦ THUẬT
 const proTotal = Object.values(m.procedure).reduce((a,b)=>a+b,0);
 
-extraHTML += `<div class="bschau">`;
-extraHTML += `<b>- Thủ thuật: ${proTotal}</b><br>`;
+extraHTML += `<div class="patient-item"">`;
+extraHTML += `Thủ thuật: ${proTotal}<br>`;
 
 for(const k in m.procedure){
   extraHTML += `+ ${k}: ${m.procedure[k]}<br>`;
@@ -1707,6 +1768,20 @@ document.addEventListener("change", function (e) {
         renderTotalStats();
     }
 });
+function updateStatsTableHeader() {
+    const isNarrow = window.innerWidth < 410;
+    const ths = document.querySelectorAll('.stats-table thead th');
+
+    if (!ths.length) return;
+	ths[0].innerText = isNarrow ? 'TT' : 'STT';
+	ths[2].innerText = isNarrow ? 'P' : 'Phòng';
+    ths[3].innerText = isNarrow ? 'Giờ' : 'Giờ khám';
+    ths[4].innerText = isNarrow ? 'Ngày' : 'Số ngày';
+    ths[6].innerText = isNarrow ? 'TT' : 'Trạng thái';
+}
+
+window.addEventListener('resize', updateStatsTableHeader);
+updateStatsTableHeader();
 
 
 </script>
