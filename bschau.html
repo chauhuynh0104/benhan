@@ -798,7 +798,14 @@ function renderPatientList() {
     let html = '', stt = 1;
 
     filtered.forEach(p => {
-        const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
+       const start = new Date(p.admissionDate);
+const today = new Date();
+
+start.setHours(0,0,0,0);
+today.setHours(0,0,0,0);
+
+const days = Math.floor((today - start) / 86400000);
+
 
         // ===== TÊN =====
         let displayName = p.fullName;
@@ -868,32 +875,44 @@ function renderPatientList() {
 
 
 function updateNotifications() {
-    showNotificationLoading(true);  // Bắt đầu loading
+    showNotificationLoading(true);
 
-    const now = new Date();
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
     const overdue = patients.filter(p => {
         if (isDischarged(p)) return false;
-        const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
-        return (p.patientType === 'Nội trú' && days > 21) || (p.patientType === 'Ban ngày' && days > 14);
+
+        const start = new Date(p.admissionDate);
+        start.setHours(0,0,0,0);
+
+        const days = Math.floor((today - start) / 86400000);
+
+        return (p.patientType === 'Nội trú' && days > 21)
+            || (p.patientType === 'Ban ngày' && days > 14);
     });
 
-    // Xử lý kết quả
     if (overdue.length === 0) {
-        // Không có cảnh báo → ẩn toàn bộ bar
         document.getElementById('notificationContainer').classList.add('hidden');
     } else {
-        // Có cảnh báo → hiện nội dung
         let txt = '<strong>Cảnh báo quá ngày nằm viện:</strong><br>';
+
         overdue.forEach(p => {
-            const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
+            const start = new Date(p.admissionDate);
+            start.setHours(0,0,0,0);
+
+            const days = Math.floor((today - start) / 86400000);
+
             txt += `• <strong>${p.fullName}</strong> (Phòng ${p.room}) - ${p.patientType} nằm ${days} ngày<br>`;
         });
+
         document.getElementById('notificationText').innerHTML = txt;
+        document.getElementById('notificationContainer').classList.remove('hidden');
     }
 
-    // Luôn ẩn loading khi xong (dù có hay không có cảnh báo)
     showNotificationLoading(false);
 }
+
 
         function showPatientDetail(id) {
             currentPatientId = id; currentView = 'patient';
@@ -1586,7 +1605,9 @@ function getAvailableYears() {
 }
 function renderTotalStats() {
     const year = document.getElementById("totalYearSelect").value;
-    const now = new Date();
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
     const list = patients.filter(p => {
         if (year === "all") return true;
@@ -1600,11 +1621,16 @@ function renderTotalStats() {
     let banNgay14 = 0;
 
     list.forEach(p => {
-        const days = Math.ceil((now - new Date(p.admissionDate)) / 86400000);
+        const start = new Date(p.admissionDate);
+        start.setHours(0,0,0,0);
+
+        const days = Math.floor((today - start) / 86400000);
+
         if (p.patientType === "Nội trú") {
             noiTru++;
             if (days > 20) noiTru20++;
         }
+
         if (p.patientType === "Ban ngày") {
             banNgay++;
             if (days > 14) banNgay14++;
@@ -1618,54 +1644,41 @@ function renderTotalStats() {
        <div class="patient-item">Nội trú nằm > 20 ngày<b>${noiTru20}</b></div>
        <div class="patient-item">Ban ngày > 14 ngày<b>${banNgay14}</b></div>
     `;
-	
-	  /* ===== THỐNG KÊ CẬN LÂM SÀNG – THỦ THUẬT ===== */
-  const m = calcMedicalStats(patients);
 
-  let extraHTML = "";
+    /* ===== THỐNG KÊ CẬN LÂM SÀNG – THỦ THUẬT ===== */
+    const m = calcMedicalStats(patients);
+    let extraHTML = "";
 
-// XÉT NGHIỆM
-const labTotal = Object.values(m.lab).reduce((a,b)=>a+b,0);
+    // XÉT NGHIỆM
+    const labTotal = Object.values(m.lab).reduce((a,b)=>a+b,0);
+    extraHTML += `<div class="patient-item">`;
+    extraHTML += `Xét nghiệm: ${labTotal}<br>`;
+    for(const k in m.lab){
+        extraHTML += `+ ${k}: ${m.lab[k]}<br>`;
+    }
+    extraHTML += `</div>`;
 
-extraHTML += `<div class="patient-item"">`;
-extraHTML += `Xét nghiệm: ${labTotal}<br>`;
+    // HÌNH ẢNH
+    const imgTotal = Object.values(m.imaging).reduce((a,b)=>a+b,0);
+    extraHTML += `<div class="patient-item">`;
+    extraHTML += `Hình ảnh: ${imgTotal}<br>`;
+    for(const k in m.imaging){
+        extraHTML += `+ ${k}: ${m.imaging[k]}<br>`;
+    }
+    extraHTML += `</div>`;
 
-for(const k in m.lab){
-  extraHTML += `+ ${k}: ${m.lab[k]}<br>`;
+    // THỦ THUẬT
+    const proTotal = Object.values(m.procedure).reduce((a,b)=>a+b,0);
+    extraHTML += `<div class="patient-item">`;
+    extraHTML += `Thủ thuật: ${proTotal}<br>`;
+    for(const k in m.procedure){
+        extraHTML += `+ ${k}: ${m.procedure[k]}<br>`;
+    }
+    extraHTML += `</div>`;
+
+    document.getElementById("totalStatsContent").innerHTML += extraHTML;
 }
 
-extraHTML += `</div>`;
-
-
- // HÌNH ẢNH
-const imgTotal = Object.values(m.imaging).reduce((a,b)=>a+b,0);
-
-extraHTML += `<div class="patient-item"">`;
-extraHTML += `Hình ảnh: ${imgTotal}<br>`;
-
-for(const k in m.imaging){
-  extraHTML += `+ ${k}: ${m.imaging[k]}<br>`;
-}
-
-extraHTML += `</div>`;
-
-// THỦ THUẬT
-const proTotal = Object.values(m.procedure).reduce((a,b)=>a+b,0);
-
-extraHTML += `<div class="patient-item"">`;
-extraHTML += `Thủ thuật: ${proTotal}<br>`;
-
-for(const k in m.procedure){
-  extraHTML += `+ ${k}: ${m.procedure[k]}<br>`;
-}
-
-extraHTML += `</div>`;
-
-  document.getElementById("totalStatsContent").innerHTML += extraHTML;
-
-	
-	
-}
 let currentTarget = null;
 
 function openLabModal(detail=false){
