@@ -1773,10 +1773,11 @@ function updateStatsTableHeader() {
     const ths = document.querySelectorAll('.stats-table thead th');
 
     if (!ths.length) return;
-	ths[0].innerText = isNarrow ? 'TT' : 'STT';
+	ths[0].innerText = isNarrow ? 'T' : 'STT';
 	ths[2].innerText = isNarrow ? 'P' : 'Phòng';
     ths[3].innerText = isNarrow ? 'Giờ' : 'Giờ khám';
-    ths[4].innerText = isNarrow ? 'Ngày' : 'Số ngày';
+    ths[4].innerText = isNarrow ? 'N' : 'Số ngày';
+	ths[4].innerText = isNarrow ? 'L' : 'Loại';
     ths[6].innerText = isNarrow ? 'TT' : 'Trạng thái';
 }
 
