@@ -682,7 +682,7 @@ function filterPatients(list) {
 
         function formatDate(d) { const date = new Date(d); return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`; }
 
-      function renderPatientList() {
+function renderPatientList() {
     const filtered = filterPatients(patients);
     const rooms = {};
     const isNarrow = window.innerWidth < 410;
@@ -713,12 +713,15 @@ function filterPatients(list) {
                     patientTypeTooltip = `title="${p.patientType}"`;
                 }
 
+                // ===== TUỔI =====
+                const ageText = isNarrow ? `${p.age}T` : `${p.age} tuổi`;
+
                 html += `
 <div class="patient-item ${currentPatientId === p.id ? 'active' : ''}"
      onclick="requirePassword(() => showPatientDetail('${p.id}'))">
 
     <span class="patient-name">${p.fullName}</span>
-    <span class="patient-age">${p.age} tuổi</span>
+    <span class="patient-age">${ageText}</span>
 
     <span class="patient-details">
         <span class="patient-type ${p.patientType === 'Nội trú' ? 'inpatient' : 'outpatient'}"
@@ -736,6 +739,7 @@ function filterPatients(list) {
     document.getElementById('patientListContainer').innerHTML =
         html || '<div class="empty-state"><center><p><i class="fas fa-users-slash"></i>Không có bệnh nhân nào</p></center></div>';
 }
+
 
 
      function renderStatsTable() {
