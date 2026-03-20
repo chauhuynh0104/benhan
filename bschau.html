@@ -417,6 +417,29 @@ input[type="number"]:focus,
     text-decoration: line-through;
     opacity: 0.6;
 }
+/* Xoá khoảng trống phía trên */
+#rightPanelContent{
+    padding-top: 0 !important;
+}
+
+/* Xoá margin thừa của statsContent */
+#statsContent{
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Ép table sát lên */
+#statsTableContainer{
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Thằng loading ẩn nhưng vẫn chiếm chỗ */
+#statsLoading{
+    display: none !important;
+}.stats-table{
+    margin-top: 0 !important;
+}
     </style>
 </head>
 <body>
@@ -481,8 +504,8 @@ input[type="number"]:focus,
                         <th>STT</th>
                         <th>Tên</th>
                         <th>Phòng</th>
-                        <th>Giờ khám</th>
-                        <th>Số ngày</th>
+                        <th>Giờ</th>
+                        <th>Ngày</th>
                         <th>Loại</th>
                         <th>Trạng thái</th>
                     </tr>
@@ -1908,8 +1931,7 @@ function updateStatsTableHeader() {
     if (!ths.length) return;
 	ths[0].innerText = isNarrow ? 'T' : 'STT';
 	ths[2].innerText = isNarrow ? 'P' : 'Phòng';
-    ths[3].innerText = isNarrow ? 'Giờ' : 'Giờ khám';
-    ths[4].innerText = isNarrow ? 'N' : 'Số ngày';
+    ths[4].innerText = isNarrow ? 'N' : 'Ngày';
 	ths[5].innerText = isNarrow ? 'L' : 'Loại';
     ths[6].innerText = isNarrow ? 'TT' : 'Trạng thái';
 }
@@ -1937,8 +1959,8 @@ document.getElementById('rightPanelTitle').onclick = () => {
                             <th>STT</th>
                             <th>Tên</th>
                             <th>Phòng</th>
-                            <th>Giờ khám</th>
-                            <th>Số ngày</th>
+                            <th>Giờ</th>
+                            <th>Ngày</th>
                             <th>Loại</th>
                         </tr>
                     </thead>
