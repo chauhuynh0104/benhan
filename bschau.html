@@ -413,7 +413,10 @@ input[type="number"]:focus,
         width: 12%;
     }
 }
-
+.strike-row td{
+    text-decoration: line-through;
+    opacity: 0.6;
+}
     </style>
 </head>
 <body>
@@ -461,7 +464,9 @@ input[type="number"]:focus,
 
         <div class="right-panel">
             <div class="panel-header">
-                <h2 id="rightPanelTitle"><i class="fas fa-chart-bar"></i> THỐNG KÊ GIỜ KHÁM</h2>
+                <h2 id="rightPanelTitle" style="cursor:pointer">
+    <i class="fas fa-chart-bar"></i> THỐNG KÊ GIỜ KHÁM
+</h2>
                 <button id="viewStatsBtn" class="btn btn-secondary"><i class="fas fa-chart-bar"></i> Xem thống kê</button>
 				<button id="totalStatsBtn" class="btn btn-primary"><i class="fas fa-chart-pie"></i> Thống kê tổng</button>
             </div>
@@ -1911,7 +1916,65 @@ function updateStatsTableHeader() {
 
 window.addEventListener('resize', updateStatsTableHeader);
 updateStatsTableHeader();
+// CLICK TITLE THỐNG KÊ GIỜ KHÁM -> POPUP
+document.getElementById('rightPanelTitle').onclick = () => {
 
+    if (currentView !== 'stats') return;
+
+    const rows = document.querySelectorAll('#statsTableBody tr');
+
+    let html = `
+    <div class="overlay" id="statsPopup">
+        <div class="modal">
+            <div class="modal-header">
+                THỐNG KÊ GIỜ KHÁM
+                <button class="close-btn" onclick="document.getElementById('statsPopup').remove()">×</button>
+            </div>
+            <div class="modal-content">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên</th>
+                            <th>Phòng</th>
+                            <th>Giờ khám</th>
+                            <th>Số ngày</th>
+                            <th>Loại</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+
+    rows.forEach(r => {
+        const tds = r.querySelectorAll('td');
+        if (tds.length >= 6) {
+            html += `
+            <tr onclick="toggleStrike(this)">
+                <td>${tds[0].innerText}</td>
+                <td onclick="event.stopPropagation()">${tds[1].innerText}</td>
+                <td>${tds[2].innerText}</td>
+                <td>${tds[3].innerText}</td>
+                <td>${tds[4].innerText}</td>
+                <td>${tds[5].innerText}</td>
+            </tr>`;
+        }
+    });
+
+    html += `
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>`;
+
+    document.body.insertAdjacentHTML('beforeend', html);
+};
+
+
+// GẠCH NGANG
+function toggleStrike(row){
+    row.classList.toggle('strike-row');
+}
 
 </script>
 <div id="labModal" class="overlay hidden">
