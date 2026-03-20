@@ -413,9 +413,19 @@ input[type="number"]:focus,
         width: 12%;
     }
 }
-.strike-row td{
-    text-decoration: line-through;
-    opacity: 0.6;
+.popup-row{
+    position: relative;
+}
+
+.popup-row.strike-row::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    background: red;
+    transform: translateY(-50%);
 }
 .stats-table{
     margin-top: 0 !important;
