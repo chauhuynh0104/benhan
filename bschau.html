@@ -1937,8 +1937,8 @@ document.getElementById('rightPanelTitle').onclick = () => {
                             <th>STT</th>
                             <th>Tên</th>
                             <th>Phòng</th>
-                            <th>Giờ</th>
-                            <th>Ngày</th>
+                            <th>Giờ khám</th>
+                            <th>Số ngày</th>
                             <th>Loại</th>
                         </tr>
                     </thead>
@@ -1949,9 +1949,9 @@ document.getElementById('rightPanelTitle').onclick = () => {
         const tds = r.querySelectorAll('td');
         if (tds.length >= 6) {
             html += `
-            <tr onclick="toggleStrike(this)">
+            <tr class="popup-row">
                 <td>${tds[0].innerText}</td>
-                <td onclick="event.stopPropagation()">${tds[1].innerText}</td>
+                <td>${tds[1].innerText}</td>
                 <td>${tds[2].innerText}</td>
                 <td>${tds[3].innerText}</td>
                 <td>${tds[4].innerText}</td>
@@ -1968,8 +1968,14 @@ document.getElementById('rightPanelTitle').onclick = () => {
     </div>`;
 
     document.body.insertAdjacentHTML('beforeend', html);
-};
 
+    // 🔥 FIX: gán click cho CẢ HÀNG
+    document.querySelectorAll('.popup-row').forEach(row => {
+        row.onclick = () => {
+            row.classList.toggle('strike-row');
+        };
+    });
+};
 
 // GẠCH NGANG
 function toggleStrike(row){
