@@ -412,14 +412,26 @@ z-index:9999;
 
 .phone-box{
 background:#fff;
-width:420px;
-height:80vh;
+width:95%;
+max-width:420px;
+height:90vh;
+max-height:700px;
 display:flex;
 flex-direction:column;
 border-radius:12px;
 box-shadow:0 5px 20px rgba(0,0,0,0.2);
 }
+@media (max-width: 640px){
+.phone-box{
+width:100%;
+height:100vh;
+border-radius:0;
+}
 
+.phone-header{
+border-radius:0;
+}
+}
 .phone-header{
 padding:12px 15px;
 font-weight:bold;
