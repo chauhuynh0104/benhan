@@ -413,8 +413,9 @@ z-index:9999;
 .phone-box{
 background:#fff;
 width:420px;
-max-height:80vh;
-overflow:auto;
+height:80vh;
+display:flex;
+flex-direction:column;
 border-radius:12px;
 box-shadow:0 5px 20px rgba(0,0,0,0.2);
 }
@@ -429,6 +430,33 @@ align-items:center;
 background:#007bff;
 color:white;
 border-radius:12px 12px 0 0;
+}
+
+.phone-search{
+padding:8px;
+border-bottom:1px solid #eee;
+}
+
+.phone-search input{
+width:100%;
+padding:6px 8px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+.phone-list{
+flex:1;
+overflow-y:auto;
+}
+
+.close-x{
+cursor:pointer;
+padding:2px 6px;
+border-radius:4px;
+}
+
+.close-x:hover{
+background:rgba(255,255,255,0.2);
 }
 
 .phone-item{
@@ -465,13 +493,14 @@ padding:8px 15px;
 border-radius:6px;
 z-index:99999;
 }
+
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
         <div class="title-section">
-            <h1><i class="fas fa-calendar-check"></i> Trực Bác Sĩ</h1>
+            <h1><span class="click-bs" onclick="showAllDoctorPhones()"style="cursor:pointer"><i class="fas fa-calendar-check"></i> Trực Bác Sĩ</span></h1>
         
         </div>
         <button class="btn-primary" id="openAddModalBtn"><i class="fas fa-plus-circle"></i> Thêm ngày trực</button>
@@ -524,10 +553,15 @@ z-index:99999;
 <div id="phonePopup" class="phone-popup">
   <div class="phone-box">
     <div class="phone-header">
-      📞 SĐT phiên trực
-     <span onclick="closePhonePopup()" style="cursor:pointer">✖</span>
+      📞 Danh sách SĐT
+      <span onclick="closePhonePopup()" class="close-x">✖</span>
     </div>
-    <div id="phoneList"></div>
+
+    <div class="phone-search">
+      <input type="text" id="phoneSearch" placeholder="🔍 Tìm theo tên..." onkeyup="filterPhones()">
+    </div>
+
+    <div id="phoneList" class="phone-list"></div>
   </div>
 </div>
 <!-- MODAL nhập / sửa -->
@@ -578,6 +612,7 @@ z-index:99999;
 </div>
 
 <script>
+document.getElementById("phoneSearch").value="";
     // ---------- DANH SÁCH Y SĨ THEO KHOA (6 khoa) ----------
     const khoaMapping = {
         "Khoa Nội": ["Nguyễn Hoài Phương","Lê Thị Minh","Nguyễn Thị Thu Ngân","Nguyễn Thị Phương","Bùi Thị Khiêm","Phạm Thị Thu Vân","Võ Thị Thu Thủy","Hoàng Thị Hồng","Nguyễn Thị Kim","Bùi Thị Thúy Vân"],
@@ -696,7 +731,6 @@ let pendingAction = null;
 
 ////mật khẩu///
 function requirePassword(callback) {
-    // ✅ Nếu đã login thì chạy luôn
     if (isLoggedIn()) {
         callback();
         return;
@@ -705,6 +739,8 @@ function requirePassword(callback) {
     pendingAction = callback;
     document.getElementById('passwordInput').value = '';
     document.getElementById('passwordModal').classList.add('active');
+
+   setTimeout(()=>document.getElementById('passwordInput').focus(),50);
 }
 // ===== PASSWORD =====
 document.getElementById('cancelPasswordBtn').onclick = () => {
@@ -1227,6 +1263,41 @@ function showPopup(msg) {
 
     setTimeout(() => div.remove(), 2500);
 }	
+function showAllDoctorPhones(){
+
+let html="";
+
+Object.entries(phoneBook).forEach(([name,phone])=>{
+
+html += `
+<div class="phone-item">
+   <div>
+      <div class="phone-name">${name}</div>
+      <div>${phone}</div>
+   </div>
+
+   <div class="phone-actions">
+      <button class="btn-call" onclick="callPhone('${phone}')">📞</button>
+      <button class="btn-copy" onclick="copyPhone('${phone}')">📋</button>
+   </div>
+</div>
+`;
+
+});
+
+document.getElementById("phoneList").innerHTML = html;
+document.getElementById("phonePopup").style.display="flex";
+}
+
+function filterPhones(){
+const keyword = document.getElementById("phoneSearch").value.toLowerCase();
+const items = document.querySelectorAll(".phone-item");
+
+items.forEach(item=>{
+const name = item.querySelector(".phone-name").innerText.toLowerCase();
+item.style.display = name.includes(keyword) ? "flex" : "none";
+});
+}
 
     initDropbox();
 	
