@@ -1999,7 +1999,24 @@ document.getElementById('patientListTitle').onclick = showStatsPopup;
 function toggleStrike(row){
     row.classList.toggle('strike-row');
 }
-
+// Tự động cuộn xuống Right Panel khi click vào danh sách bệnh nhân (dành cho Mobile)
+document.getElementById('patientListContainer').addEventListener('click', function(e) {
+    // Chỉ cuộn nếu màn hình đang ở dạng dọc (Mobile/Tablet)
+    if (window.innerWidth <= 768) {
+        // Kiểm tra xem cú click có phải vào một patient-item không
+        if (e.target.closest('.patient-item')) {
+            setTimeout(() => {
+                const rightPanel = document.querySelector('.right-panel');
+                if (rightPanel) {
+                    rightPanel.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }
+            }, 150); // Delay nhẹ 150ms để đợi dữ liệu chi tiết kịp render xong
+        }
+    }
+});
 </script>
 <div id="labModal" class="overlay hidden">
   <div class="modal" style="max-width:500px">
