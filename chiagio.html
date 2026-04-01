@@ -1,0 +1,227 @@
+<!-- 
+
+///////////////////////////////////////////////
+/////Code được viết bởi Chauhuynh0104/////////
+////http://fb.com/chauhuynh0104//////////////
+/////////////079.567.9350///////////////////
+///Vui lòng tôn trọng bản quyền tác giả////
+/////////Không xoá dòng này //////////////
+/////////////////////////////////////////
+
+!-->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Giờ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f4f7f6; padding: 1px; font-family: 'Segoe UI', Arial, sans-serif; font-size: 1rem; }
+        .table-container { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; }
+        .section-title { background-color: #2c3e50; color: white; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-transform: uppercase; font-weight: bold; text-align: center; }
+        table { font-size: 1rem; border-collapse: collapse; width: 100%; table-layout: fixed; }
+        th { background-color: #e9ecef !important; text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 4px !important; }
+        td { vertical-align: middle; padding: 1px 4px !important; border: 1px solid #dee2e6; height: 36px; }
+        tr.has-data { outline: 2px solid #0d6efd; outline-offset: -2px; background-color: #f0f7ff; }
+        .input-cell { border: none; background: transparent; width: 100%; padding: 2px; outline: none; font-size: 1rem; }
+        .readonly-cell { background-color: #fcfcfc; color: #444; text-align: center; }
+       /* Tìm đến đoạn này trong file của bạn và sửa lại */
+.select-custom { 
+    border: 1px solid #eee; 
+    background: #fff; 
+    cursor: pointer; 
+    font-size: 0.85rem; /* Sửa từ 0.8rem thành 0.85rem để bằng chữ thường */
+    padding: 2px; 
+    border-radius: 4px; 
+}
+        .status-bar { position: fixed; bottom: 10px; right: 10px; font-size: 0.8rem; padding: 5px 10px; border-radius: 20px; background: #333; color: #fff; z-index: 9999; }
+        .col-ten { width: 11%; } .col-xoa { width: 16%; } .col-thuy { width: 16%; } .col-note { width: 15%; }.col-may { width: 8%; }
+    </style>
+</head>
+<body>
+
+<div id="status" class="status-bar">Đang kết nối máy chủ...</div>
+
+<div class="container-fluid table-container">
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="col-ten">Tên</th><th>Điện châm</th><th class="col-may">Máy</th><th>Chiếu đèn</th><th class="col-may">Máy</th><th class="col-xoa">Xoa bóp</th><th class="col-thuy">Thuỷ châm</th><th class="col-note">Chú thích</th>
+            </tr>
+        </thead>
+        <tbody id="table-sang"></tbody>
+    </table>
+</div>
+
+<div class="container-fluid table-container">
+    <h3 class="section-title">CHIỀU</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="col-ten">Tên</th><th>Điện châm</th><th>Máy</th><th>Chiếu đèn</th><th>Máy</th><th class="col-xoa">Xoa bóp</th><th class="col-thuy">Thuỷ châm</th><th class="col-note">Chú thích</th>
+            </tr>
+        </thead>
+        <tbody id="table-chieu"></tbody>
+    </table>
+</div>
+
+<script>
+    const APP_KEY = 'qzy5kclrf827aey';
+    const APP_SECRET = '6jlsunzjqr3s3nh';
+    const REFRESH_TOKEN = 'yvVdSnOoxgsAAAAAAAAAAYwqRQmU9NPgvKrMmzAL2JY9QqutemeEsykD9LmlQcRr';
+    const FILE_PATH = '/data_lich.json';
+
+    let remoteData = {}; 
+    let accessToken = '';
+
+    const dataSang = [
+        ["08h00-08h25", "28", "08h06-08h21", "8", "8h32-9h02 (Minh)"],
+        ["08h07-08h32", "29", "08h13-08h28", "5", "7h30-8h00 (Minh)"],
+        ["08h14-08h39", "30", "08h20-08h35", "3", "9h34-10h04 (Khiêm)"],
+        ["08h27-08h52", "10", "08h33-08h48", "8", "9h34-10h04 (Minh)"],
+        ["08h34-08h59", "36", "08h40-08h55", "5", "9h03-9h33 (Khiêm)"],
+        ["08h41-09h06", "19", "08h47-09h02", "3", "10h05-10h35 (Minh)"],
+        ["08h54-09h19", "20", "09h00-09h15", "8", "10h05-10h35 (Khiêm)"],
+        ["09h01-09h26", "21", "09h07-09h22", "5", "8h01-8h31 (Khiêm)"],
+        ["09h08-09h33", "5", "09h14-09h29", "3", "8h32-9h02 (Khiêm)"],
+        ["09h21-09h46", "6", "09h27-09h42", "8", "7h30-8h00 (Khiêm)"],
+        ["09h28-09h53", "28", "09h34-09h49", "5", "8h01-8h31 (Minh)"],
+        ["09h35-10h00", "29", "09h41-09h56", "3", "9h03-9h33 (Minh)"],
+        ["09h48-10h13", "30", "09h54-10h09", "8", "10h36-11h06 (Minh)"],
+        ["09h55-10h20", "10", "10h01-10h16", "5", "10h36-11h06 (Khiêm)"],
+        ["10h02-10h27", "36", "10h08-10h23", "3", "13h30-14h00 (Khiêm)"],
+        ["10h15-10h40", "19", "10h21-10h36", "8", "13h30-14h00(Minh)"],
+        ["10h22-10h47", "20", "10h28-10h43", "5", "14h01-14h31 (Minh)"],
+        ["10h29-10h54", "21", "10h35-10h50", "3", "14h01-14h31 (Khiêm)"],
+        ["10h42-11h07", "5", "10h48-11h03", "8", "14h32-15h02 (Khiêm)"],
+        ["10h49-11h14", "6", "10h55-11h10", "5", "14h32-15h02 (Minh)"],
+        ["10h56-11h21", "28", "11h02-11h17", "3", "15h03-15h33 (Minh)"]
+    ];
+
+    const dataChieu = [
+        ["15h00-15h25", "28", "15h06-15h21", "8", "15h26-15h56 (Khiêm)"],
+        ["15h07-15h32", "29", "15h13-15h28", "5", "15h34-16h04 (Minh)"],
+        ["15h14-15h39", "30", "15h20-15h35", "3", "15h57-16h27 (Khiêm)"],
+        ["15h27-15h52", "10", "15h33-15h48", "8", "16h05-16h35 (Minh)"],
+        ["15h34-15h59", "36", "15h40-15h55", "5", "16h28-16h58 (Khiêm)"],
+        ["15h41-16h06", "19", "15h47-16h02", "3", ""],
+        ["15h54-16h19", "20", "16h00-16h15", "8", ""],
+        ["16h01-16h26", "21", "16h07-16h22", "5", ""],
+        ["16h08-16h33", "5", "16h14-16h29", "3", ""],
+        ["16h21-16h46", "6", "16h27-16h42", "8", ""],
+        ["16h28-16h53", "28", "16h34-16h49", "5", ""],
+        ["16h35-17h00", "29", "16h41-16h56", "3", ""]
+    ];
+
+    const thuyChamTimes = ["", "11h03-11h28", "13h30-13h55", "13h41-14h06", "13h52-14h17", "14h03-14h28", "14h14-14h39", "14h25-14h50", "14h36-15h01", "14h47-15h12"];
+    const thuyChamDays = ["", "2-4-6", "3-5"];
+
+    async function getAccessToken() {
+        const response = await fetch('https://api.dropbox.com/oauth2/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `grant_type=refresh_token&refresh_token=${REFRESH_TOKEN}&client_id=${APP_KEY}&client_secret=${APP_SECRET}`
+        });
+        const data = await response.json();
+        accessToken = data.access_token;
+    }
+
+    async function downloadData() {
+        try {
+            const response = await fetch('https://content.dropboxapi.com/2/files/download', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}`, 'Dropbox-API-Arg': JSON.stringify({ path: FILE_PATH }) }
+            });
+            if (response.ok) remoteData = await response.json();
+            document.getElementById('status').innerText = 'Đã cập nhật';
+        } catch (e) { remoteData = {}; }
+    }
+
+    async function uploadData() {
+        document.getElementById('status').innerText = 'Đang lưu lên Dropbox...';
+        await fetch('https://content.dropboxapi.com/2/files/upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/octet-stream',
+                'Dropbox-API-Arg': JSON.stringify({ path: FILE_PATH, mode: 'overwrite' })
+            },
+            body: JSON.stringify(remoteData)
+        });
+        document.getElementById('status').innerText = 'Đã lưu thành công';
+    }
+
+    function checkDuplicate(rowId, day, time) {
+        if (!day || !time) return false;
+        for (let key in remoteData) {
+            if (key.startsWith('tc_d_') && key !== 'tc_d_'+rowId) {
+                let idSuffix = key.replace('tc_d_', '');
+                if (remoteData[key] === day && remoteData['tc_t_'+idSuffix] === time) {
+                    let name = remoteData['n_'+idSuffix] || "Bệnh nhân ẩn danh";
+                    Swal.fire('Trùng lịch!', `<b>${name}</b> đã đặt giờ này (${time} - ${day})`, 'error');
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function renderTable(data, elementId, prefix) {
+        const tbody = document.getElementById(elementId);
+        tbody.innerHTML = "";
+        data.forEach((row, index) => {
+            const rowId = prefix + index;
+            const tr = document.createElement('tr');
+            if (remoteData['n_'+rowId]) tr.classList.add('has-data');
+
+            tr.innerHTML = `
+                <td><input class="input-cell" value="${remoteData['n_'+rowId]||''}" onchange="updateVal('${rowId}','n',this.value)"></td>
+                ${row.map(t => `<td class="readonly-cell">${t}</td>`).join('')}
+                <td><div style="display:flex;gap:1px">
+                    <select class="select-custom w-35" onchange="updateTC('${rowId}',this.value,'day')">
+                        ${thuyChamDays.map(d => `<option value="${d}" ${remoteData['tc_d_'+rowId]===d?'selected':''}>${d||'Thứ'}</option>`).join('')}
+                    </select>
+                    <select class="select-custom w-65" onchange="updateTC('${rowId}',this.value,'time')">
+                        ${thuyChamTimes.map(t => `<option value="${t}" ${remoteData['tc_t_'+rowId]===t?'selected':''}>${t||'Giờ'}</option>`).join('')}
+                    </select>
+                </div></td>
+                <td><input class="input-cell" value="${remoteData['note_'+rowId]||''}" onchange="updateVal('${rowId}','note',this.value)"></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    window.updateVal = async (id, type, val) => {
+        remoteData[type+'_'+id] = val;
+        await uploadData();
+        init(); // Load lại để cập nhật màu hàng
+    };
+
+    window.updateTC = async (id, val, type) => {
+        let d = type === 'day' ? val : (remoteData['tc_d_'+id] || '');
+        let t = type === 'time' ? val : (remoteData['tc_t_'+id] || '');
+        
+        if (checkDuplicate(id, d, t)) {
+            init(); // Reset giao diện
+            return;
+        }
+        remoteData[type==='day'?'tc_d_'+id:'tc_t_'+id] = val;
+        await uploadData();
+    };
+
+    async function init() {
+        if (!accessToken) await getAccessToken();
+        await downloadData();
+        renderTable(dataSang, 'table-sang', 's_');
+        renderTable(dataChieu, 'table-chieu', 'c_');
+    }
+
+    init();
+    // Tự động tải lại sau mỗi 30 giây để cập nhật dữ liệu từ máy khác
+    setInterval(init, 30000);
+</script>
+</body>
+</html>
