@@ -430,6 +430,18 @@ input[type="number"]:focus,
 .stats-table{
     margin-top: 0 !important;
 }
+/* CSS cho dòng đang được chọn (Tô xanh) */
+.current-time-row {
+    background-color: #e3f2fd !important; /* Màu xanh nhạt */
+    border-left: 5px solid #2196f3;
+    font-weight: bold;
+    color: #0d47a1;
+}
+
+#emrPopup .stats-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
     </style>
 </head>
 <body>
@@ -2017,6 +2029,79 @@ document.getElementById('patientListContainer').addEventListener('click', functi
         }
     }
 });
+// Danh sách các khung giờ cố định
+const TIME_SLOTS = [
+    "08:21", "08:48", "09:15", "09:42", "10:09", 
+    "10:36", "11:03", "15:21", "15:48", "16:15"
+];
+
+// Hàm lấy text hiển thị khung giờ (ví dụ: 08:21 -> 08:26)
+function getTimeRangeText(startTimeStr) {
+    const [h, m] = startTimeStr.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(h, m, 0);
+    
+    const endDate = new Date(startDate.getTime() + 5 * 60000); // +5 phút
+    const endStr = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+    
+    return `${startTimeStr} -> ${endStr}`;
+}
+
+// Hàm mở và xử lý Popup
+function openEmrPopup() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const currentH = now.getHours();
+    const currentM = now.getMinutes();
+    const currentTimeVal = currentH * 60 + currentM; // Tổng số phút hiện tại từ đầu ngày
+
+    // Lấy danh sách bệnh nhân hôm nay
+    const todayPatients = patients.filter(p => p.admissionDate === todayStr);
+
+    let html = '';
+    let foundNextSlot = false; // Biến đánh dấu đã tìm thấy dòng cần tô xanh hay chưa
+
+    for (let i = 0; i < TIME_SLOTS.length; i++) {
+        const slotStart = TIME_SLOTS[i];
+        const [h, m] = slotStart.split(':').map(Number);
+        const slotStartVal = h * 60 + m;
+        const slotEndVal = slotStartVal + 5; // Khung giờ kéo dài 5 phút
+
+        // Tìm bệnh nhân khớp giờ
+        const patient = todayPatients.find(p => p.admissionTime === slotStart);
+        const patientName = patient ? patient.fullName : "";
+
+        let rowClass = '';
+
+        // LOGIC TÔ XANH MỚI:
+        // 1. Dòng đó phải chưa có bệnh nhân (patientName === "")
+        // 2. Giờ hiện tại phải nhỏ hơn giờ kết thúc của khung đó (chưa trôi qua)
+        // 3. Chỉ tô xanh dòng đầu tiên thỏa mãn (foundNextSlot === false)
+        if (!foundNextSlot && patientName === "" && currentTimeVal <= slotEndVal) {
+            rowClass = 'current-time-row';
+            foundNextSlot = true; // Đánh dấu đã tô màu xong, không tô các dòng trống phía sau nữa
+        }
+
+        html += `
+            <tr class="${rowClass}">
+                <td>${i + 1}</td>
+                <td>${patientName || '<span style="color: #ccc; font-style: italic;">Trống</span>'}</td>
+                <td>${getTimeRangeText(slotStart)}</td>
+            </tr>
+        `;
+    }
+
+    document.getElementById('emrPopupBody').innerHTML = html;
+    document.getElementById('emrPopup').classList.remove('hidden');
+}
+
+function closeEmrPopup() {
+    document.getElementById('emrPopup').classList.add('hidden');
+}
+
+// Gán sự kiện click vào chữ "Electronic Medical Record" ở Header
+document.querySelector('.header h1').style.cursor = 'pointer';
+document.querySelector('.header h1').onclick = openEmrPopup;
 </script>
 <div id="labModal" class="overlay hidden">
   <div class="modal" style="max-width:500px">
@@ -2166,5 +2251,28 @@ document.getElementById('patientListContainer').addEventListener('click', functi
     </div>
   </div>
 </div>
-
+<div id="emrPopup" class="overlay hidden">
+    <div class="modal" style="max-width: 600px;">
+        <div class="modal-header">
+            <i class="fas fa-clock"></i> Thống kê giờ khám hôm nay
+            <button class="close-btn" onclick="closeEmrPopup()">×</button>
+        </div>
+        <div class="modal-content">
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Stt</th>
+                        <th>Tên bệnh nhân</th>
+                        <th style="width: 150px;">Giờ khám</th>
+                    </tr>
+                </thead>
+                <tbody id="emrPopupBody">
+                    </tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeEmrPopup()">Đóng</button>
+        </div>
+    </div>
+</div>
 </body></html>
