@@ -15,7 +15,7 @@
         button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; transition: 0.3s; }
         button:hover { background: #0056b3; }
         button:disabled { background: #ccc; cursor: not-allowed; }
-        #status { margin-top: 15px; text-align: center; font-size: 14px; }
+        #status { margin-top: 15px; text-align: center; font-size: 14px; white-space: pre-wrap; }
     </style>
 </head>
 <body>
@@ -30,7 +30,7 @@
 
     <div class="group">
         <label>Tên file sau khi gộp:</label>
-        <input type="text" id="fileName" placeholder="Gop_File_Moi" value="Phiếu thực hiện kỹ thuật phục hồi chức năng">
+        <input type="text" id="fileName" placeholder="Gop_File_Moi" value="Phieu_thuc_hien_ky_thuat_PHCN">
     </div>
 
     <button id="mergeBtn">Bắt đầu gộp và Lưu</button>
@@ -52,7 +52,8 @@
             return;
         }
 
-        status.innerText = "Đang xử lý... vui lòng đợi.";
+        status.innerText = "⏳ Đang xử lý... vui lòng đợi.";
+        status.style.color = "#333";
         document.getElementById('mergeBtn').disabled = true;
 
         try {
@@ -68,32 +69,29 @@
             const pdfBytes = await mergedPdf.save();
             const fileName = fileNameInput.value.trim() || 'Combined_Document';
 
-            // Sử dụng File System Access API để lưu (Nếu trình duyệt hỗ trợ)
-            if ('showSaveFilePicker' in window) {
-                const handle = await window.showSaveFilePicker({
-                    suggestedName: `${fileName}.pdf`,
-                    types: [{
-                        description: 'PDF Document',
-                        accept: {'application/pdf': ['.pdf']},
-                    }],
-                });
-                const writable = await handle.createWritable();
-                await writable.write(pdfBytes);
-                await writable.close();
-                status.innerText = "✅ Đã gộp và lưu file thành công!";
-            } else {
-                // Cách fallback cũ cho các trình duyệt không hỗ trợ API mới
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `${fileName}.pdf`;
-                link.click();
-                status.innerText = "✅ Đã gộp thành công! File đang được tải xuống.";
-            }
+            // Sử dụng phương pháp Blob để tương thích tốt nhất với Nativefier/Electron
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.href = url;
+            link.download = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+            
+            // Thêm vào DOM tạm thời để kích hoạt click trên một số môi trường nghiêm ngặt
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Giải phóng bộ nhớ
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+
+            status.innerText = "✅ Đã gộp thành công! File đang được tải xuống.";
+            status.style.color = "green";
 
         } catch (error) {
-            console.error(error);
-            status.innerText = "❌ Có lỗi xảy ra trong quá trình gộp file.";
+            console.error("Lỗi chi tiết:", error);
+            status.innerText = "❌ Có lỗi xảy ra: " + error.message;
+            status.style.color = "red";
         } finally {
             document.getElementById('mergeBtn').disabled = false;
         }
