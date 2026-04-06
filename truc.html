@@ -765,8 +765,7 @@ document.getElementById('confirmPasswordBtn').onclick = () => {
     const val = document.getElementById('passwordInput').value;
 
     if (val === APP_PASSWORD) {
-        setLoggedIn(); // ✅ lưu session
-
+        setLoggedIn(); // ✅ Đã chuyển sang lưu localStorage
         document.getElementById('passwordModal').classList.remove('active');
 
         if (pendingAction) {
@@ -774,10 +773,11 @@ document.getElementById('confirmPasswordBtn').onclick = () => {
             pendingAction = null;
         }
     } else {
-    const err = document.getElementById('passwordError');
-    err.style.display = 'block';
-}
+        const err = document.getElementById('passwordError');
+        err.style.display = 'block';
+    }
 };
+
 
 // Enter để submit
 document.getElementById('passwordInput').addEventListener('keydown', (e) => {
@@ -787,18 +787,21 @@ document.getElementById('passwordInput').addEventListener('keydown', (e) => {
 });
 
 
-// ✅ trạng thái login theo session (tồn tại tới khi đóng tab)
+// ✅ trạng thái login theo // ✅ Trạng thái login lưu tại localStorage (giữ lại khi đóng tab/trình duyệt)
 function isLoggedIn() {
-    return sessionStorage.getItem('isLoggedIn') === 'true';
+    return localStorage.getItem('isLoggedIn') === 'true';
 }
 
 function setLoggedIn() {
-    sessionStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('isLoggedIn', 'true');
 }
 
 function logout() {
-    sessionStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('isLoggedIn');
+    // Tùy chọn: Tải lại trang để áp dụng trạng thái đăng xuất ngay lập tức
+    window.location.reload(); 
 }
+
 ////////////end mật khẩu//////////
 
 
