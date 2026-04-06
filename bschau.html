@@ -625,6 +625,27 @@ input[type="number"]:focus,
     </div>
 
     <script>
+	// Hàm xử lý tên thu gọn: Kim Yến -> K.Yến nếu có >1 người tên Yến
+function formatDisplayName(p, allPatients) {
+    const isNarrow = window.innerWidth < 410;
+    if (!isNarrow) return p.fullName; // Nếu màn hình lớn thì hiện tên đầy đủ
+
+    const parts = p.fullName.trim().split(/\s+/);
+    const lastName = parts[parts.length - 1];
+    const nearName = parts.length > 1 ? parts[parts.length - 2] : "";
+
+    // Kiểm tra xem trong danh sách hiện tại có ai trùng tên cuối không
+    const duplicates = allPatients.filter(item => {
+        const pParts = item.fullName.trim().split(/\s+/);
+        return pParts[pParts.length - 1] === lastName && item.id !== p.id;
+    });
+
+    if (duplicates.length > 0 && nearName) {
+        return `${nearName.charAt(0)}.${lastName}`;
+    }
+    return lastName;
+}
+
      const PASSWORD = "1!"; // ← Đổi mật khẩu ở đây
     const REFRESH_KEY = "yvVdSnOoxgsAAAAAAAAAAYwqRQmU9NPgvKrMmzAL2JY9QqutemeEsykD9LmlQcRr";
     const APP_KEY = "qzy5kclrf827aey";
@@ -823,12 +844,12 @@ function renderPatientList() {
 
 
 
-     function renderStatsTable() {
+   function renderStatsTable() {
     showStatsLoading(true);
-
     const now = new Date();
     const isNarrow = window.innerWidth < 410;
 
+    // Lấy danh sách bệnh nhân đang hiển thị để kiểm tra trùng tên
     const filtered = filterPatients(patients)
         .filter(p => !isDischarged(p))
         .sort((a,b) => a.examinationTime.localeCompare(b.examinationTime));
@@ -836,29 +857,19 @@ function renderPatientList() {
     let html = '', stt = 1;
 
     filtered.forEach(p => {
-       const start = new Date(p.admissionDate);
-const today = new Date();
+        const start = new Date(p.admissionDate);
+        const today = new Date();
+        start.setHours(0,0,0,0);
+        today.setHours(0,0,0,0);
+        const days = Math.floor((today - start) / 86400000);
 
-start.setHours(0,0,0,0);
-today.setHours(0,0,0,0);
+        // ===== CẬP NHẬT PHẦN TÊN Ở ĐÂY =====
+        let displayName = formatDisplayName(p, filtered); 
+        let nameTooltip = `title="${p.fullName}"`; // Luôn hiện tên đầy đủ khi di chuột vào
 
-const days = Math.floor((today - start) / 86400000);
-
-
-        // ===== TÊN =====
-        let displayName = p.fullName;
-        let nameTooltip = '';
-
-        if (isNarrow && p.fullName) {
-            const parts = p.fullName.trim().split(/\s+/);
-            displayName = parts[parts.length - 1];
-            nameTooltip = `title="${p.fullName}"`;
-        }
-
-        // ===== LOẠI BỆNH NHÂN =====
+        // ===== CÁC PHẦN KHÁC GIỮ NGUYÊN =====
         let patientTypeText = p.patientType;
         let patientTypeTooltip = '';
-
         if (isNarrow) {
             if (p.patientType === 'Ban ngày') patientTypeText = 'BN';
             if (p.patientType === 'Nội trú') patientTypeText = 'NT';
@@ -892,7 +903,7 @@ const days = Math.floor((today - start) / 86400000);
             statusTooltip = 'title="Đang điều trị"';
         }
 
-        html += `
+   html += `
 <tr style="cursor:pointer" onclick="requirePassword(() => showPatientDetail('${p.id}'))">
     <td>${stt++}</td>
     <td ${nameTooltip}>${displayName}</td>
@@ -906,7 +917,6 @@ const days = Math.floor((today - start) / 86400000);
 
     document.getElementById('statsTableBody').innerHTML =
         html || '<tr><td colspan="7" style="text-align:center;padding:40px;">Không có dữ liệu</td></tr>';
-
     showStatsLoading(false);
 }
 
@@ -2150,7 +2160,7 @@ function formatSpecialDate(dateStr) {
 
 // Hàm xử lý tên bệnh nhân theo độ rộng màn hình
 function formatPatientName(name) {
-    if (window.innerWidth >= 710) return name;
+    if (window.innerWidth >= 410) return name;
     
     // Nếu màn hình nhỏ < 410px
     const parts = name.trim().split(/\s+/);
@@ -2391,11 +2401,11 @@ function showDischargeProposal() {
             <table class="stats-table">
                 <thead>
                     <tr>
-                        <th>Stt</th>
+                        <th>STT</th>
                         <th>Tên</th>
                         <th>Loại</th>
-                        <th>Vv</th>
-                        <th>ĐX ra</th>
+                        <th>Ngày vào viện</th>
+                        <th>Đề xuất ra</th>
                         <th>Nằm</th>
                         <th>Σ ĐX</th>
                         <th>Duyệt</th>
