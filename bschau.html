@@ -2206,11 +2206,43 @@ function formatPatientName(name) {
     return lastName;
 }
 
+// HÀM LƯU TRẠNG THÁI HIỂN THỊ NGÀY (THÊM MỚI)
+let isSimpleDateFormat = localStorage.getItem('dischargeDateFormat') === 'simple';
+
+function toggleDateFormat() {
+    isSimpleDateFormat = !isSimpleDateFormat;
+    localStorage.setItem('dischargeDateFormat', isSimpleDateFormat ? 'simple' : 'full');
+    showDischargeProposal(); // Refresh lại bảng
+}
+
+// HÀM ĐỊNH DẠNG NGÀY THEO TRẠNG THÁI
+function formatDateByMode(dateStr) {
+    if (!dateStr) return "";
+    if (!isSimpleDateFormat) {
+        return formatSpecialDate(dateStr); // Định dạng cũ: Thứ 2 - 16/03 (28/1 ÂL)
+    }
+    // Định dạng mới chỉ: DD/MM
+    const d = new Date(dateStr);
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+}
+
+// HÀM SHOW DISCHARGE PROPOSAL (THAY THẾ HOÀN TOÀN)
 function showDischargeProposal() {
     const tbody = document.getElementById('proposalTableBody');
     tbody.innerHTML = '';
     
-    // Chỉ lấy bệnh nhân chưa ra viện hoặc sắp ra viện (tùy logic của bạn, ở đây lấy all active)
+    // Đổi tiêu đề cột dựa vào trạng thái
+    const headerRow = document.querySelector('#dischargeProposalModal thead tr');
+    if (headerRow) {
+        const cells = headerRow.querySelectorAll('th');
+        if (cells.length >= 5) {
+            cells[3].innerHTML = isSimpleDateFormat ? 'VV' : 'Ngày vào';
+            cells[4].innerHTML = isSimpleDateFormat ? 'ĐXR' : 'Đề xuất ra';
+            cells[7].innerHTML = 'DV'; // Cột Duyệt -> DV
+        }
+    }
+    
+    // Chỉ lấy bệnh nhân chưa ra viện
     const activePatients = patients.filter(p => !isDischarged(p));
     
     activePatients.forEach((p, index) => {
@@ -2220,10 +2252,10 @@ function showDischargeProposal() {
         
         const proposedDate = getProposedDate(p.admissionDate, p.patientType);
         
-        // Tính ngày đã nằm = ngày hiện tại - ngày vào
+        // Tính ngày đã nằm
         const daysSpent = Math.floor((today - admission) / (1000 * 60 * 60 * 24));
         
-        // Tổng ngày nằm theo đề xuất = ngày đề xuất - ngày vào
+        // Tổng ngày nằm theo đề xuất
         const totalProposedDays = Math.floor((proposedDate - admission) / (1000 * 60 * 60 * 24));
         
         const isOverdue = daysSpent > totalProposedDays;
@@ -2232,21 +2264,44 @@ function showDischargeProposal() {
         const row = document.createElement('tr');
         if (hasInputDischarge) row.className = 'row-discharged';
 
+        // Hiển thị ngày theo chế độ đã chọn
+        const admissionDisplay = formatDateByMode(p.admissionDate);
+        const proposalDisplay = formatDateByMode(proposedDate.toISOString().split('T')[0]);
+        const dischargeDisplay = hasInputDischarge ? formatDateByMode(p.dischargeDate) : '---';
+
         row.innerHTML = `
             <td>${index + 1}</td>
             <td class="proposal-name">${formatPatientName(p.fullName)}</td>
             <td>${p.patientType === 'Nội trú' ? 'NT' : 'BN'}</td>
-            <td>${formatSpecialDate(p.admissionDate)}</td>
-            <td>${formatSpecialDate(proposedDate.toISOString().split('T')[0])}</td>
+            <td>${admissionDisplay}</td>
+            <td>${proposalDisplay}</td>
             <td><span class="${isOverdue ? 'text-overdue' : ''}">${daysSpent}</span></td>
             <td>${totalProposedDays}</td>
-            <td>${hasInputDischarge ? formatSpecialDate(p.dischargeDate) : '---'}</td>
+            <td>${dischargeDisplay}</td>
         `;
         tbody.appendChild(row);
     });
 
     document.getElementById('dischargeProposalModal').classList.remove('hidden');
 }
+// THÊM SỰ KIỆN CLICK VÀO TIÊU ĐỀ "Đề xuất ngày ra viện" ĐỂ ĐỔI KIỂU NGÀY
+// Đặt đoạn code này SAU hàm showDischargeProposal
+setTimeout(() => {
+    const modal = document.getElementById('dischargeProposalModal');
+    const observer = new MutationObserver(() => {
+        const modalHeader = modal.querySelector('.modal-header');
+        if (modalHeader && !modalHeader.hasAttribute('data-click-bound')) {
+            modalHeader.setAttribute('data-click-bound', 'true');
+            modalHeader.style.cursor = 'pointer';
+            modalHeader.onclick = (e) => {
+                // Chặn click vào nút đóng (×)
+                if (e.target.classList.contains('close-btn')) return;
+                toggleDateFormat();
+            };
+        }
+    });
+    observer.observe(modal, { attributes: true, childList: true, subtree: false });
+}, 100);
 </script>
 <div id="labModal" class="overlay hidden">
   <div class="modal" style="max-width:500px">
