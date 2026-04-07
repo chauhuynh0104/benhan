@@ -2231,28 +2231,32 @@ function showDischargeProposal() {
     const tbody = document.getElementById('proposalTableBody');
     tbody.innerHTML = '';
     
-    // Đổi tiêu đề cột dựa vào trạng thái
     const headerRow = document.querySelector('#dischargeProposalModal thead tr');
     if (headerRow) {
         const cells = headerRow.querySelectorAll('th');
         if (cells.length >= 5) {
             cells[3].innerHTML = isSimpleDateFormat ? 'VV' : 'Ngày vào';
             cells[4].innerHTML = isSimpleDateFormat ? 'ĐXR' : 'Đề xuất ra';
-            cells[7].innerHTML = 'DV'; // Cột Duyệt -> DV
+            cells[7].innerHTML = 'DV';
         }
     }
     
-    // Chỉ lấy bệnh nhân chưa ra viện
     const activePatients = patients.filter(p => !isDischarged(p));
     
     activePatients.forEach((p, index) => {
+        // --- SỬA TẠI ĐÂY ---
         const admission = new Date(p.admissionDate);
+        admission.setHours(0, 0, 0, 0); // Đưa về 0 giờ để tính đúng khoảng cách ngày
+
         const today = new Date();
-        today.setHours(0,0,0,0);
+        today.setHours(0, 0, 0, 0); // Đưa về 0 giờ
         
-        const proposedDate = getProposedDate(p.admissionDate, p.patientType);
+        // Tương tự cho ngày đề xuất (hàm getProposedDate thường trả về date object hoặc string)
+        const proposedDate = new Date(getProposedDate(p.admissionDate, p.patientType));
+        proposedDate.setHours(0, 0, 0, 0); 
+        // -------------------
         
-        // Tính ngày đã nằm
+        // Tính ngày đã nằm (7 - 1 = 6)
         const daysSpent = Math.floor((today - admission) / (1000 * 60 * 60 * 24));
         
         // Tổng ngày nằm theo đề xuất
@@ -2264,7 +2268,6 @@ function showDischargeProposal() {
         const row = document.createElement('tr');
         if (hasInputDischarge) row.className = 'row-discharged';
 
-        // Hiển thị ngày theo chế độ đã chọn
         const admissionDisplay = formatDateByMode(p.admissionDate);
         const proposalDisplay = formatDateByMode(proposedDate.toISOString().split('T')[0]);
         const dischargeDisplay = hasInputDischarge ? formatDateByMode(p.dischargeDate) : '---';
