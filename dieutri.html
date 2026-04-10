@@ -374,8 +374,7 @@ function getPatientInfo(html) {
           if (
     hasText(d.content, "Thứ bảy") || 
     hasText(d.content, "Thứ 7") || 
-    hasText(d.content, "Chủ nhật") || 
-    hasText(d.content, "CN")
+    hasText(d.content, "Chủ nhật")
 ) return;
             if (d.content.includes(t.key)) mustHave = true;
             if (mustHave && !d.content.includes(t.key)) {
