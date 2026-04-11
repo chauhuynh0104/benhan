@@ -890,7 +890,7 @@ function renderPatientList() {
         const today = new Date();
         start.setHours(0,0,0,0);
         today.setHours(0,0,0,0);
-        const days = Math.floor((today - start) / 86400000);
+        const days = Math.floor((today - start) / 86400000) + 1;
 
         // ===== CẬP NHẬT PHẦN TÊN Ở ĐÂY =====
         let displayName = formatDisplayName(p, filtered); 
@@ -963,7 +963,7 @@ function updateNotifications() {
         const start = new Date(p.admissionDate);
         start.setHours(0,0,0,0);
 
-        const days = Math.floor((today - start) / 86400000);
+        const days = Math.floor((today - start) / 86400000) + 1;
 
         return (p.patientType === 'Nội trú' && days > 21)
             || (p.patientType === 'Ban ngày' && days > 14);
@@ -978,7 +978,7 @@ function updateNotifications() {
             const start = new Date(p.admissionDate);
             start.setHours(0,0,0,0);
 
-            const days = Math.floor((today - start) / 86400000);
+            const days = Math.floor((today - start) / 86400000) + 1;
 
             txt += `• <strong>${p.fullName}</strong> (Phòng ${p.room}) - ${p.patientType} nằm ${days} ngày<br>`;
         });
@@ -1421,19 +1421,21 @@ function formatHourHM(timeStr){
     const [h, m] = timeStr.split(":");
     return `${h.padStart(2,'0')}:${m.padStart(2,'0')}`;
 }
-function calcHospitalDays(admit, discharge){
+function calcHospitalDays(admit, discharge) {
     if (!admit) return "";
 
     const a = new Date(admit);
-    a.setHours(0,0,0,0);
+    a.setHours(0, 0, 0, 0);
 
     // nếu chưa có ngày ra viện → lấy hôm nay
     const r = discharge ? new Date(discharge) : new Date();
-    r.setHours(0,0,0,0);
+    r.setHours(0, 0, 0, 0);
 
-    const diff = Math.floor((r - a) / 86400000);
+    // Tính hiệu số ngày và cộng thêm 1
+    const diff = Math.floor((r - a) / 86400000) + 1;
 
-    return diff >= 0 ? diff + " ngày" : "";
+    // Trả về kết quả, đảm bảo nếu ngày hợp lệ thì tối thiểu là 1 ngày
+    return diff > 0 ? diff + " ngày" : "";
 }
 
 /* ====== AM LICH VIET NAM - HO NGOC DUC (CHUAN) ====== */
@@ -1701,7 +1703,7 @@ function renderTotalStats() {
         const start = new Date(p.admissionDate);
         start.setHours(0,0,0,0);
 
-        const days = Math.floor((today - start) / 86400000);
+        const days = Math.floor((today - start) / 86400000) + 1;
 
         if (p.patientType === "Nội trú") {
             noiTru++;
@@ -2233,7 +2235,18 @@ function showDischargeProposal() {
     
     const headerRow = document.querySelector('#dischargeProposalModal thead tr');
     if (headerRow) {
-        const cells = headerRow.querySelectorAll('th');
+        let cells = headerRow.querySelectorAll('th');
+        
+        // Nếu chưa có cột thứ 9 thì thêm vào
+        if (cells.length < 9) {
+            const th = document.createElement('th');
+            th.innerText = 'Σ';
+            headerRow.appendChild(th);
+            // Cập nhật lại danh sách cells sau khi thêm
+            cells = headerRow.querySelectorAll('th');
+        }
+        
+        // Giữ nguyên logic xử lý hiển thị cột 3,4 nếu có (cũ)
         if (cells.length >= 5) {
             cells[3].innerHTML = isSimpleDateFormat ? 'VV' : 'Ngày vào';
             cells[4].innerHTML = isSimpleDateFormat ? 'ĐXR' : 'Đề xuất ra';
@@ -2244,22 +2257,16 @@ function showDischargeProposal() {
     const activePatients = patients.filter(p => !isDischarged(p));
     
     activePatients.forEach((p, index) => {
-        // --- SỬA TẠI ĐÂY ---
         const admission = new Date(p.admissionDate);
-        admission.setHours(0, 0, 0, 0); // Đưa về 0 giờ để tính đúng khoảng cách ngày
-
+        admission.setHours(0, 0, 0, 0);
+        
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Đưa về 0 giờ
+        today.setHours(0, 0, 0, 0);
         
-        // Tương tự cho ngày đề xuất (hàm getProposedDate thường trả về date object hoặc string)
         const proposedDate = new Date(getProposedDate(p.admissionDate, p.patientType));
-        proposedDate.setHours(0, 0, 0, 0); 
-        // -------------------
+        proposedDate.setHours(0, 0, 0, 0);
         
-        // Tính ngày đã nằm (7 - 1 = 6)
-        const daysSpent = Math.floor((today - admission) / (1000 * 60 * 60 * 24));
-        
-        // Tổng ngày nằm theo đề xuất
+        const daysSpent = Math.floor((today - admission) / (1000 * 60 * 60 * 24)) + 1;
         const totalProposedDays = Math.floor((proposedDate - admission) / (1000 * 60 * 60 * 24));
         
         const isOverdue = daysSpent > totalProposedDays;
@@ -2267,11 +2274,20 @@ function showDischargeProposal() {
         
         const row = document.createElement('tr');
         if (hasInputDischarge) row.className = 'row-discharged';
-
+        
         const admissionDisplay = formatDateByMode(p.admissionDate);
         const proposalDisplay = formatDateByMode(proposedDate.toISOString().split('T')[0]);
         const dischargeDisplay = hasInputDischarge ? formatDateByMode(p.dischargeDate) : '---';
-
+        
+        // Tính tổng ngày nằm đã duyệt (nếu có dischargeDate)
+        let totalApprovedDays = '---';
+        if (p.dischargeDate) {
+            const dischargeDateObj = new Date(p.dischargeDate);
+            dischargeDateObj.setHours(0, 0, 0, 0);
+            const diffDays = Math.floor((dischargeDateObj - admission) / (1000 * 60 * 60 * 24)) + 1;
+            totalApprovedDays = diffDays > 0 ? diffDays : '';
+        }
+        
         row.innerHTML = `
             <td>${index + 1}</td>
             <td class="proposal-name">${formatPatientName(p.fullName)}</td>
@@ -2281,10 +2297,11 @@ function showDischargeProposal() {
             <td><span class="${isOverdue ? 'text-overdue' : ''}">${daysSpent}</span></td>
             <td>${totalProposedDays}</td>
             <td>${dischargeDisplay}</td>
+            <td>${totalApprovedDays}</td>
         `;
         tbody.appendChild(row);
     });
-
+    
     document.getElementById('dischargeProposalModal').classList.remove('hidden');
 }
 // THÊM SỰ KIỆN CLICK VÀO TIÊU ĐỀ "Đề xuất ngày ra viện" ĐỂ ĐỔI KIỂU NGÀY
