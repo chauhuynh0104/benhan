@@ -2159,18 +2159,31 @@ function closeProposalModal() {
 }
 
 // Hàm tính ngày đề xuất (Lùi về thứ 6 nếu rơi vào T7, CN, T2)
-function getProposedDate(admissionDate, type) {
-    let daysToAdd = (type === "Ban ngày") ? 14 : 21;
-    let date = new Date(admissionDate);
+// SỬA LẠI HÀM getProposedDate
+function getProposedDate(admissionDate, patientType) {
+    // Ép về 12 giờ trưa để cộng trừ ngày không bị lệch
+    let date = new Date(admissionDate + 'T12:00:00');
+    
+    // Nội trú 21 ngày (cộng 20), Ban ngày 14 ngày (cộng 13) để tính cả ngày đầu
+    let daysToAdd = (patientType === 'Nội trú') ? 20 : 13;
     date.setDate(date.getDate() + daysToAdd);
     
+    let exactDate = new Date(date); 
     let dayOfWeek = date.getDay(); // 0: CN, 1: T2, 6: T7
-    
-    if (dayOfWeek === 0) date.setDate(date.getDate() - 2);      // CN -> lùi 2 ngày về Thứ 6
-    else if (dayOfWeek === 6) date.setDate(date.getDate() - 1); // T7 -> lùi 1 ngày về Thứ 6
-    else if (dayOfWeek === 1) date.setDate(date.getDate() - 3); // T2 -> lùi 3 ngày về Thứ 6
-    
-    return date;
+
+    // Ép tất cả về Thứ Sáu (5)
+    if (dayOfWeek === 0) { // Chủ Nhật lùi 2 ngày
+        date.setDate(date.getDate() - 2);
+    } else if (dayOfWeek === 1) { // Thứ Hai lùi 3 ngày
+        date.setDate(date.getDate() - 3);
+    } else if (dayOfWeek === 6) { // Thứ Bảy lùi 1 ngày
+        date.setDate(date.getDate() - 1);
+    }
+
+    return {
+        exact: exactDate,
+        proposed: date
+    };
 }
 
 // Hàm định dạng ngày: Thứ X - DD/MM (DD/MM ÂL)
@@ -2229,11 +2242,11 @@ function formatDateByMode(dateStr) {
 }
 
 // HÀM SHOW DISCHARGE PROPOSAL (THAY THẾ HOÀN TOÀN)
+// SỬA HÀM showDischargeProposal - HIỂN THỊ ĐÚNG 2 DÒNG
 function showDischargeProposal() {
     const tbody = document.getElementById('proposalTableBody');
     tbody.innerHTML = '';
-    
-    const headerRow = document.querySelector('#dischargeProposalModal thead tr');
+     const headerRow = document.querySelector('#dischargeProposalModal thead tr');
     if (headerRow) {
         let cells = headerRow.querySelectorAll('th');
         
@@ -2253,21 +2266,26 @@ function showDischargeProposal() {
             cells[7].innerHTML = 'DV';
         }
     }
-    
     const activePatients = patients.filter(p => !isDischarged(p));
     
     activePatients.forEach((p, index) => {
-        const admission = new Date(p.admissionDate);
-        admission.setHours(0, 0, 0, 0);
-        
+        // Chuẩn hóa ngày vào về 00:00:00
+        const admission = new Date(p.admissionDate + 'T00:00:00');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        const proposedDate = new Date(getProposedDate(p.admissionDate, p.patientType));
-        proposedDate.setHours(0, 0, 0, 0);
+        const res = getProposedDate(p.admissionDate, p.patientType);
+        const proposedDate = res.proposed; 
+        const exactDate = res.exact;
         
-        const daysSpent = Math.floor((today - admission) / (1000 * 60 * 60 * 24)) + 1;
-        const totalProposedDays = Math.floor((proposedDate - admission) / (1000 * 60 * 60 * 24));
+        // Chuẩn hóa ngày đề xuất về 00:00:00 để tính Σ
+        const pDateOnly = new Date(proposedDate.toISOString().split('T')[0] + 'T00:00:00');
+
+        // Nằm: Từ lúc vào đến hôm nay
+        const daysSpent = Math.round((today - admission) / 86400000) + 1;
+        
+        // Σ: Từ lúc vào đến ngày đã lùi
+        const totalProposedDays = Math.round((pDateOnly - admission) / 86400000) + 1;
         
         const isOverdue = daysSpent > totalProposedDays;
         const hasInputDischarge = p.dischargeDate ? true : false;
@@ -2276,18 +2294,23 @@ function showDischargeProposal() {
         if (hasInputDischarge) row.className = 'row-discharged';
         
         const admissionDisplay = formatDateByMode(p.admissionDate);
-        const proposalDisplay = formatDateByMode(proposedDate.toISOString().split('T')[0]);
-        const dischargeDisplay = hasInputDischarge ? formatDateByMode(p.dischargeDate) : '---';
         
-        // Tính tổng ngày nằm đã duyệt (nếu có dischargeDate)
-        let totalApprovedDays = '---';
+        let proposalDisplay = "";
+        if (proposedDate.getTime() !== exactDate.getTime()) {
+            proposalDisplay = `<b style="color: #d32f2f;">Lui: ${formatDateByMode(proposedDate.toISOString().split('T')[0])}</b><br>` + 
+                              `<span style="font-size:10px; color:#777;">Đúng: ${formatDateByMode(exactDate.toISOString().split('T')[0])}</span>`;
+        } else {
+            proposalDisplay = `<b>${formatDateByMode(proposedDate.toISOString().split('T')[0])}</b>`;
+        }
+        
+        const dischargeDisplay = hasInputDischarge ? formatDateByMode(p.dischargeDate) : '---';
+         let totalApprovedDays = '---';
         if (p.dischargeDate) {
             const dischargeDateObj = new Date(p.dischargeDate);
             dischargeDateObj.setHours(0, 0, 0, 0);
             const diffDays = Math.floor((dischargeDateObj - admission) / (1000 * 60 * 60 * 24)) + 1;
             totalApprovedDays = diffDays > 0 ? diffDays : '';
         }
-        
         row.innerHTML = `
             <td>${index + 1}</td>
             <td class="proposal-name">${formatPatientName(p.fullName)}</td>
@@ -2513,6 +2536,7 @@ setTimeout(() => {
                         <th>Nằm</th>
                         <th>Σ</th>
                         <th>Duyệt</th>
+						 <th>ΣD</th>
                     </tr>
                 </thead>
                 <tbody id="proposalTableBody"></tbody>
