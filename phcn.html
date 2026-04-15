@@ -22,35 +22,28 @@
         button:hover { opacity: 0.9; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         button:disabled { background: #ccc; cursor: not-allowed; }
         .hidden { display: none !important; }
-        .tag-tinh { color: #d93025; font-weight: bold; }
-		.copy-btn {
-    padding: 4px 8px;
-    background: #34a853;
-    color: white;
-    font-size: 12px;
-    border-radius: 4px;
-    margin-left: 10px;
-    cursor: pointer;
-    border: none;
-    transition: 0.2s;
-}
-.copy-btn:hover { background: #2d8e47; }
-.new-content span {
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.new-content span:hover {
-    background-color: #f0f0f0;
-    border-radius: 4px;
-}
+        .copy-btn {
+            padding: 4px 8px;
+            background: #34a853;
+            color: white;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+        .copy-btn:hover { background: #2d8e47; }
+        .new-content span { cursor: pointer; transition: background 0.2s; }
+        .new-content span:hover { background-color: #f0f0f0; border-radius: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>CÔNG CỤ XỬ LÝ DIỄN BIẾN BỆNH ÁN v2.0</h2>
     
-    <div class="upload-section" onclick="document.getElementById('fileInput').click()">
+    
+    <div id="uploadWrapper" class="upload-section" onclick="document.getElementById('fileInput').click()">
         <strong>Click để chọn file</strong>
         <input type="file" id="fileInput" accept=".html" style="display:none">
         <p id="fileNameDisplay" style="margin-top:10px; color: #555;"></p>
@@ -65,10 +58,19 @@
 </div>
 
 <script>
+    // 1. XỬ LÝ F5 RELOAD (Cho Nativefier)
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+            e.preventDefault();
+            window.location.reload();
+        }
+    });
+
     const fileInput = document.getElementById('fileInput');
     const processBtn = document.getElementById('processBtn');
     const toggleBtn = document.getElementById('toggleOldBtn');
     const resultArea = document.getElementById('resultArea');
+    const uploadWrapper = document.getElementById('uploadWrapper');
     let originalHtml = "";
 
     fileInput.addEventListener('change', function(e) {
@@ -76,18 +78,17 @@
         if (!file) return;
         document.getElementById('fileNameDisplay').innerText = "Đã chọn: " + file.name;
         const reader = new FileReader();
-        reader.onload = (e) => { originalHtml = e.target.result; processBtn.disabled = false; };
+        reader.onload = (e) => { 
+            originalHtml = e.target.result; 
+            // Tự động chạy khi có file
+            const daysData = parseAndProcess(originalHtml);
+            renderTable(daysData);
+            
+            // 2. ẨN CLASS UPLOAD-SECTION KHI XUẤT DỮ LIỆU
+            uploadWrapper.style.display = 'none';
+            toggleBtn.classList.remove('hidden');
+        };
         reader.readAsText(file);
-    });
-
-    processBtn.addEventListener('click', () => {
-        const daysData = parseAndProcess(originalHtml);
-        renderTable(daysData);
-        toggleBtn.classList.remove('hidden');
-    });
-
-    toggleBtn.addEventListener('click', () => {
-        document.querySelectorAll('.old-content').forEach(el => el.classList.toggle('hidden'));
     });
 
     function isWeekend(dateStr) {
@@ -95,139 +96,128 @@
         const date = new Date(y, m - 1, d);
         return date.getDay() === 0 || date.getDay() === 6; 
     }
-function decodeHTMLEntities(text) {
-    const textArea = document.createElement('textarea');
-    textArea.innerHTML = text;
-    return textArea.value;
-}
-function parseAndProcess(html) {
-    const dayRegex = /<td\b[^>]*>\s*<nobr>(\d{2}\/\d{2}\/\d{4})<\/nobr>[\s\S]*?<\/td>/gi;
-    const matches = [...html.matchAll(dayRegex)];
-    let results = [];
-    let previousCorePain = ""; 
 
-    matches.forEach((match, i) => {
-        const dateStr = match[1];
-        const start = match.index;
-        const end = (matches[i+1]) ? matches[i+1].index : html.length;
-        const block = html.substring(start, end);
-        const contentAreaRegex = /<div style="overflow:hidden;width:295px;[\s\S]*?">([\s\S]*?)<\/div>/i;
-        const contentMatch = block.match(contentAreaRegex);
-        
-        let oldText = "";
-        let newText = "";
+    function decodeHTMLEntities(text) {
+        const textArea = document.createElement('textarea');
+        textArea.innerHTML = text;
+        return textArea.value;
+    }
 
-        if (contentMatch) {
-            const spanRegex = /<span[^>]*>([\s\S]*?)<\/span>/gi;
-            let rawLines = [];
-            let m;
-            while ((m = spanRegex.exec(contentMatch[1])) !== null) {
-                let decodedText = decodeHTMLEntities(m[1]);
-                let text = decodedText.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
-                if (text && !text.includes('{SignLibrary') && !/đau đầu|âm ỉ/i.test(text)) {
-                    rawLines.push(text);
-                }
-            }
-            oldText = rawLines.join(". ");
+    function parseAndProcess(html) {
+        const dayRegex = /<td\b[^>]*>\s*<nobr>(\d{2}\/\d{2}\/\d{4})<\/nobr>[\s\S]*?<\/td>/gi;
+        const matches = [...html.matchAll(dayRegex)];
+        let results = [];
+        let previousCorePain = ""; 
 
-            if (isWeekend(dateStr)) {
-                const [d, m, y] = dateStr.split('/');
-                const dateObj = new Date(y, m - 1, d);
-                newText = (dateObj.getDay() === 6) ? "Thứ bảy" : "Chủ nhật";
-                previousCorePain = ""; 
-            } else {
-                let baseStatus = (i % 2 === 0) ? "Tỉnh, tiếp xúc tốt" : "Tỉnh, tiếp xúc tốt. Sinh hiệu ổn";
-                let currentPainLine = "";
-                for (let line of rawLines) {
-                    if ((line.startsWith("Đau") || line.startsWith("Còn đau")) && /thắt lưng|gối|mông/i.test(line)) {
-                        currentPainLine = line;
-                        break;
+        matches.forEach((match, i) => {
+            const dateStr = match[1];
+            const start = match.index;
+            const end = (matches[i+1]) ? matches[i+1].index : html.length;
+            const block = html.substring(start, end);
+            const contentAreaRegex = /<div style="overflow:hidden;width:295px;[\s\S]*?">([\s\S]*?)<\/div>/i;
+            const contentMatch = block.match(contentAreaRegex);
+            
+            let oldText = "";
+            let newText = "";
+
+            if (contentMatch) {
+                const spanRegex = /<span[^>]*>([\s\S]*?)<\/span>/gi;
+                let rawLines = [];
+                let m;
+                while ((m = spanRegex.exec(contentMatch[1])) !== null) {
+                    let decodedText = decodeHTMLEntities(m[1]);
+                    let text = decodedText.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+                    if (text && !text.includes('{SignLibrary') && !/đau đầu|âm ỉ/i.test(text)) {
+                        rawLines.push(text);
                     }
                 }
+                oldText = rawLines.join(". ");
 
-                if (currentPainLine) {
-                    let processedPain = currentPainLine;
-                    if (currentPainLine === previousCorePain || (processedPain.match(/đau tăng/g) || []).length > 1) {
-                        const altVars = ["đau nhiều về đêm.", "vận động còn đau."];
-                        let selectedAlt = altVars[i % altVars.length];
-                        if (processedPain.includes("vận động hạn chế")) {
-                            processedPain = processedPain.replace("vận động hạn chế", selectedAlt);
-                        } else {
-                            processedPain = processedPain.replace(/,?\s*gặp lạnh đau tăng/g, ", " + selectedAlt);
-                            processedPain = processedPain.replace(/,?\s*vận động đau tăng/g, ", " + selectedAlt);
-                        }
-                    } 
-                    newText = baseStatus + ". " + processedPain;
-                    previousCorePain = currentPainLine; 
-                } else {
-                    newText = baseStatus;
+                if (isWeekend(dateStr)) {
+                    const [d, m, y] = dateStr.split('/');
+                    const dateObj = new Date(y, m - 1, d);
+                    newText = (dateObj.getDay() === 6) ? "Thứ bảy" : "Chủ nhật";
                     previousCorePain = ""; 
+                } else {
+                    let baseStatus = (i % 2 === 0) ? "Tỉnh, tiếp xúc tốt" : "Tỉnh, tiếp xúc tốt. Sinh hiệu ổn";
+                    let currentPainLine = "";
+                    for (let line of rawLines) {
+                        if ((line.startsWith("Đau") || line.startsWith("Còn đau")) && /thắt lưng|gối|mông/i.test(line)) {
+                            currentPainLine = line;
+                            break;
+                        }
+                    }
+
+                    if (currentPainLine) {
+                        let processedPain = currentPainLine;
+                        if (currentPainLine === previousCorePain || (processedPain.match(/đau tăng/g) || []).length > 1) {
+                            const altVars = ["đau nhiều về đêm.", "vận động còn đau."];
+                            let selectedAlt = altVars[i % altVars.length];
+                            if (processedPain.includes("vận động hạn chế")) {
+                                processedPain = processedPain.replace("vận động hạn chế", selectedAlt);
+                            } else {
+                                processedPain = processedPain.replace(/,?\s*gặp lạnh đau tăng/g, ", " + selectedAlt);
+                                processedPain = processedPain.replace(/,?\s*vận động đau tăng/g, ", " + selectedAlt);
+                            }
+                        } 
+                        newText = baseStatus + ". " + processedPain;
+                        previousCorePain = currentPainLine; 
+                    } else {
+                        newText = baseStatus;
+                        previousCorePain = ""; 
+                    }
                 }
             }
-        }
-        results.push({ 
-            date: dateStr, 
-            old: oldText, 
-            new: newText.replace(/\.\s*\./g, '.').replace(/,\s*\./g, '.').replace(/\s\s+/g, ' ').trim(), 
-            weekend: isWeekend(dateStr) 
+            results.push({ 
+                date: dateStr, 
+                old: oldText, 
+                new: newText.replace(/\.\s*\./g, '.').replace(/,\s*\./g, '.').replace(/\s\s+/g, ' ').trim(), 
+                weekend: isWeekend(dateStr) 
+            });
         });
-    });
-    return results;
-}
+        return results;
+    }
 
-function renderTable(data) {
-    let html = `<table><thead><tr><th style="width:120px">Ngày</th><th>Diễn biến (Cũ & Mới)</th></tr></thead><tbody>`;
-    data.forEach((item, index) => {
-        html += `<tr class="${item.weekend ? 'weekend' : ''}">
-            <td><strong>${item.date}</strong>${item.weekend ? '<br><small style="color:orange">(Thứ 7/CN)</small>' : ''}</td>
-            <td>
-                <div class="old-content"><strong>Gốc:</strong> ${item.old}</div>
-                <div class="new-content">
-                    <span id="text-${index}" onclick="copyToClipboard('${index}')" title="Click để copy">${item.new}</span>
-                    <button id="btn-${index}" class="copy-btn" onclick="copyToClipboard('${index}')" style="float:right; padding: 2px 8px; background: #34a853; color: white; border: none; border-radius: 4px; cursor: pointer;">Copy</button>
-                </div>
-            </td>
-        </tr>`;
-    });
-    html += `</tbody></table>`;
-    resultArea.innerHTML = html;
-}
+    function renderTable(data) {
+        let html = `<table><thead><tr><th style="width:120px">Ngày</th><th>Diễn biến (Cũ & Mới)</th></tr></thead><tbody>`;
+        data.forEach((item, index) => {
+            html += `<tr class="${item.weekend ? 'weekend' : ''}">
+                <td><strong>${item.date}</strong>${item.weekend ? '<br><small style="color:orange">(Thứ 7/CN)</small>' : ''}</td>
+                <td>
+                    <div class="old-content"><strong>Gốc:</strong> ${item.old}</div>
+                    <div class="new-content">
+                        <span id="text-${index}" onclick="copyToClipboard('${index}')" title="Click để copy">${item.new}</span>
+                        <button id="btn-${index}" class="copy-btn" onclick="copyToClipboard('${index}')" style="float:right;">Copy</button>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        html += `</tbody></table>`;
+        resultArea.innerHTML = html;
+    }
 
-// Hàm bổ sung để thực hiện lệnh copy
-function copyToClipboard(index) {
-    const text = document.getElementById('text-' + index).innerText;
-    const btn = document.getElementById('btn-' + index); // Lấy trực tiếp nút qua ID
-    
-    navigator.clipboard.writeText(text).then(() => {
-        const originalText = btn.innerText;
-        btn.innerText = "Đã chép!";
-        btn.style.background = "#5f6368";
+    function copyToClipboard(index) {
+        const text = document.getElementById('text-' + index).innerText;
+        const btn = document.getElementById('btn-' + index);
         
-        // Hiệu ứng đổi màu nhẹ cho văn bản khi click
-        const textSpan = document.getElementById('text-' + index);
-        textSpan.style.color = "#34a853";
-        
-        setTimeout(() => {
-            btn.innerText = originalText;
-            btn.style.background = "#34a853";
-            textSpan.style.color = "";
-        }, 1000);
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = btn.innerText;
+            btn.innerText = "Đã chép!";
+            btn.style.background = "#5f6368";
+            const textSpan = document.getElementById('text-' + index);
+            textSpan.style.color = "#34a853";
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "#34a853";
+                textSpan.style.color = "";
+            }, 1000);
+        });
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        document.querySelectorAll('.old-content').forEach(el => el.classList.toggle('hidden'));
     });
-}
-fileInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    document.getElementById('fileNameDisplay').innerText = "Đã chọn: " + file.name;
-    const reader = new FileReader();
-    reader.onload = (e) => { 
-        originalHtml = e.target.result; 
-        // TỰ ĐỘNG CHẠY KHI CÓ FILE
-        const daysData = parseAndProcess(originalHtml);
-        renderTable(daysData);
-        toggleBtn.classList.remove('hidden');
-    };
-    reader.readAsText(file);
-});
 </script>
 
 </body>
