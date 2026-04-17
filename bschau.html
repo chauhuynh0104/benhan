@@ -477,6 +477,19 @@ input[type="number"]:focus,
         padding: 12px 8px;
         border-bottom: 1px solid #eee;
     }
+	
+	#dischargeProposalModal thead th:nth-child(5) {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+#dischargeProposalModal thead th:nth-child(5):hover {
+    background-color: #e0e0e0;
+}
+.sort-icon {
+    margin-left: 6px;
+    font-size: 12px;
+}
     </style>
 </head>
 <body>
@@ -689,7 +702,7 @@ function formatDisplayName(p, allPatients) {
 	let tempLab = "";
 	let tempImaging = "";
 	let tempProcedure = "";
-
+	let proposalSortDirection = 'asc'; // 'asc' = tăng dần, 'desc' = giảm dần
     // =================== THÊM MỚI: Quản lý đăng nhập bằng localStorage ===================
     const AUTH_STORAGE_KEY = "hospital_app_authenticated";
 
@@ -2158,6 +2171,13 @@ function closeProposalModal() {
     document.getElementById('dischargeProposalModal').classList.add('hidden');
 }
 
+
+///hàm sắp xếp tăng giảm////
+function getProposalSortValue(p) {
+    const res = getProposedDate(p.admissionDate, p.patientType);
+    return res.proposed.getTime(); // Trả về timestamp để so sánh
+}
+
 // Hàm tính ngày đề xuất (Lùi về thứ 6 nếu rơi vào T7, CN, T2)
 // SỬA LẠI HÀM getProposedDate
 function getProposedDate(admissionDate, patientType) {
@@ -2246,30 +2266,37 @@ function formatDateByMode(dateStr) {
 function showDischargeProposal() {
     const tbody = document.getElementById('proposalTableBody');
     tbody.innerHTML = '';
-     const headerRow = document.querySelector('#dischargeProposalModal thead tr');
+    
+    const headerRow = document.querySelector('#dischargeProposalModal thead tr');
     if (headerRow) {
         let cells = headerRow.querySelectorAll('th');
         
-        // Nếu chưa có cột thứ 9 thì thêm vào
         if (cells.length < 9) {
             const th = document.createElement('th');
             th.innerText = 'Σ';
             headerRow.appendChild(th);
-            // Cập nhật lại danh sách cells sau khi thêm
             cells = headerRow.querySelectorAll('th');
         }
         
-        // Giữ nguyên logic xử lý hiển thị cột 3,4 nếu có (cũ)
         if (cells.length >= 5) {
             cells[3].innerHTML = isSimpleDateFormat ? 'VV' : 'Ngày vào';
-            cells[4].innerHTML = isSimpleDateFormat ? 'ĐXR' : 'Đề xuất ra';
+            cells[4].innerHTML = isSimpleDateFormat ? 'ĐXR' : 'Đề xuất ra ⬍'; // Thêm icon
             cells[7].innerHTML = 'DV';
         }
     }
-    const activePatients = patients.filter(p => !isDischarged(p));
+    
+    // Lọc bệnh nhân chưa ra viện
+    let activePatients = patients.filter(p => !isDischarged(p));
+    
+    // ========== THÊM PHẦN SẮP XẾP ==========
+    activePatients = activePatients.sort((a, b) => {
+        const valA = getProposalSortValue(a);
+        const valB = getProposalSortValue(b);
+        return proposalSortDirection === 'asc' ? valA - valB : valB - valA;
+    });
+    // ======================================
     
     activePatients.forEach((p, index) => {
-        // Chuẩn hóa ngày vào về 00:00:00
         const admission = new Date(p.admissionDate + 'T00:00:00');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -2278,13 +2305,8 @@ function showDischargeProposal() {
         const proposedDate = res.proposed; 
         const exactDate = res.exact;
         
-        // Chuẩn hóa ngày đề xuất về 00:00:00 để tính Σ
         const pDateOnly = new Date(proposedDate.toISOString().split('T')[0] + 'T00:00:00');
-
-        // Nằm: Từ lúc vào đến hôm nay
         const daysSpent = Math.round((today - admission) / 86400000) + 1;
-        
-        // Σ: Từ lúc vào đến ngày đã lùi
         const totalProposedDays = Math.round((pDateOnly - admission) / 86400000) + 1;
         
         const isOverdue = daysSpent > totalProposedDays;
@@ -2297,20 +2319,21 @@ function showDischargeProposal() {
         
         let proposalDisplay = "";
         if (proposedDate.getTime() !== exactDate.getTime()) {
-            proposalDisplay = `<b style="color: #d32f2f;">Lui: ${formatDateByMode(proposedDate.toISOString().split('T')[0])}</b><br>` + 
+            proposalDisplay = `<b style="color: #d32f2f;">${formatDateByMode(proposedDate.toISOString().split('T')[0])}</b><br>` + 
                               `<span style="font-size:10px; color:#777;">Đúng: ${formatDateByMode(exactDate.toISOString().split('T')[0])}</span>`;
         } else {
             proposalDisplay = `<b>${formatDateByMode(proposedDate.toISOString().split('T')[0])}</b>`;
         }
         
         const dischargeDisplay = hasInputDischarge ? formatDateByMode(p.dischargeDate) : '---';
-         let totalApprovedDays = '---';
+        let totalApprovedDays = '---';
         if (p.dischargeDate) {
             const dischargeDateObj = new Date(p.dischargeDate);
             dischargeDateObj.setHours(0, 0, 0, 0);
             const diffDays = Math.floor((dischargeDateObj - admission) / (1000 * 60 * 60 * 24)) + 1;
             totalApprovedDays = diffDays > 0 ? diffDays : '';
         }
+        
         row.innerHTML = `
             <td>${index + 1}</td>
             <td class="proposal-name">${formatPatientName(p.fullName)}</td>
@@ -2345,6 +2368,55 @@ setTimeout(() => {
     });
     observer.observe(modal, { attributes: true, childList: true, subtree: false });
 }, 100);
+
+// Gắn sự kiện click vào cột "Đề xuất ra" để sắp xếp
+function bindProposalSortEvent() {
+    // Đợi modal được mở lần đầu, dùng MutationObserver hoặc setInterval nhẹ
+    const checkInterval = setInterval(() => {
+        const headerCells = document.querySelectorAll('#dischargeProposalModal thead th');
+        if (headerCells.length >= 5) {
+            const proposalHeader = headerCells[4]; // Cột thứ 5 (index 4) là "Đề xuất ra"
+            if (proposalHeader && !proposalHeader.hasAttribute('data-sort-bound')) {
+                proposalHeader.setAttribute('data-sort-bound', 'true');
+                proposalHeader.style.cursor = 'pointer';
+                proposalHeader.style.userSelect = 'none';
+                proposalHeader.title = 'Nhấn để sắp xếp tăng/giảm theo ngày đề xuất';
+                
+                // Thêm icon nếu chưa có
+                if (!proposalHeader.querySelector('.sort-icon')) {
+                    const iconSpan = document.createElement('span');
+                    iconSpan.className = 'sort-icon';
+                    iconSpan.style.marginLeft = '5px';
+                    iconSpan.innerHTML = '<i class="fas fa-sort"></i>';
+                    proposalHeader.appendChild(iconSpan);
+                }
+                
+                proposalHeader.onclick = (e) => {
+                    e.stopPropagation();
+                    // Đổi chiều sắp xếp
+                    proposalSortDirection = proposalSortDirection === 'asc' ? 'desc' : 'asc';
+                    
+                    // Cập nhật icon
+                    const icon = proposalHeader.querySelector('.sort-icon i');
+                    if (icon) {
+                        icon.className = proposalSortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+                    }
+                    
+                    // Đóng modal hiện tại rồi mở lại để refresh (hoặc gọi lại showDischargeProposal)
+                    const modal = document.getElementById('dischargeProposalModal');
+                    if (!modal.classList.contains('hidden')) {
+                        // Nếu modal đang mở, gọi lại hàm show để cập nhật
+                        showDischargeProposal();
+                    }
+                };
+            }
+            clearInterval(checkInterval);
+        }
+    }, 500);
+}
+
+// Gọi hàm này sau khi trang load
+bindProposalSortEvent();
 </script>
 <div id="labModal" class="overlay hidden">
   <div class="modal" style="max-width:500px">
