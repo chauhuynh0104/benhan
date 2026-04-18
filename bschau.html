@@ -17,478 +17,186 @@
     <title>Quản Lý Bệnh Án</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #ff9800;
-            --primary-light: #ffe0b2;
-            --primary-dark: #f57c00;
-            --bg-color: #ffffff;
-            --border-color: #ffcc80;
-            --text-color: #333;
-            --light-text: #666;
-            --success-color: #4caf50;
-            --warning-color: #ff9800;
-            --danger-color: #f44336;
-            --info-color: #2196f3;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            --radius: 12px;
-        }
+ :root {
+    --primary-color: #ff9800;
+    --primary-light: #ffe0b2;
+    --primary-dark: #f57c00;
+    --bg-color: #ffffff;
+    --border-color: #ffcc80;
+    --text-color: #333;
+    --light-text: #666;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f44336;
+    --info-color: #2196f3;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --radius: 12px;
+}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f9f9f9; color: var(--text-color); line-height: 1.6; padding: 10px; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: #f9f9f9; color: var(--text-color); line-height: 1.6; padding: 10px; }
 
-        .container { max-width: 1400px; margin: 0 auto; display: flex; gap: 20px; }
-        .header { background: linear-gradient(135deg, #ff9800, #ff5722); color: white; padding: 20px; border-radius: var(--radius); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
-        .header h1 { font-size: 28px; font-weight: 600; }
-        .header i { margin-right: 10px; }
+.container { max-width: 1400px; margin: 0 auto; display: flex; gap: 20px; }
+.header { background: linear-gradient(135deg, #ff9800, #ff5722); color: white; padding: 20px; border-radius: var(--radius); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
+.header h1 { font-size: 28px; font-weight: 600; cursor: pointer; }
+.header i { margin-right: 10px; }
+.header p { cursor: pointer; }
 
-        .left-panel, .right-panel { flex: 1; background-color: var(--bg-color); border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; }
-        .right-panel { flex: 2; }
+.left-panel, .right-panel { flex: 1; background-color: var(--bg-color); border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; }
+.right-panel { flex: 2; }
 
-        .panel-header { background-color: var(--primary-light); padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .panel-header h2 { color: var(--primary-dark); font-size: 20px; }
+.panel-header { background-color: var(--primary-light); padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+.panel-header h2 { color: var(--primary-dark); font-size: 20px; cursor: pointer; }
 
-        .panel-content { padding: 20px; flex: 1; overflow-y: auto; }
+.panel-content { padding: 20px; flex: 1; overflow-y: auto; }
 
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background-color: var(--primary-color); color: white; }
-        .btn-primary:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
-        .btn-secondary { background-color: #f0f0f0; color: var(--text-color); }
-        .btn-success { background-color: var(--success-color); color: white; }
-        .btn-danger { background-color: var(--danger-color); color: white; }
+.btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background-color: var(--primary-color); color: white; }
+.btn-primary:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+.btn-secondary { background-color: #f0f0f0; color: var(--text-color); }
+.btn-success { background-color: var(--success-color); color: white; }
+.btn-danger { background-color: var(--danger-color); color: white; }
 
-        .notification-bar { background-color: #fff3e0; border-left: 5px solid var(--warning-color); padding: 15px; margin-bottom: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .notification-bar i { color: var(--warning-color); margin-right: 10px; }
+.notification-bar { background-color: #fff3e0; border-left: 5px solid var(--warning-color); padding: 15px; margin-bottom: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+.notification-bar i { color: var(--warning-color); margin-right: 10px; }
 
-        .search-filter { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .search-filter input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; min-width: 200px; }
-        .search-filter select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+.search-filter { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+.search-filter input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; min-width: 200px; }
+.search-filter select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
 
-        .patient-room-group { margin-bottom: 20px; }
-        .patient-room-group h3 { color: var(--primary-dark); margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--border-color); }
-        .patient-item { padding: 15px; border: 1px solid #eee; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: center; }
-        .patient-item:hover { background-color: #fff9f0; border-color: var(--border-color); }
-        .patient-item.active { background-color: var(--primary-light); border-color: var(--primary-color); }
+.patient-room-group { margin-bottom: 20px; }
+.patient-room-group h3 { color: var(--primary-dark); margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--border-color); }
+.patient-item { padding: 15px; border: 1px solid #eee; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: center; }
+.patient-item:hover { background-color: #fff9f0; border-color: var(--border-color); }
+.patient-item.active { background-color: var(--primary-light); border-color: var(--primary-color); }
 
-        .patient-type.inpatient { display: inline-block; padding: 8px 16px; background: #34d399; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); }
-        .patient-type.outpatient { display: inline-block; padding: 8px 16px; background: #fbbf24; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2); }
+.patient-type.inpatient { display: inline-block; padding: 8px 16px; background: #34d399; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); }
+.patient-type.outpatient { display: inline-block; padding: 8px 16px; background: #fbbf24; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2); }
 
-        .status-ok { display: inline-block; padding: 8px 16px; background: #34d399; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; }
-        .status-error { display: inline-block; padding: 8px 16px; background: #fb7185; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; }
-        .status-warning { display: inline-block; padding: 8px 16px; background: #fbbf24; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; }
+.status-ok { display: inline-block; padding: 8px 16px; background: #34d399; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; }
+.status-error { display: inline-block; padding: 8px 16px; background: #fb7185; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; }
+.status-warning { display: inline-block; padding: 8px 16px; background: #fbbf24; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; }
 
-        .stats-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .stats-table th, .stats-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
-        .stats-table th { background-color: #f9f9f9; color: var(--primary-dark); font-weight: 600; }
+.stats-table { width: 100%; border-collapse: collapse; margin-top: 0 !important; }
+.stats-table th, .stats-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+.stats-table th { background-color: #f9f9f9; color: var(--primary-dark); font-weight: 600; }
 
-        .patient-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { margin-bottom: 5px; font-weight: 600; color: var(--light-text); }
-        .form-group input, .form-group select { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2); }
+.patient-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+.form-group { display: flex; flex-direction: column; }
+.form-group label { margin-bottom: 5px; font-weight: 600; color: var(--light-text); }
+.form-group input, .form-group select { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2); }
 
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal { background-color: white; border-radius: var(--radius); width: 90%; max-width: 900px; max-height: 90vh; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
-        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: bold; }
-        .modal-content { padding: 20px; overflow-y: auto; flex: 1; }
-        .modal-footer { padding: 15px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
-        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--light-text); }
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal { background-color: white; border-radius: var(--radius); width: 90%; max-width: 900px; max-height: 90vh; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
+.modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: bold; }
+.modal-content { padding: 20px; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 15px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
+.close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--light-text); }
 
-        .hidden { display: none; }
+.hidden { display: none; }
 
-        #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { min-width: 300px; padding: 15px 20px; border-radius: 8px; color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.2); animation: slideIn 0.4s ease; }
-        .toast.success { background-color: var(--success-color); }
-        .toast.error { background-color: var(--danger-color); }
-        .toast.info { background-color: var(--info-color); }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+#toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+.toast { min-width: 300px; padding: 15px 20px; border-radius: 8px; color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.2); animation: slideIn 0.4s ease; }
+.toast.success { background-color: var(--success-color); }
+.toast.error { background-color: var(--danger-color); }
+.toast.info { background-color: var(--info-color); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        footer { text-align: center; padding: 20px; color: var(--light-text); font-size: 14px; margin-top: 30px; }
+footer { text-align: center; padding: 20px; color: var(--light-text); font-size: 14px; margin-top: 30px; }
 
-/* ================== RESPONSIVE MOBILE ================== */
+.date-wrapper { position: relative; display: flex; align-items: center; }
+.date-wrapper input { width: 100%; padding-right: 110px; }
+.date-wrapper span { position: absolute; right: 55px; font-weight: 600; color: #ff5722; }
+.date-wrapper input::-webkit-calendar-picker-indicator { position: absolute; right: 10px; cursor: pointer; }
+
+.action-buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+#totalYearSelect, input[type="number"], .bschau { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; min-width: 160px; background-color: #fff; cursor: pointer; }
+#totalYearSelect:focus, input[type="number"]:focus, .bschau:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2); }
+
+#dateRangeBox { display: none; gap: 10px; width: 100%; }
+#dateRangeBox input[type="date"] { flex: unset; width: 200px; min-width: 160px; }
+
+.patient-item-left { justify-content: flex-start !important; gap: 10px; }
+
+.popup-row { position: relative; }
+.popup-row.strike-row::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: red; transform: translateY(-50%); }
+
+.current-time-row { background-color: #e3f2fd !important; border-left: 5px solid #2196f3; font-weight: bold; color: #0d47a1; }
+
+#emrPopup .stats-table td { padding: 10px; border-bottom: 1px solid #eee; }
+
+/* ===== DISCHARGE PROPOSAL MODAL ===== */
+#dischargeProposalModal .modal { max-width: 1300px; width: 98%; margin: 20px auto; overflow: hidden; display: flex; flex-direction: column; max-height: 85vh; }
+#dischargeProposalModal .modal-header { padding: 12px 20px; border-bottom: 1px solid var(--border-color); background-color: var(--primary-light); flex-shrink: 0; }
+#dischargeProposalModal .modal-content { padding: 0 !important; overflow: auto; flex: 1; max-height: calc(85vh - 55px); }
+#dischargeProposalModal .stats-table { width: 100%; min-width: 900px; border-collapse: collapse; margin: 0; }
+#dischargeProposalModal .stats-table thead th { position: sticky; top: 0; background: linear-gradient(135deg, #ff9800, #f57c00); color: white; font-weight: 600; padding: 10px 12px; white-space: nowrap; z-index: 20; border-bottom: 2px solid #ffcc80; }
+#dischargeProposalModal .stats-table thead th:hover { background: linear-gradient(135deg, #f57c00, #ef6c00); cursor: pointer; }
+#dischargeProposalModal thead th:nth-child(5) { cursor: pointer; user-select: none; }
+
+.sort-icon { margin-left: 6px; font-size: 12px; }
+
+#proposalTableBody tr td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+
+.text-overdue { color: #d32f2f; font-weight: bold; background: #ffebee; padding: 2px 8px; border-radius: 4px; border: 1px solid #ffcdd2; }
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-
-    body {
-        padding: 6px;
-        font-size: 14px;
-    }
-
-    /* Header */
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 15px;
-    }
-
-    .header h1 {
-        font-size: 20px;
-    }
-
-    .header p {
-        font-size: 13px;
-    }
-
-    #newPatientBtn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    /* Container: 2 cột -> 1 cột */
-    .container {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .left-panel,
-    .right-panel {
-        flex: unset;
-        width: 100%;
-    }
-
-    /* Panel */
-    .panel-header h2 {
-        font-size: 16px;
-    }
-
-    .panel-content {
-        padding: 12px;
-    }
-
-    /* Search */
-    .search-filter {
-        flex-direction: column;
-    }
-
-    .search-filter input,
-    .search-filter select {
-        width: 100%;
-        font-size: 14px;
-    }
-
-    /* Patient item */
-    .patient-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        padding: 12px;
-    }
-
-    .patient-type {
-        font-size: 12px;
-        padding: 6px 12px;
-    }
-
-    /* Table -> scroll ngang */
-    .stats-table {
-        font-size: 13px;
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-
-    /* Form */
-    .patient-form {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .form-group input,
-    .form-group select {
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    /* Modal */
-    .modal {
-        width: 95%;
-        max-height: 90vh;
-    }
-
-    .modal-header {
-        font-size: 16px;
-        padding: 12px;
-    }
-
-    /* Button */
-    .btn {
-        padding: 10px 14px;
-        font-size: 14px;
-    }
-
-    /* Toast */
-    .toast {
-        min-width: unset;
-        width: calc(100vw - 40px);
-        font-size: 13px;
-    }
-
-    footer {
-        font-size: 12px;
-    }
+    body { padding: 6px; font-size: 14px; }
+    .header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; }
+    .header h1 { font-size: 20px; }
+    .header p { font-size: 13px; }
+    #newPatientBtn { width: 100%; justify-content: center; }
+    .container { flex-direction: column; gap: 12px; }
+    .left-panel, .right-panel { flex: unset; width: 100%; }
+    .panel-header h2 { font-size: 16px; }
+    .panel-content { padding: 12px; }
+    .search-filter { flex-direction: column; }
+    .search-filter input, .search-filter select { width: 100%; font-size: 14px; }
+    .patient-item { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
+    .patient-type { font-size: 12px; padding: 6px 12px; }
+    .stats-table { font-size: 13px; display: block; overflow-x: auto; white-space: nowrap; }
+    .patient-form { grid-template-columns: 1fr; gap: 12px; }
+    .form-group input, .form-group select { font-size: 14px; padding: 10px; }
+    .modal { width: 95%; max-height: 90vh; }
+    .modal-header { font-size: 16px; padding: 12px; }
+    .btn { padding: 10px 14px; font-size: 14px; }
+    .toast { min-width: unset; width: calc(100vw - 40px); font-size: 13px; }
+    footer { font-size: 12px; }
+    
+    #dischargeProposalModal .modal { max-height: 95vh; width: 98%; }
+    #dischargeProposalModal .modal-content { max-height: calc(95vh - 50px); -webkit-overflow-scrolling: touch; }
+    #dischargeProposalModal .stats-table { min-width: 700px; }
+    #dischargeProposalModal .stats-table thead th { padding: 16px 16px; font-size: 12px; }
+    #proposalTableBody tr td { padding: 8px 8px; font-size: 12px; }
 }
 
-/* Mobile rất nhỏ (≤480px) */
 @media (max-width: 480px) {
-
-    .header h1 {
-        font-size: 18px;
-    }
-
-    .panel-header h2 {
-        font-size: 15px;
-    }
-
-    .btn {
-        font-size: 13px;
-    }
-
-    .patient-item {
-        padding: 10px;
-    }
-}
-.date-wrapper{
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-/* chừa chỗ cho chữ + icon */
-.date-wrapper input{
-    width: 100%;
-    padding-right: 110px;
-}
-
-/* chữ Thứ nằm TRƯỚC icon */
-.date-wrapper span{
-    position: absolute;
-    right: 55px;
-    font-weight: 600;
-    color: #ff5722;
-}
-
-/* icon lịch nằm mép phải */
-.date-wrapper input::-webkit-calendar-picker-indicator{
-    position: absolute;
-    right: 10px;
-    cursor: pointer;
-}
-
-    .action-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    justify-content: flex-end; /* Đẩy toàn bộ nút sang bên phải */
-}
-/* Dropdown thống kê tổng – giống filterStatus */
-#totalYearSelect {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    min-width: 160px;
-    background-color: #fff;
-    cursor: pointer;
-}
-
-/* Khi focus – giống các select khác */
-#totalYearSelect:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
-}
-#dateRangeBox {
-    display: none;          /* ← MẶC ĐỊNH ẨN */
-    gap: 10px;
-    width: 100%;
-}
-/* Khoảng ngày giống filterStatus */
-#dateRangeBox input[type="date"] {
-    flex: unset;          /* bỏ flex:1 */
-    width: 200px;         /* giống select */
-    min-width: 160px;
-}
-
-.patient-item-left {
-    justify-content: flex-start !important;
-    gap: 10px; /* khoảng cách giữa checkbox và chữ */
-}
-input[type="number"],
-.bschau {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    min-width: 160px;
-    background-color: #fff;
-    cursor: pointer;
-}
-
-/* Khi focus – giống các select khác */
-input[type="number"]:focus,
-.bschau:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
-}
-@media (max-width: 480px) {
-    .patient-item {
-        display: flex !important;
-        flex-direction: row !important;   /* 🔥 ép nằm ngang */
-        align-items: center !important;
-        text-align: left !important;      /* 🔥 bỏ căn giữa */
-        gap: 8px;
-    }
-
-    .patient-name {
-        flex: 1;
-        min-width: 0;                     /* 🔥 bắt buộc */
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        text-align: left !important;
-        font-size: 14px;
-    }
-
-    .patient-age {
-        flex-shrink: 0;
-        white-space: nowrap;
-        font-size: 13px;
-    }
-
-    .patient-details {
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-    }
-
-    .patient-type {
-        white-space: nowrap;
-        font-size: 12px;
-        padding: 4px 10px;
-    }
+    .header h1 { font-size: 18px; }
+    .panel-header h2 { font-size: 15px; }
+    .btn { font-size: 13px; }
+    .patient-item { padding: 10px; display: flex !important; flex-direction: row !important; align-items: center !important; text-align: left !important; gap: 8px; }
+    .patient-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left !important; font-size: 14px; }
+    .patient-age { flex-shrink: 0; white-space: nowrap; font-size: 13px; }
+    .patient-details { flex-shrink: 0; display: flex; align-items: center; }
+    .patient-type { white-space: nowrap; font-size: 12px; padding: 4px 10px; }
+    
+    .proposal-name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #dischargeProposalModal .stats-table { min-width: 600px; }
 }
 
 @media (max-width: 410px) {
-
-    .stats-table {
-        table-layout: fixed;      /* 🔥 rất quan trọng */
-        width: 100%;
-    }
-
-    .stats-table th,
-    .stats-table td {
-        padding: 6px 4px;         /* 🔥 thu padding */
-        font-size: 13px;
-        text-align: center;
-        white-space: nowrap;
-    }
-
-    /* Cột Tên cho phép chiếm nhiều hơn */
-    .stats-table th:nth-child(2),
-    .stats-table td:nth-child(2) {
-        text-align: left;
-        padding-left: 6px;
-        width: 28%;
-    }
-
-    /* Các cột số ép nhỏ */
-    .stats-table th:nth-child(1),
-    .stats-table td:nth-child(1),
-    .stats-table th:nth-child(3),
-    .stats-table td:nth-child(3),
-    .stats-table th:nth-child(4),
-    .stats-table td:nth-child(4),
-    .stats-table th:nth-child(5),
-    .stats-table td:nth-child(5),
-    .stats-table th:nth-child(6),
-    .stats-table td:nth-child(6) {
-        width: 10%;
-    }
-
-    /* Trạng thái */
-    .stats-table th:nth-child(7),
-    .stats-table td:nth-child(7) {
-        width: 12%;
-    }
-}
-.popup-row{
-    position: relative;
-}
-
-.popup-row.strike-row::after{
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    height: 2px;
-    background: red;
-    transform: translateY(-50%);
-}
-.stats-table{
-    margin-top: 0 !important;
-}
-/* CSS cho dòng đang được chọn (Tô xanh) */
-.current-time-row {
-    background-color: #e3f2fd !important; /* Màu xanh nhạt */
-    border-left: 5px solid #2196f3;
-    font-weight: bold;
-    color: #0d47a1;
-}
-
-#emrPopup .stats-table td {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-}
-/* Style cho Popup Đề xuất */
-    #dischargeProposalModal .modal { max-width: 1000px; width: 95%; }
-    .row-discharged { } /* Mờ hàng đã nhập ngày ra */
-    .text-overdue { color: #f44336; font-weight: bold; border: 2px solid #f44336; padding: 2px 5px; border-radius: 4px; } /* Tô đỏ ngày đã nằm */
-    
-    @media (max-width: 410px) {
-        .proposal-name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    }
-	/* Tăng độ rộng cho Popup Đề xuất */
-    #dischargeProposalModal .modal { 
-        max-width: 1200px; /* Tăng từ 1000px lên 1200px */
-        width: 98%;        /* Chiếm gần hết màn hình trên tablet/mobile */
-        margin: 20px auto;
-    }
-
-    /* Đảm bảo bảng bên trong không bị tràn và dễ nhìn */
-    #dischargeProposalModal .modal-content {
-        overflow-x: auto; /* Cho phép cuộn ngang nếu màn hình quá nhỏ */
-        padding: 15px;
-    }
-
- 
-    
-    .text-overdue { 
-        color: #d32f2f; 
-        font-weight: bold; 
-        background: #ffebee;
-        padding: 2px 8px;
-        border-radius: 4px;
-        border: 1px solid #ffcdd2;
-    }
-
-    /* Giãn khoảng cách dòng trong bảng cho dễ đọc */
-    #proposalTableBody tr td {
-        padding: 12px 8px;
-        border-bottom: 1px solid #eee;
-    }
-	
-	#dischargeProposalModal thead th:nth-child(5) {
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.2s;
-}
-#dischargeProposalModal thead th:nth-child(5):hover {
-    background-color: #e0e0e0;
-}
-.sort-icon {
-    margin-left: 6px;
-    font-size: 12px;
+    .stats-table { table-layout: fixed; width: 100%; }
+    .stats-table th, .stats-table td { padding: 6px 4px; font-size: 13px; text-align: center; white-space: nowrap; }
+    .stats-table th:nth-child(2), .stats-table td:nth-child(2) { text-align: left; padding-left: 6px; width: 28%; }
+    .stats-table th:nth-child(1), .stats-table td:nth-child(1),
+    .stats-table th:nth-child(3), .stats-table td:nth-child(3),
+    .stats-table th:nth-child(4), .stats-table td:nth-child(4),
+    .stats-table th:nth-child(5), .stats-table td:nth-child(5),
+    .stats-table th:nth-child(6), .stats-table td:nth-child(6) { width: 10%; }
+    .stats-table th:nth-child(7), .stats-table td:nth-child(7) { width: 12%; }
 }
     </style>
 </head>
@@ -572,7 +280,7 @@ input[type="number"]:focus,
         </div>
     </div>
 
-    <!-- ====== 👉 THỐNG KÊ TỔNG (THÊM MỚI – DÁN VÀO ĐÂY) ====== -->
+    <!-- ======  THỐNG KÊ TỔNG ====== -->
     <div id="totalStatsContent" class="hidden">
 
         <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap">
@@ -596,7 +304,7 @@ input[type="number"]:focus,
     <footer>© 2014-2026 By Dr.Châu</footer>
     <div id="toastContainer"></div>
 
-    <!-- Password Modal - Ẩn lúc đầu -->
+    <!-- Password Modal-->
     <div id="passwordModal" class="overlay hidden">
         <div class="modal" style="max-width: 400px;">
             <div class="modal-header"><h3>Nhập mật khẩu để tiếp tục</h3></div>
@@ -667,7 +375,7 @@ input[type="number"]:focus,
     </div>
 
     <script>
-	// Hàm xử lý tên thu gọn: Kim Yến -> K.Yến nếu có >1 người tên Yến
+	// Hàm xử lý tên thu gọn: VD: Kim Yến -> K.Yến nếu có >1 người tên Yến
 function formatDisplayName(p, allPatients) {
     const isNarrow = window.innerWidth < 410;
     if (!isNarrow) return p.fullName; // Nếu màn hình lớn thì hiện tên đầy đủ
@@ -688,14 +396,14 @@ function formatDisplayName(p, allPatients) {
     return lastName;
 }
 
-     const PASSWORD = "1!"; // ← Đổi mật khẩu ở đây
+     const PASSWORD = "1!"; 
     const REFRESH_KEY = "yvVdSnOoxgsAAAAAAAAAAYwqRQmU9NPgvKrMmzAL2JY9QqutemeEsykD9LmlQcRr";
     const APP_KEY = "qzy5kclrf827aey";
     const APP_SECRET = "6jlsunzjqr3s3nh";
 
     let patients = [];
     let accessToken = "";
-    let isAuthenticated = false;        // Sẽ được kiểm tra từ localStorage
+    let isAuthenticated = false;       
     let pendingAction = null;
     let currentPatientId = null;
     let currentView = 'stats';
@@ -763,7 +471,7 @@ function formatDisplayName(p, allPatients) {
 
         document.getElementById('passwordInput').onkeyup = e => { if (e.key === 'Enter') document.getElementById('passwordOk').click(); };
 
-        // Dropbox
+        
         async function getAccessToken() {
             const res = await fetch('https://api.dropbox.com/oauth2/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `grant_type=refresh_token&refresh_token=${REFRESH_KEY}&client_id=${APP_KEY}&client_secret=${APP_SECRET}` });
@@ -1126,8 +834,8 @@ setTimeout(() => {
     document.getElementById('statsContent').classList.remove('hidden');
     document.getElementById('patientDetailContent').classList.add('hidden');
     
-    showStatsLoading(true);  // <<< THÊM
-    renderStatsTable();      // renderStatsTable đã tự ẩn loading khi xong
+    showStatsLoading(true);  
+    renderStatsTable();      
     renderPatientList();
 }
 
@@ -1142,7 +850,7 @@ setTimeout(() => {
 
     document.getElementById('patientModal').classList.remove('hidden');
 
-    // ✅ GỌI HÀM TẠI ĐÂY
+   
     bindWeekdayAutoUpdate(
         "admissionDate",
         "admissionWeekday",
@@ -1397,6 +1105,7 @@ async function initApp() {
     showNotificationLoading(true);
     
     patients = await loadFromDropbox();
+	isDataLoaded = true;  
     renderPatientList();
     renderStatsTable();       // sẽ tự ẩn loading
     updateNotifications();    // sẽ tự ẩn loading
@@ -2008,15 +1717,139 @@ function showStatsPopup() {
     // Chỉ hiển thị popup khi đang ở view thống kê
     if (currentView !== 'stats') return;
 
-    const rows = document.querySelectorAll('#statsTableBody tr');
+    // Kiểm tra nếu chưa có dữ liệu hoặc đang tải
+    if (!patients || patients.length === 0) {
+        // Hiển thị thông báo đang tải
+        const loadingHtml = `
+        <div class="overlay" id="statsPopup">
+            <div class="modal" style="max-width: 500px;">
+                <div class="modal-header">
+                    Thống kê giờ khám
+                    <button class="close-btn" onclick="document.getElementById('statsPopup').remove()">×</button>
+                </div>
+                <div class="modal-content" style="text-align:center; padding:40px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #ff9800;"></i>
+                    <p style="margin-top: 15px;">Đang tải dữ liệu bệnh nhân...</p>
+                </div>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', loadingHtml);
+        
+        // Đợi dữ liệu tải xong (kiểm tra mỗi 200ms)
+        let checkCount = 0;
+        const maxChecks = 50; // Tối đa 10 giây
+        
+        const checkInterval = setInterval(() => {
+            checkCount++;
+            if (patients && patients.length > 0) {
+                clearInterval(checkInterval);
+                // Đóng popup loading
+                const loadingPopup = document.getElementById('statsPopup');
+                if (loadingPopup) loadingPopup.remove();
+                // Gọi lại hàm để hiển thị dữ liệu thật
+                showStatsPopup();
+            } else if (checkCount >= maxChecks) {
+                clearInterval(checkInterval);
+                // Cập nhật nội dung loading thành thông báo lỗi
+                const loadingPopup = document.getElementById('statsPopup');
+                if (loadingPopup) {
+                    const content = loadingPopup.querySelector('.modal-content');
+                    if (content) {
+                        content.innerHTML = `
+                            <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #f44336;"></i>
+                            <p style="margin-top: 15px; color: #f44336;">Không thể tải dữ liệu. Vui lòng thử lại sau.</p>
+                            <button class="btn btn-primary" style="margin-top: 15px;" onclick="document.getElementById('statsPopup').remove()">Đóng</button>
+                        `;
+                    }
+                }
+            }
+        }, 200);
+        return;
+    }
 
+    // Đợi bảng thống kê được render (kiểm tra #statsTableBody có dữ liệu không)
+    const statsBody = document.getElementById('statsTableBody');
+    if (!statsBody || statsBody.children.length === 0 || statsBody.innerHTML.includes('Không có dữ liệu')) {
+        // Hiển thị thông báo đang tải bảng thống kê
+        const loadingHtml = `
+        <div class="overlay" id="statsPopup">
+            <div class="modal" style="max-width: 600px;">
+                <div class="modal-header">
+                    Thống kê giờ khám
+                    <button class="close-btn" onclick="document.getElementById('statsPopup').remove()">×</button>
+                </div>
+                <div class="modal-content" style="text-align:center; padding:40px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #ff9800;"></i>
+                    <p style="margin-top: 15px;">Đang tải dữ liệu thống kê...</p>
+                </div>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', loadingHtml);
+        
+        // Đợi bảng thống kê được render
+        let checkCount = 0;
+        const maxChecks = 30; // Tối đa 6 giây
+        
+        const checkInterval = setInterval(() => {
+            checkCount++;
+            const refreshedStatsBody = document.getElementById('statsTableBody');
+            if (refreshedStatsBody && refreshedStatsBody.children.length > 0 && 
+                !refreshedStatsBody.innerHTML.includes('Không có dữ liệu')) {
+                clearInterval(checkInterval);
+                const loadingPopup = document.getElementById('statsPopup');
+                if (loadingPopup) loadingPopup.remove();
+                // Gọi lại hàm để hiển thị dữ liệu thật
+                showStatsPopup();
+            } else if (checkCount >= maxChecks) {
+                clearInterval(checkInterval);
+                const loadingPopup = document.getElementById('statsPopup');
+                if (loadingPopup) {
+                    const content = loadingPopup.querySelector('.modal-content');
+                    if (content) {
+                        content.innerHTML = `
+                            <i class="fas fa-chart-bar" style="font-size: 32px; color: #ff9800;"></i>
+                            <p style="margin-top: 15px;">Hiện không có dữ liệu thống kê</p>
+                            <button class="btn btn-primary" style="margin-top: 15px;" onclick="document.getElementById('statsPopup').remove()">Đóng</button>
+                        `;
+                    }
+                }
+            }
+        }, 200);
+        return;
+    }
+
+    // Dữ liệu đã sẵn sàng, lấy rows từ bảng thống kê
+    const rows = document.querySelectorAll('#statsTableBody tr');
+    
+    // Kiểm tra nếu không có hàng dữ liệu nào (không phải thông báo lỗi)
+    if (!rows.length || (rows.length === 1 && rows[0].innerHTML.includes('Không có dữ liệu'))) {
+        const emptyHtml = `
+        <div class="overlay" id="statsPopup">
+            <div class="modal" style="max-width: 500px;">
+                <div class="modal-header">
+                    Thống kê giờ khám
+                    <button class="close-btn" onclick="document.getElementById('statsPopup').remove()">×</button>
+                </div>
+                <div class="modal-content" style="text-align:center; padding:40px;">
+                    <i class="fas fa-info-circle" style="font-size: 32px; color: #ff9800;"></i>
+                    <p style="margin-top: 15px;">Không có dữ liệu bệnh nhân đang điều trị</p>
+                    <button class="btn btn-primary" style="margin-top: 15px;" onclick="document.getElementById('statsPopup').remove()">Đóng</button>
+                </div>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', emptyHtml);
+        return;
+    }
+
+    // Tạo nội dung popup từ dữ liệu đã có
     let html = `
     <div class="overlay" id="statsPopup">
         <div class="modal">
             <div class="modal-header">
+                <i class="fas fa-chart-bar"></i> Thống kê giờ khám
                 <button class="close-btn" onclick="document.getElementById('statsPopup').remove()">×</button>
             </div>
-            <div class="modal-content">
+            <div class="modal-content" style="max-height: 70vh; overflow-y: auto;">
                 <table class="stats-table">
                     <thead>
                         <tr>
@@ -2026,22 +1859,27 @@ function showStatsPopup() {
                             <th>Giờ</th>
                             <th>Ngày</th>
                             <th>Loại</th>
-                        </tr>
-                    </thead>
+                        </thead>
                     <tbody>
     `;
 
     rows.forEach(r => {
         const tds = r.querySelectorAll('td');
         if (tds.length >= 6) {
+            // Lấy nội dung, bỏ qua các thẻ span bên trong nếu có
+            const getCleanText = (td) => {
+                const span = td.querySelector('span');
+                return span ? span.innerText : td.innerText;
+            };
+            
             html += `
-            <tr class="popup-row">
+            <tr class="popup-row" style="cursor: pointer;">
                 <td>${tds[0].innerText}</td>
-                <td>${tds[1].innerText}</td>
+                <td>${getCleanText(tds[1])}</td>
                 <td>${tds[2].innerText}</td>
                 <td>${tds[3].innerText}</td>
                 <td>${tds[4].innerText}</td>
-                <td>${tds[5].innerText}</td>
+                <td>${getCleanText(tds[5])}</td>
             </tr>`;
         }
     });
@@ -2049,6 +1887,9 @@ function showStatsPopup() {
     html += `
                     </tbody>
                 </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="document.getElementById('statsPopup').remove()">Đóng</button>
             </div>
         </div>
     </div>`;
@@ -2108,24 +1949,72 @@ function getTimeRangeText(startTimeStr) {
 }
 
 // Hàm mở và xử lý Popup
+// Hàm openEmrPopup - ĐÃ SỬA: Kiểm tra và đợi dữ liệu tải xong
 function openEmrPopup() {
+    const emrPopupBody = document.getElementById('emrPopupBody');
+    
+    // Kiểm tra nếu dữ liệu patients chưa có hoặc chưa tải xong
+    if (!patients || patients.length === 0) {
+        // Hiển thị loading trong popup
+        if (emrPopupBody) {
+            emrPopupBody.innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align:center; padding:40px;">
+                        <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu bệnh nhân...
+                    </td>
+                </tr>
+            `;
+        }
+        document.getElementById('emrPopup').classList.remove('hidden');
+        
+        // Đợi dữ liệu tải xong (kiểm tra mỗi 200ms)
+        let checkCount = 0;
+        const maxChecks = 50; // Tối đa 10 giây (200ms * 50)
+        
+        const checkInterval = setInterval(() => {
+            checkCount++;
+            if (patients && patients.length > 0) {
+                clearInterval(checkInterval);
+                renderEmrPopupContent(); // Gọi hàm render nội dung thật
+            } else if (checkCount >= maxChecks) {
+                clearInterval(checkInterval);
+                if (emrPopupBody) {
+                    emrPopupBody.innerHTML = `
+                        <tr>
+                            <td colspan="3" style="text-align:center; padding:40px; color:#f44336;">
+                                <i class="fas fa-exclamation-triangle"></i> Không thể tải dữ liệu. Vui lòng thử lại sau.
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        }, 200);
+        return;
+    }
+    
+    // Dữ liệu đã có sẵn, render ngay
+    renderEmrPopupContent();
+}
+
+// Hàm render nội dung popup (tách riêng để tái sử dụng)
+function renderEmrPopupContent() {
     const todayStr = new Date().toISOString().split('T')[0];
     const now = new Date();
     const currentH = now.getHours();
     const currentM = now.getMinutes();
-    const currentTimeVal = currentH * 60 + currentM; // Tổng số phút hiện tại từ đầu ngày
+    const currentTimeVal = currentH * 60 + currentM;
 
     // Lấy danh sách bệnh nhân hôm nay
     const todayPatients = patients.filter(p => p.admissionDate === todayStr);
 
     let html = '';
-    let foundNextSlot = false; // Biến đánh dấu đã tìm thấy dòng cần tô xanh hay chưa
+    let foundNextSlot = false;
 
     for (let i = 0; i < TIME_SLOTS.length; i++) {
         const slotStart = TIME_SLOTS[i];
         const [h, m] = slotStart.split(':').map(Number);
         const slotStartVal = h * 60 + m;
-        const slotEndVal = slotStartVal + 5; // Khung giờ kéo dài 5 phút
+        const slotEndVal = slotStartVal + 5;
 
         // Tìm bệnh nhân khớp giờ
         const patient = todayPatients.find(p => p.admissionTime === slotStart);
@@ -2133,13 +2022,13 @@ function openEmrPopup() {
 
         let rowClass = '';
 
-        // LOGIC TÔ XANH MỚI:
+        // LOGIC TÔ XANH:
         // 1. Dòng đó phải chưa có bệnh nhân (patientName === "")
-        // 2. Giờ hiện tại phải nhỏ hơn giờ kết thúc của khung đó (chưa trôi qua)
-        // 3. Chỉ tô xanh dòng đầu tiên thỏa mãn (foundNextSlot === false)
+        // 2. Giờ hiện tại phải nhỏ hơn giờ kết thúc của khung đó
+        // 3. Chỉ tô xanh dòng đầu tiên thỏa mãn
         if (!foundNextSlot && patientName === "" && currentTimeVal <= slotEndVal) {
             rowClass = 'current-time-row';
-            foundNextSlot = true; // Đánh dấu đã tô màu xong, không tô các dòng trống phía sau nữa
+            foundNextSlot = true;
         }
 
         html += `
@@ -2151,6 +2040,17 @@ function openEmrPopup() {
         `;
     }
 
+    // Nếu không có dữ liệu hiển thị thông báo
+    if (html === '') {
+        html = `
+            <tr>
+                <td colspan="3" style="text-align:center; padding:40px;">
+                    <i class="fas fa-info-circle"></i> Không có dữ liệu khám hôm nay
+                </td>
+            </tr>
+        `;
+    }
+
     document.getElementById('emrPopupBody').innerHTML = html;
     document.getElementById('emrPopup').classList.remove('hidden');
 }
@@ -2158,7 +2058,6 @@ function openEmrPopup() {
 function closeEmrPopup() {
     document.getElementById('emrPopup').classList.add('hidden');
 }
-
 // Gán sự kiện click vào chữ "Electronic Medical Record" ở Header
 document.querySelector('.header h1').style.cursor = 'pointer';
 document.querySelector('.header h1').onclick = openEmrPopup;
@@ -2177,6 +2076,46 @@ function getProposalSortValue(p) {
     const res = getProposedDate(p.admissionDate, p.patientType);
     return res.proposed.getTime(); // Trả về timestamp để so sánh
 }
+///hàm tuần trước tuần sau///
+// Hàm xác định tuần của một ngày so với tuần hiện tại
+function getWeekInfo(dateStr) {
+    if (!dateStr) return '';
+    
+    const targetDate = new Date(dateStr);
+    const today = new Date();
+    
+    // Reset giờ về 0 để so sánh chính xác
+    targetDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    // Tìm ngày thứ Hai của tuần hiện tại
+    const currentMonday = new Date(today);
+    const currentDayOfWeek = today.getDay(); // 0: Chủ Nhật, 1: Thứ 2, ...
+    const daysToMonday = (currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1);
+    currentMonday.setDate(today.getDate() - daysToMonday);
+    currentMonday.setHours(0, 0, 0, 0);
+    
+    // Tìm ngày Chủ Nhật của tuần hiện tại
+    const currentSunday = new Date(currentMonday);
+    currentSunday.setDate(currentMonday.getDate() + 6);
+    currentSunday.setHours(0, 0, 0, 0);
+    
+    // Tính khoảng cách tuần
+    const diffTime = targetDate - currentMonday;
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+    const weekOffset = Math.floor(diffDays / 7);
+    
+    if (targetDate < currentMonday) {
+        if (weekOffset === -1) return 'Tuần trước';
+        return 'Tuần trước nữa';
+    } else if (targetDate >= currentMonday && targetDate <= currentSunday) {
+        return 'Tuần này';
+    } else {
+        if (weekOffset === 1) return 'Tuần sau';
+        return 'Tuần sau nữa';
+    }
+}
+////
 
 // Hàm tính ngày đề xuất (Lùi về thứ 6 nếu rơi vào T7, CN, T2)
 // SỬA LẠI HÀM getProposedDate
@@ -2251,20 +2190,68 @@ function toggleDateFormat() {
 }
 
 // HÀM ĐỊNH DẠNG NGÀY THEO TRẠNG THÁI
+// HÀM ĐỊNH DẠNG NGÀY THEO TRẠNG THÁI (CÓ THÊM THÔNG TIN TUẦN)
 function formatDateByMode(dateStr) {
     if (!dateStr) return "";
+    
+    const weekInfo = getWeekInfo(dateStr);
+    const weekText = weekInfo ? ` (${weekInfo})` : '';
+    
     if (!isSimpleDateFormat) {
-        return formatSpecialDate(dateStr); // Định dạng cũ: Thứ 2 - 16/03 (28/1 ÂL)
+        // Định dạng đầy đủ: Thứ 2 (Tuần này) - 06/04 (19/2 ÂL)
+        return `${formatSpecialDate(dateStr)}${weekText}`;
     }
-    // Định dạng mới chỉ: DD/MM
+    // Định dạng đơn giản: 06/04 (Tuần này)
     const d = new Date(dateStr);
-    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+    const solarPart = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+    return `${solarPart}${weekText}`;
 }
 
 // HÀM SHOW DISCHARGE PROPOSAL (THAY THẾ HOÀN TOÀN)
 // SỬA HÀM showDischargeProposal - HIỂN THỊ ĐÚNG 2 DÒNG
+// Biến cờ để kiểm tra dữ liệu đã tải xong chưa
+let isDataLoaded = false;
+
+// Hàm showDischargeProposal - ĐÃ SỬA: Đợi dữ liệu tải xong
 function showDischargeProposal() {
+    // Kiểm tra nếu dữ liệu patients chưa có hoặc đang trống
+    if (!patients || patients.length === 0) {
+        // Hiển thị loading trong modal trước
+        const modal = document.getElementById('dischargeProposalModal');
+        const tbody = document.getElementById('proposalTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu bệnh nhân...</td></tr>';
+        }
+        modal.classList.remove('hidden');
+        
+        // Đợi dữ liệu tải xong (kiểm tra mỗi 200ms)
+        let checkCount = 0;
+        const maxChecks = 50; // Tối đa 10 giây (200ms * 50)
+        
+        const checkInterval = setInterval(() => {
+            checkCount++;
+            if (patients && patients.length > 0) {
+                clearInterval(checkInterval);
+                renderProposalTable(); // Gọi hàm render riêng
+            } else if (checkCount >= maxChecks) {
+                clearInterval(checkInterval);
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:40px; color:#f44336;"><i class="fas fa-exclamation-triangle"></i> Không thể tải dữ liệu. Vui lòng thử lại sau.</td></tr>';
+                }
+            }
+        }, 200);
+        return;
+    }
+    
+    // Dữ liệu đã có sẵn, render ngay
+    renderProposalTable();
+}
+
+// Hàm render bảng đề xuất (tách riêng để tái sử dụng)
+function renderProposalTable() {
     const tbody = document.getElementById('proposalTableBody');
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
     
     const headerRow = document.querySelector('#dischargeProposalModal thead tr');
@@ -2280,7 +2267,7 @@ function showDischargeProposal() {
         
         if (cells.length >= 5) {
             cells[3].innerHTML = isSimpleDateFormat ? 'VV' : 'Ngày vào';
-            cells[4].innerHTML = isSimpleDateFormat ? 'ĐXR' : 'Đề xuất ra ⬍'; // Thêm icon
+            cells[4].innerHTML = isSimpleDateFormat ? 'ĐXR' : 'Đề xuất ra ⬍';
             cells[7].innerHTML = 'DV';
         }
     }
@@ -2288,13 +2275,18 @@ function showDischargeProposal() {
     // Lọc bệnh nhân chưa ra viện
     let activePatients = patients.filter(p => !isDischarged(p));
     
-    // ========== THÊM PHẦN SẮP XẾP ==========
+    if (activePatients.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:40px;"><i class="fas fa-info-circle"></i> Không có bệnh nhân đang điều trị</td></tr>';
+        document.getElementById('dischargeProposalModal').classList.remove('hidden');
+        return;
+    }
+    
+    // Sắp xếp
     activePatients = activePatients.sort((a, b) => {
         const valA = getProposalSortValue(a);
         const valB = getProposalSortValue(b);
         return proposalSortDirection === 'asc' ? valA - valB : valB - valA;
     });
-    // ======================================
     
     activePatients.forEach((p, index) => {
         const admission = new Date(p.admissionDate + 'T00:00:00');
@@ -2350,6 +2342,10 @@ function showDischargeProposal() {
     
     document.getElementById('dischargeProposalModal').classList.remove('hidden');
 }
+
+// Cập nhật hàm initApp để đánh dấu dữ liệu đã tải xong
+// Tìm hàm initApp và thêm dòng này vào cuối hàm:
+// isDataLoaded = true;
 // THÊM SỰ KIỆN CLICK VÀO TIÊU ĐỀ "Đề xuất ngày ra viện" ĐỂ ĐỔI KIỂU NGÀY
 // Đặt đoạn code này SAU hàm showDischargeProposal
 setTimeout(() => {
@@ -2600,7 +2596,7 @@ bindProposalSortEvent();
             <table class="stats-table">
                 <thead>
                     <tr>
-                        <th>STT</th>
+                        <th>T</th>
                         <th>Tên</th>
                         <th>Loại</th>
                         <th>Ngày vào</th>
