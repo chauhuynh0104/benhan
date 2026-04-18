@@ -2163,8 +2163,8 @@ function formatSpecialDate(dateStr) {
 
 // Hàm xử lý tên bệnh nhân theo độ rộng màn hình
 function formatPatientName(name) {
-    // 1. Nếu màn hình lớn (>= 610px) thì hiện đầy đủ tên
-    if (window.innerWidth >= 610) return name;
+    // 1. Nếu màn hình lớn (>= 410px) thì hiện đầy đủ tên
+    if (window.innerWidth >= 410) return name;
     
     const parts = name.trim().split(/\s+/);
     if (parts.length < 2) return name;
