@@ -2163,20 +2163,29 @@ function formatSpecialDate(dateStr) {
 
 // Hàm xử lý tên bệnh nhân theo độ rộng màn hình
 function formatPatientName(name) {
-    if (window.innerWidth >= 410) return name;
+    // 1. Nếu màn hình lớn (>= 610px) thì hiện đầy đủ tên
+    if (window.innerWidth >= 610) return name;
     
-    // Nếu màn hình nhỏ < 410px
     const parts = name.trim().split(/\s+/);
     if (parts.length < 2) return name;
     
     const lastName = parts[parts.length - 1];
     const nearName = parts[parts.length - 2];
     
-    // Kiểm tra xem có ai trùng tên không
-    const duplicates = patients.filter(p => p.fullName.trim().endsWith(lastName));
+    // 2. Tìm những người trùng tên cuối VÀ đang còn nằm viện (chưa ra viện)
+    // Sử dụng hàm isDischarged(p) có sẵn trong code của bạn
+    const duplicates = patients.filter(p => {
+        const isSameName = p.fullName.trim().endsWith(lastName);
+        const isStillInHospital = !isDischarged(p); // Chỉ xét người đang nằm viện
+        return isSameName && isStillInHospital;
+    });
+
+    // 3. Nếu có từ 2 người trùng tên trở lên đang nằm viện thì mới thêm tên phụ
     if (duplicates.length >= 2) {
         return `${nearName.charAt(0)}.${lastName}`;
     }
+
+    // 4. Các trường hợp còn lại (đã ra viện hoặc không trùng) chỉ hiện tên cuối
     return lastName;
 }
 
