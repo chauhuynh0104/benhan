@@ -2373,7 +2373,27 @@ setTimeout(() => {
     });
     observer.observe(modal, { attributes: true, childList: true, subtree: false });
 }, 100);
+function hideTypeColumn() {
+    // 1. Xác định vị trí (index) của cột Loại. Trong bảng này là cột thứ 3 (index 2)
+    const columnIndex = 2; 
+    const modal = document.getElementById('dischargeProposalModal');
+    
+    // 2. Ẩn tiêu đề (th)
+    const header = modal.querySelectorAll('thead th')[columnIndex];
+    if (header) header.style.display = 'none';
+    
+    // 3. Ẩn tất cả các ô dữ liệu (td) trong cột đó
+    const rows = modal.querySelectorAll('#proposalTableBody tr');
+    rows.forEach(row => {
+        const cell = row.cells[columnIndex];
+        if (cell) cell.style.display = 'none';
+    });
+    
+   
+}
 
+// Lưu ý: Để cột hiện lại khi mở lại modal, bạn nên thêm dòng này vào hàm openProposalModal() (nếu có):
+// document.querySelectorAll('#dischargeProposalModal th, #dischargeProposalModal td').forEach(el => el.style.display = '');
 // Gắn sự kiện click vào cột "Đề xuất ra" để sắp xếp
 function bindProposalSortEvent() {
     // Đợi modal được mở lần đầu, dùng MutationObserver hoặc setInterval nhẹ
@@ -2422,6 +2442,8 @@ function bindProposalSortEvent() {
 
 // Gọi hàm này sau khi trang load
 bindProposalSortEvent();
+
+
 </script>
 <div id="labModal" class="overlay hidden">
   <div class="modal" style="max-width:500px">
@@ -2607,7 +2629,7 @@ bindProposalSortEvent();
                     <tr>
                         <th>T</th>
                         <th>Tên</th>
-                        <th>Loại</th>
+                        <th ondblclick="hideTypeColumn()">Loại</th>
                         <th>Ngày vào</th>
                         <th>Đề xuất ra</th>
                         <th>Nằm</th>
