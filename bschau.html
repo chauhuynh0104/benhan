@@ -2156,7 +2156,7 @@ function formatSpecialDate(dateStr) {
     // Lấy ngày âm lịch (Sử dụng hàm có sẵn trong code của bạn nếu có, ở đây giả định format theo yêu cầu)
     // Nếu bạn đã có thư viện getLunarDate trong file:
     let lunar = typeof getLunarDate === "function" ? getLunarDate(d.getDate(), d.getMonth() + 1, d.getFullYear()) : null;
-    const lunarPart = lunar ? ` (${lunar.day}/${lunar.month} ÂL)` : "";
+    const lunarPart = lunar ? ` (${lunar.day}/${lunar.month})` : "";
     
     return `${dayName} - ${solarPart}${lunarPart}`;
 }
