@@ -2213,7 +2213,7 @@ function formatDateByMode(dateStr) {
     // Định dạng đơn giản: 06/04 (Tuần này)
     const d = new Date(dateStr);
     const solarPart = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-    return `${solarPart}${weekText}`;
+    return `${solarPart}<br>${weekText}`;
 }
 
 // HÀM SHOW DISCHARGE PROPOSAL (THAY THẾ HOÀN TOÀN)
