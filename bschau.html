@@ -2208,7 +2208,7 @@ function formatDateByMode(dateStr) {
     
     if (!isSimpleDateFormat) {
         // Định dạng đầy đủ: Thứ 2 (Tuần này) - 06/04 (19/2 ÂL)
-        return `${formatSpecialDate(dateStr)}${weekText}`;
+        return `${formatSpecialDate(dateStr)}<br>${weekText}`;
     }
     // Định dạng đơn giản: 06/04 (Tuần này)
     const d = new Date(dateStr);
