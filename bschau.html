@@ -2372,64 +2372,78 @@ function renderProposalTable() {
 // Đặt đoạn code này SAU hàm showDischargeProposal
 setTimeout(() => {
     const modal = document.getElementById('dischargeProposalModal');
+    // Biến lưu trữ cỡ chữ hiện tại (bắt đầu từ 14)
+    let currentFontSize = 14;
+
     const observer = new MutationObserver(() => {
         const modalHeader = modal.querySelector('.modal-header');
         if (modalHeader && !modalHeader.querySelector('.font-controls')) {
             
-            // 1. Tạo container chứa tiêu đề và nút
-            const titleContainer = document.createElement('span');
-            titleContainer.style.display = 'inline-flex';
-            titleContainer.style.alignItems = 'center';
-            titleContainer.style.gap = '10px';
+            modalHeader.style.display = 'flex';
+            modalHeader.style.justifyContent = 'space-between';
+            modalHeader.style.alignItems = 'center';
 
-            // 2. Phần chữ tiêu đề (Click để đổi định dạng ngày)
+            const leftGroup = document.createElement('div');
+            leftGroup.style.cssText = 'display:flex; align-items:center; gap:8px; flex:1;';
+
+            // 1. Tiêu đề
             const titleText = document.createElement('span');
-            titleText.textContent = 'Đề xuất ngày ra viện';
-            titleText.style.cursor = 'pointer';
-            titleText.style.userSelect = 'none';
+            titleText.innerHTML = '<i class="fas fa-calendar-check"></i> Đề xuất ngày ra viện';
+            titleText.style.cssText = 'cursor:pointer; user-select:none; padding: 5px 0;';
             titleText.onclick = (e) => {
-                e.stopPropagation();
+                e.preventDefault();
                 if (typeof toggleDateFormat === 'function') toggleDateFormat();
             };
 
-            // 3. Cụm nút tăng giảm kích thước
-            const fontControls = document.createElement('span');
+            // 2. Nút bấm (Tách biệt rõ ràng ID để tránh nhảy bậy)
+            const fontControls = document.createElement('div');
             fontControls.className = 'font-controls';
-            fontControls.innerHTML = `
-                <button class="btn-size" data-type="plus" title="Tăng cỡ chữ" style="margin-left:5px; padding:0 5px; cursor:pointer; border:1px solid #ccc; border-radius:3px; background:#fff; line-height:1;">+</button>
-                <button class="btn-size" data-type="minus" title="Giảm cỡ chữ" style="margin-left:2px; padding:0 7px; cursor:pointer; border:1px solid #ccc; border-radius:3px; background:#fff; line-height:1;">-</button>
-            `;
-
-            // Chèn vào header (xử lý xóa text cũ để tránh trùng lặp)
-            // Tìm text node "Đề xuất ngày ra viện" cũ để thay thế
-            Array.from(modalHeader.childNodes).forEach(node => {
-                if (node.nodeType === Node.TEXT_NODE && node.textContent.includes('Đề xuất ngày ra viện')) {
-                    modalHeader.removeChild(node);
-                }
-            });
+            fontControls.style.cssText = 'display:flex; gap:10px; margin-left:10px; align-items:center;';
             
-            titleContainer.appendChild(titleText);
-            titleContainer.appendChild(fontControls);
-            modalHeader.insertBefore(titleContainer, modalHeader.querySelector('.close-btn'));
+            const btnPlus = document.createElement('button');
+            btnPlus.innerHTML = '+';
+            btnPlus.style.cssText = 'width:40px; height:40px; border:1px solid #ccc; border-radius:5px; background:#fff; font-weight:bold; font-size:20px; color:black; touch-action:manipulation;';
+            
+            const btnMinus = document.createElement('button');
+            btnMinus.innerHTML = '-';
+            btnMinus.style.cssText = 'width:40px; height:40px; border:1px solid #ccc; border-radius:5px; background:#fff; font-weight:bold; font-size:20px; color:black; touch-action:manipulation;';
 
-            // 4. Sự kiện tăng giảm Font Size
-            fontControls.querySelectorAll('.btn-size').forEach(btn => {
-                btn.onclick = (e) => {
-                    e.stopPropagation();
-                    const isPlus = btn.getAttribute('data-type') === 'plus';
-                    // Lấy font-size hiện tại của modal, mặc định là 14px nếu chưa có
-                    const currentSize = parseFloat(window.getComputedStyle(modal).fontSize) || 14;
-                    const newSize = isPlus ? currentSize + 1 : currentSize - 1;
-                    
-                    if (newSize >= 10 && newSize <= 30) { // Giới hạn cỡ chữ từ 10px đến 30px
-                        modal.style.fontSize = newSize + 'px';
-                        // Áp dụng cho cả bảng bên trong
-                        modal.querySelectorAll('table, td, th, button').forEach(el => {
-                            el.style.fontSize = newSize + 'px';
-                        });
-                    }
-                };
+            // 3. Hàm thực thi đổi size
+            const updateSize = (delta) => {
+                currentFontSize += delta;
+                // Giới hạn trong khoảng 10px - 25px
+                if (currentFontSize < 10) currentFontSize = 10;
+                if (currentFontSize > 25) currentFontSize = 25;
+                
+                // Áp dụng trực tiếp lên Modal và toàn bộ con của nó
+                modal.style.fontSize = currentFontSize + 'px';
+                const allElements = modal.querySelectorAll('.modal-content, table, td, th, span, div:not(.font-controls)');
+                allElements.forEach(el => {
+                    el.style.fontSize = currentFontSize + 'px';
+                });
+            };
+
+            // 4. Gán sự kiện (Dùng click nhưng chặn các hành động mặc định của Mobile)
+            btnPlus.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                updateSize(1); // Cộng 1
             });
+
+            btnMinus.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                updateSize(-1); // Trừ 1
+            });
+
+            // Xóa rác và chèn vào giao diện
+            const closeBtn = modalHeader.querySelector('.close-btn');
+            modalHeader.innerHTML = ''; 
+            leftGroup.appendChild(titleText);
+            leftGroup.appendChild(btnPlus);
+            leftGroup.appendChild(btnMinus);
+            modalHeader.appendChild(leftGroup);
+            modalHeader.appendChild(closeBtn);
         }
     });
     observer.observe(modal, { attributes: true, childList: true, subtree: false });
