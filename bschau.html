@@ -198,6 +198,19 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
     .stats-table th:nth-child(6), .stats-table td:nth-child(6) { width: 10%; }
     .stats-table th:nth-child(7), .stats-table td:nth-child(7) { width: 12%; }
 }
+.btn-size {
+    font-weight: bold;
+    color: #333;
+    transition: all 0.2s;
+    font-size: 14px !important; /* Giữ kích thước nút cố định */
+}
+.btn-size:hover {
+    background-color: #f0f0f0 !important;
+    border-color: #999 !important;
+}
+.btn-size:active {
+    background-color: #ddd !important;
+}
     </style>
 </head>
 <body>
@@ -2156,7 +2169,7 @@ function formatSpecialDate(dateStr) {
     // Lấy ngày âm lịch (Sử dụng hàm có sẵn trong code của bạn nếu có, ở đây giả định format theo yêu cầu)
     // Nếu bạn đã có thư viện getLunarDate trong file:
     let lunar = typeof getLunarDate === "function" ? getLunarDate(d.getDate(), d.getMonth() + 1, d.getFullYear()) : null;
-    const lunarPart = lunar ? ` (${lunar.day}/${lunar.month})` : "";
+  const lunarPart = lunar ? ` (${lunar.day}/${lunar.month} ÂL)` : "";
     
     return `${dayName} - ${solarPart}${lunarPart}`;
 }
@@ -2208,12 +2221,12 @@ function formatDateByMode(dateStr) {
     
     if (!isSimpleDateFormat) {
         // Định dạng đầy đủ: Thứ 2 (Tuần này) - 06/04 (19/2 ÂL)
-        return `${formatSpecialDate(dateStr)}<br>${weekText}`;
+        return `${formatSpecialDate(dateStr)}${weekText}`;
     }
     // Định dạng đơn giản: 06/04 (Tuần này)
     const d = new Date(dateStr);
     const solarPart = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-    return `${solarPart}<br>${weekText}`;
+    return `${solarPart}${weekText}`;
 }
 
 // HÀM SHOW DISCHARGE PROPOSAL (THAY THẾ HOÀN TOÀN)
@@ -2361,14 +2374,62 @@ setTimeout(() => {
     const modal = document.getElementById('dischargeProposalModal');
     const observer = new MutationObserver(() => {
         const modalHeader = modal.querySelector('.modal-header');
-        if (modalHeader && !modalHeader.hasAttribute('data-click-bound')) {
-            modalHeader.setAttribute('data-click-bound', 'true');
-            modalHeader.style.cursor = 'pointer';
-            modalHeader.onclick = (e) => {
-                // Chặn click vào nút đóng (×)
-                if (e.target.classList.contains('close-btn')) return;
-                toggleDateFormat();
+        if (modalHeader && !modalHeader.querySelector('.font-controls')) {
+            
+            // 1. Tạo container chứa tiêu đề và nút
+            const titleContainer = document.createElement('span');
+            titleContainer.style.display = 'inline-flex';
+            titleContainer.style.alignItems = 'center';
+            titleContainer.style.gap = '10px';
+
+            // 2. Phần chữ tiêu đề (Click để đổi định dạng ngày)
+            const titleText = document.createElement('span');
+            titleText.textContent = 'Đề xuất ngày ra viện';
+            titleText.style.cursor = 'pointer';
+            titleText.style.userSelect = 'none';
+            titleText.onclick = (e) => {
+                e.stopPropagation();
+                if (typeof toggleDateFormat === 'function') toggleDateFormat();
             };
+
+            // 3. Cụm nút tăng giảm kích thước
+            const fontControls = document.createElement('span');
+            fontControls.className = 'font-controls';
+            fontControls.innerHTML = `
+                <button class="btn-size" data-type="plus" title="Tăng cỡ chữ" style="margin-left:5px; padding:0 5px; cursor:pointer; border:1px solid #ccc; border-radius:3px; background:#fff; line-height:1;">+</button>
+                <button class="btn-size" data-type="minus" title="Giảm cỡ chữ" style="margin-left:2px; padding:0 7px; cursor:pointer; border:1px solid #ccc; border-radius:3px; background:#fff; line-height:1;">-</button>
+            `;
+
+            // Chèn vào header (xử lý xóa text cũ để tránh trùng lặp)
+            // Tìm text node "Đề xuất ngày ra viện" cũ để thay thế
+            Array.from(modalHeader.childNodes).forEach(node => {
+                if (node.nodeType === Node.TEXT_NODE && node.textContent.includes('Đề xuất ngày ra viện')) {
+                    modalHeader.removeChild(node);
+                }
+            });
+            
+            titleContainer.appendChild(titleText);
+            titleContainer.appendChild(fontControls);
+            modalHeader.insertBefore(titleContainer, modalHeader.querySelector('.close-btn'));
+
+            // 4. Sự kiện tăng giảm Font Size
+            fontControls.querySelectorAll('.btn-size').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const isPlus = btn.getAttribute('data-type') === 'plus';
+                    // Lấy font-size hiện tại của modal, mặc định là 14px nếu chưa có
+                    const currentSize = parseFloat(window.getComputedStyle(modal).fontSize) || 14;
+                    const newSize = isPlus ? currentSize + 1 : currentSize - 1;
+                    
+                    if (newSize >= 10 && newSize <= 30) { // Giới hạn cỡ chữ từ 10px đến 30px
+                        modal.style.fontSize = newSize + 'px';
+                        // Áp dụng cho cả bảng bên trong
+                        modal.querySelectorAll('table, td, th, button').forEach(el => {
+                            el.style.fontSize = newSize + 'px';
+                        });
+                    }
+                };
+            });
         }
     });
     observer.observe(modal, { attributes: true, childList: true, subtree: false });
