@@ -2408,35 +2408,20 @@ setTimeout(() => {
             btnMinus.innerHTML = '-';
             btnMinus.style.cssText = 'width:40px; height:40px; border:1px solid #ccc; border-radius:5px; background:#fff; font-weight:bold; font-size:20px; color:black; touch-action:manipulation;';
 
-                        // 3. Hàm thực thi đổi size
+            // 3. Hàm thực thi đổi size
             const updateSize = (delta) => {
                 currentFontSize += delta;
+                // Giới hạn trong khoảng 10px - 25px
+                if (currentFontSize < 0) currentFontSize = 0;
+                if (currentFontSize > 25) currentFontSize = 25;
                 
-                // Cho phép về 0 (biến mất), không cho số âm vì CSS không nhận
-                if (currentFontSize < 0) currentFontSize = 0; 
-                if (currentFontSize > 50) currentFontSize = 50; 
-                
-                // Áp dụng trực tiếp lên Modal
+                // Áp dụng trực tiếp lên Modal và toàn bộ con của nó
                 modal.style.fontSize = currentFontSize + 'px';
-                
-                // Cập nhật cho tất cả các thành phần bên trong
                 const allElements = modal.querySelectorAll('.modal-content, table, td, th, span, div:not(.font-controls)');
                 allElements.forEach(el => {
                     el.style.fontSize = currentFontSize + 'px';
-                    
-                    // Xử lý padding và line-height để bảng co lại tối đa khi thu nhỏ
-                    if(el.tagName === 'TD' || el.tagName === 'TH') {
-                        // Padding tỉ lệ thuận với cỡ chữ để không bị khoảng trắng thừa
-                        let p = currentFontSize > 10 ? 4 : (currentFontSize / 2.5);
-                        el.style.padding = `${p}px 2px`;
-                        el.style.lineHeight = '1.1';
-                    }
                 });
-                
-                // Hiển thị một thông báo nhỏ (Toast) nếu bạn muốn biết size hiện tại
-                // showToast('Cỡ chữ: ' + currentFontSize + 'px', 'info'); 
             };
-
 
             // 4. Gán sự kiện (Dùng click nhưng chặn các hành động mặc định của Mobile)
             btnPlus.addEventListener('click', (e) => {
