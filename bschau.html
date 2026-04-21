@@ -2412,7 +2412,7 @@ setTimeout(() => {
             const updateSize = (delta) => {
                 currentFontSize += delta;
                 // Giới hạn trong khoảng 10px - 25px
-                if (currentFontSize < 10) currentFontSize = 10;
+                if (currentFontSize < 1) currentFontSize = 1;
                 if (currentFontSize > 25) currentFontSize = 25;
                 
                 // Áp dụng trực tiếp lên Modal và toàn bộ con của nó
