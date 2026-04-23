@@ -142,7 +142,7 @@
                     let baseStatus = (i % 2 === 0) ? "Tỉnh, tiếp xúc tốt" : "Tỉnh, tiếp xúc tốt. Sinh hiệu ổn";
                     let currentPainLine = "";
                     for (let line of rawLines) {
-                        if ((line.startsWith("Đau") || line.startsWith("Còn đau")) && /thắt lưng|gối|mông/i.test(line)) {
+                        if ((line.startsWith("Đau") || line.startsWith("Còn đau")) && /cổ|vai|thắt lưng|gối|mông/i.test(line)) {
                             currentPainLine = line;
                             break;
                         }
