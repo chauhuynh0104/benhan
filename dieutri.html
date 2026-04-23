@@ -360,6 +360,18 @@ function getPatientInfo(html) {
 
     const validDays = days.filter(d => !d.content.includes("ra viện"));
 
+// ===== MỚI: KIỂM TRA CỒN XOA BÓP JAMDA =====
+    const hasBackPain = hasText(html, "Đau cột sống thắt lưng (M54.5)");
+    const hasJamda = hasText(html, "Jamda");
+
+    if (hasBackPain && !hasJamda) {
+        // Nếu muốn hiện thông báo riêng biệt ở đầu kết quả:
+        rawErrors.push({
+            date: "", 
+            msg: `<span style="color: #e11d48">⚠️ <b>Bệnh nhân này không thấy Cồn xoa bóp Jamda trên tờ điều trị</b></span>`
+        });
+    }
+
     // ===== 2. Thủ thuật =====
     const techniques = [
         { key: "[kim ngắn]", label: "Điện châm [kim ngắn]" },
@@ -483,7 +495,7 @@ if (
 
    // ===== 7. Báo thuốc đã dùng (theo yêu cầu mới) =====
     // Các thuốc chỉ hiển thị ngày đầu - ngày cuối + kiểm tra thiếu
-    const rangeDisplayItems = ["Amlodipine 5 mg Cap", "Mimosa", "Kamelox 15", "Giác hơi", "Khang Minh thanh huyết", "Agilosart", "Tadimax"];
+    const rangeDisplayItems = ["Amlodipine 5 mg Cap", "Mimosa", "Kamelox 15", "Giác hơi", "Khang Minh thanh huyết", "Agilosart", "Magnesi-B6", "Tadimax", "Cồn xoa b&oacute;p Jamda","Reumokam"];
     // Thuốc liệt kê từng ngày, không kiểm tra thiếu
     const listEachDayItems = ["Dubemin injection"];
 
@@ -523,15 +535,15 @@ let patientInfoHTML = `
         </thead>
         <tbody>`;
 
-    allTrackedItems.filter(t => used[t].length > 0).forEach(t => {
+   allTrackedItems.filter(t => used[t].length > 0).forEach(t => {
         let datesHTML = "";
         let missingHTML = "";
 
         if (listEachDayItems.includes(t)) {
-            // Dubemin: liệt kê từng ngày, xuống dòng, không kiểm tra thiếu
+            // Dubemin: liệt kê từng ngày
             datesHTML = used[t].map(d => formatDateWithDay(d)).join("<hr>");
         } else {
-            // Các thuốc còn lại: chỉ hiển thị ngày đầu và ngày cuối
+            // Các thuốc còn lại: hiển thị ngày đầu - ngày cuối
             const start = used[t][0];
             const end = used[t][used[t].length - 1];
             datesHTML = `${formatDateWithDay(start)}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⭣<br>${formatDateWithDay(end)}`;
@@ -539,22 +551,26 @@ let patientInfoHTML = `
             // Kiểm tra thiếu ngày trong khoảng
             const fullRange = getDateRange(start, end);
             const missing = fullRange.filter(d => !used[t].includes(d));
+            
             if (missing.length > 0) {
-                const formattedMissing = missing.map(d => formatDateWithDay(d)).join("<br> ");
-                missingHTML = `<span style="color:#dc2626">${formattedMissing}</span>`;
-            }else{
-			missingHTML = `<span style="color:#dc2626">Đã lên thuốc đủ</span>`;
-			}
+                missingHTML = `<span style="color:#dc2626">${missing.map(d => formatDateWithDay(d)).join("<br> ")}</span>`;
+            } else {
+                missingHTML = `<span style="color:#16a34a"><b>Đã lên thuốc đủ</b></span>`;
+            }
+
+            // === LOGIC RIÊNG CHO REUMOKAM ===
+            if (t === "Reumokam" && used[t].length < 3) {
+                missingHTML = `<span style="color:#dc2626">⚠️ Chỉ mới lên <b>${used[t].length}</b> ngày</span>`;
+            }
         }
 
         reportTable += `
         <tr class="hang">
             <td><strong>${t}</strong></td>
             <td>${datesHTML}</td>
-            <td><font color="red"><b>${missingHTML}</b></font></td>
+            <td>${missingHTML}</td>
         </tr>`;
     });
-
     reportTable += `</tbody></table>`;
 
     // ===== HIỂN THỊ KẾT QUẢ =====
