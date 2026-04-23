@@ -371,10 +371,12 @@ function getPatientInfo(html) {
     techniques.forEach(t => {
         let mustHave = false;
         validDays.forEach(d => {
-          if (
+if (
     hasText(d.content, "Thứ bảy") || 
     hasText(d.content, "Thứ 7") || 
-    hasText(d.content, "Chủ nhật")
+    hasText(d.content, "Chủ nhật") || 
+	    hasText(d.content, "Nghỉ lễ") || 
+    hasText(d.content, "Nghỉ b&ugrave; lễ")
 ) return;
             if (d.content.includes(t.key)) mustHave = true;
             if (mustHave && !d.content.includes(t.key)) {
