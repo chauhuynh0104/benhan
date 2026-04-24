@@ -358,7 +358,7 @@ function getPatientInfo(html) {
         days.push({ date, content: block });
     }
 
-    const validDays = days.filter(d => !d.content.includes("ra viện"));
+    const validDays = days.filter(d => !d.content.includes(">Phạm&nbsp;Khắc&nbsp;Kim&nbsp;Th&#224;nh"));
 
 // ===== MỚI: KIỂM TRA CỒN XOA BÓP JAMDA =====
     const hasBackPain = hasText(html, "Đau cột sống thắt lưng (M54.5)");
