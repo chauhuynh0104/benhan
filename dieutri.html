@@ -305,7 +305,17 @@ function runCheck() {
 
 
 
-
+// Hàm tìm và lấy số lượng từ khối HTML của từng ngày
+function getQuantityFromBlock(block, drugName) {
+    // Escape các ký tự đặc biệt trong tên thuốc để đưa vào Regex
+    const escapedName = drugName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Regex tìm tên thuốc -> tìm tag đóng </td> -> tìm ô <td> kế tiếp -> lấy số từ <span>
+    const regex = new RegExp(escapedName + "[\\s\\S]*?<\/td>\\s*<td[^>]*?>[\\s\\S]*?<span[^>]*?>(\\d+)", "i");
+    const match = block.match(regex);
+    
+    return match ? parseInt(match[1]) : 0;
+}
 
 function processHTML(html) {
 const patient = getPatientInfo(html);
@@ -502,13 +512,23 @@ if (
 
     const allTrackedItems = [...rangeDisplayItems, ...listEachDayItems];
     const used = {};
-    allTrackedItems.forEach(t => used[t] = []);
+	const qtys = {}; // Khai báo đối tượng lưu số lượng
 
-    validDays.forEach(d => {
-        allTrackedItems.forEach(t => {
-            if (d.content.includes(t)) used[t].push(d.date);
-        });
+// Khởi tạo giá trị 0 cho tất cả thuốc cần theo dõi
+allTrackedItems.forEach(t => { 
+    used[t] = []; 
+    qtys[t] = 0; 
+});
+
+validDays.forEach(d => {
+    allTrackedItems.forEach(t => {
+        if (d.content.includes(t)) {
+            used[t].push(d.date);
+            // CỘNG DỒN SỐ LƯỢNG:
+            qtys[t] += getQuantityFromBlock(d.content, t);
+        }
     });
+});
 let patientInfoHTML = `
 <div style="
     margin: 20px 0;
@@ -530,7 +550,7 @@ let patientInfoHTML = `
         <thead>
             <tr>
                 <th style="width:240px;">Tên</th>
-                <th style="width:300px;">Ngày đã dùng</th>
+                <th style="width:300px;">Ngày đã dùng</th><th style="width:100px; text-align:center;">Số lượng</th>
                 <th>Thiếu ngày</th>
             </tr>
         </thead>
@@ -561,7 +581,7 @@ let patientInfoHTML = `
 
             // === LOGIC RIÊNG CHO REUMOKAM ===
             if (t === "Reumokam" && used[t].length < 3) {
-                missingHTML = `<span style="color:#dc2626">⚠️ Chỉ mới lên <b>${used[t].length}</b> ngày</span>`;
+                missingHTML = `<span style="color:#dc2626"><b>Chỉ mới lên ${used[t].length}ngày</b> </span>`;
             }
         }
 
@@ -569,6 +589,9 @@ let patientInfoHTML = `
         <tr class="hang">
             <td><strong>${t}</strong></td>
             <td>${datesHTML}</td>
+			<td style="text-align:center; font-weight:bold; color:#2563eb;">
+        ${qtys[t] > 0 ? qtys[t] : "-"}
+    </td>
             <td>${missingHTML}</td>
         </tr>`;
     });
