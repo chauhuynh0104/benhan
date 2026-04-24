@@ -377,7 +377,8 @@ function getPatientInfo(html) {
         { key: "[kim ngắn]", label: "Điện châm [kim ngắn]" },
         { key: "bấm huyệt bằng tay", label: "Xoa bóp bấm huyệt bằng tay" },
         { key: "Điều trị bằng tia hồng ngoại", label: "Điều trị bằng tia hồng ngoại" },
-        { key: "Kỹ thuật xoa", label: "Kỹ thuật xoa bóp vùng" }
+        { key: "Kỹ thuật xoa", label: "Kỹ thuật xoa bóp vùng" },
+		{ key: "H&agrave;o ch&acirc;m", label: "Hào châm" }
     ];
 
     techniques.forEach(t => {
@@ -606,9 +607,9 @@ let errorTableHTML = `
         <tbody>`;
 
     sortedDates.forEach(date => {
-               const result = formatDateWithDay(date);
+       const result = formatDateWithDay(date);
 	   const formattedDate = result.replace("undefined -", "Cảnh báo");
-        
+     
         // Danh sách lỗi, mỗi lỗi một div riêng, khoảng cách đẹp
         const messagesHTML = errorsByDate[date]
             .map(msg => `<div style="margin-bottom: 14px; line-height: 1.5;">${msg}</div>`)
