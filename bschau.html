@@ -2137,7 +2137,7 @@ function getProposedDate(admissionDate, patientType) {
     let date = new Date(admissionDate + 'T12:00:00');
     
     // Nội trú 21 ngày (cộng 20), Ban ngày 14 ngày (cộng 13) để tính cả ngày đầu
-    let daysToAdd = (patientType === 'Nội trú') ? 19 : 12;
+    let daysToAdd = (patientType === 'Nội trú') ? 19 : 13;
     date.setDate(date.getDate() + daysToAdd);
     
     let exactDate = new Date(date); 
