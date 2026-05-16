@@ -141,7 +141,7 @@
 
         // 2. Loại bỏ cụm từ "Mạch trầm"
         joinedText = joinedText.replace(/mạch trầm\.?/gi, "");
-        
+             joinedText = joinedText.replace(/Bụng không đau, không ợ chua ợ hơi, không nôn, không buồn nôn.\.?/gi, ""); 
         // 3. Chuyển "Bệnh tỉnh, tiếp xúc tốt" thành "Tỉnh, tiếp xúc tốt"
         joinedText = joinedText.replace(/Bệnh tỉnh,\s*tiếp xúc tốt/g, "Tỉnh, tiếp xúc tốt");
         
