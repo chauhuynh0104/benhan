@@ -15,7 +15,7 @@
         .old-content { color: #888; font-size: 0.85em; background: #f9f9f9; padding: 8px; border-radius: 4px; margin-bottom: 8px; display: block; border-left: 3px solid #ccc; font-style: italic; }
         .new-content { color: #202124; font-weight: 500; font-size: 1.05em; line-height: 1.5; display: block; padding: 5px; }
         .weekend { background-color: #fff4e5; }
-        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
         button { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 15px; }
         #processBtn { background: #1a73e8; color: white; }
         #toggleOldBtn { background: #5f6368; color: white; }
@@ -36,12 +36,29 @@
         .copy-btn:hover { background: #2d8e47; }
         .new-content span { cursor: pointer; transition: background 0.2s; }
         .new-content span:hover { background-color: #f0f0f0; border-radius: 4px; }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            color: #1a73e8;
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #1a73e8;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+        .checkbox-container input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
     
     <div id="uploadWrapper" class="upload-section" onclick="document.getElementById('fileInput').click()">
         <strong>Click để chọn file</strong>
@@ -52,13 +69,15 @@
     <div class="btn-group">
         <button id="processBtn" disabled>XỬ LÝ DỮ LIỆU</button>
         <button id="toggleOldBtn" class="hidden">ẨN/HIỆN NỘI DUNG CŨ</button>
+        <label class="checkbox-container hidden" id="rawModeWrapper">
+            <input type="checkbox" id="rawModeCheckbox"> Hiển thị nguyên văn diễn biến
+        </label>
     </div>
 
     <div id="resultArea"></div>
 </div>
 
 <script>
-    // 1. XỬ LÝ F5 RELOAD (Cho Nativefier)
     window.addEventListener('keydown', function(e) {
         if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
             e.preventDefault();
@@ -69,6 +88,8 @@
     const fileInput = document.getElementById('fileInput');
     const processBtn = document.getElementById('processBtn');
     const toggleBtn = document.getElementById('toggleOldBtn');
+    const rawModeCheckbox = document.getElementById('rawModeCheckbox');
+    const rawModeWrapper = document.getElementById('rawModeWrapper');
     const resultArea = document.getElementById('resultArea');
     const uploadWrapper = document.getElementById('uploadWrapper');
     let originalHtml = "";
@@ -80,16 +101,25 @@
         const reader = new FileReader();
         reader.onload = (e) => { 
             originalHtml = e.target.result; 
-            // Tự động chạy khi có file
-            const daysData = parseAndProcess(originalHtml);
-            renderTable(daysData);
+            runProcessing();
             
-            // 2. ẨN CLASS UPLOAD-SECTION KHI XUẤT DỮ LIỆU
             uploadWrapper.style.display = 'none';
             toggleBtn.classList.remove('hidden');
+            rawModeWrapper.classList.remove('hidden');
         };
         reader.readAsText(file);
     });
+
+    rawModeCheckbox.addEventListener('change', function() {
+        if (originalHtml) {
+            runProcessing();
+        }
+    });
+
+    function runProcessing() {
+        const daysData = parseAndProcess(originalHtml, rawModeCheckbox.checked);
+        renderTable(daysData);
+    }
 
     function isWeekend(dateStr) {
         const [d, m, y] = dateStr.split('/');
@@ -103,7 +133,36 @@
         return textArea.value;
     }
 
-    function parseAndProcess(html) {
+    function cleanAndFormatText(textArr) {
+        let joinedText = textArr.join(". ");
+        
+        // 1. Xóa chữ "Khám:" hoặc "Khám :" (không phân biệt hoa thường) ở bất kỳ đâu
+        joinedText = joinedText.replace(/Khám\s*:\s*/gi, "");
+
+        // 2. Loại bỏ cụm từ "Mạch trầm"
+        joinedText = joinedText.replace(/mạch trầm\.?/gi, "");
+        
+        // 3. Chuyển "Bệnh tỉnh, tiếp xúc tốt" thành "Tỉnh, tiếp xúc tốt"
+        joinedText = joinedText.replace(/Bệnh tỉnh,\s*tiếp xúc tốt/g, "Tỉnh, tiếp xúc tốt");
+        
+        // 4. Chuẩn hóa lại dấu câu và khoảng trắng
+        joinedText = joinedText
+            .replace(/\.\s*\./g, '.')
+            .replace(/,\s*\./g, '.')
+            .replace(/\s\s+/g, ' ')
+            .trim();
+            
+        // Đảm bảo chữ cái đầu tiên của chuỗi được viết hoa sau khi xóa chữ "Khám:"
+        if (joinedText) {
+            joinedText = joinedText.charAt(0).toUpperCase() + joinedText.slice(1);
+            if (!joinedText.endsWith('.')) {
+                joinedText += '.';
+            }
+        }
+        return joinedText;
+    }
+
+    function parseAndProcess(html, isRawMode) {
         const dayRegex = /<td\b[^>]*>\s*<nobr>(\d{2}\/\d{2}\/\d{4})<\/nobr>[\s\S]*?<\/td>/gi;
         const matches = [...html.matchAll(dayRegex)];
         let results = [];
@@ -133,51 +192,60 @@
                 }
                 oldText = rawLines.join(". ");
 
-                if (isWeekend(dateStr)) {
-                    const [d, m, y] = dateStr.split('/');
-                    const dateObj = new Date(y, m - 1, d);
-                    newText = (dateObj.getDay() === 6) ? "Thứ bảy" : "Chủ nhật";
-                    previousCorePain = ""; 
-                } else {
-                    let baseStatus = (i % 2 === 0) ? "Tỉnh, tiếp xúc tốt" : "Tỉnh, tiếp xúc tốt. Sinh hiệu ổn";
-                    let currentPainLine = "";
-                    for (let line of rawLines) {
-                        if ((line.startsWith("Đau") || line.startsWith("Còn đau")) && /cổ|vai|thắt lưng|gối|mông/i.test(line)) {
-                            currentPainLine = line;
-                            break;
-                        }
-                    }
-
-                    if (currentPainLine) {
-                        let processedPain = currentPainLine;
-                        if (currentPainLine === previousCorePain || (processedPain.match(/đau tăng/g) || []).length > 1) {
-                            const altVars = ["đau nhiều về đêm.", "vận động còn đau."];
-                            let selectedAlt = altVars[i % altVars.length];
-                            if (processedPain.includes("vận động hạn chế")) {
-                                processedPain = processedPain.replace("vận động hạn chế", selectedAlt);
-                            } else {
-                                processedPain = processedPain.replace(/,?\s*gặp lạnh đau tăng/g, ", " + selectedAlt);
-                                processedPain = processedPain.replace(/,?\s*vận động đau tăng/g, ", " + selectedAlt);
-                            }
-                        } 
-                        newText = baseStatus + ". " + processedPain;
-                        previousCorePain = currentPainLine; 
-                    } else {
-                        newText = baseStatus;
+                if (isRawMode) {
+                    newText = cleanAndFormatText(rawLines);
+                } 
+                else {
+                    if (isWeekend(dateStr)) {
+                        const [d, m, y] = dateStr.split('/');
+                        const dateObj = new Date(y, m - 1, d);
+                        newText = (dateObj.getDay() === 6) ? "Thứ bảy." : "Chủ nhật.";
                         previousCorePain = ""; 
+                    } else {
+                        let baseStatus = (i % 2 === 0) ? "Tỉnh, tiếp xúc tốt" : "Tỉnh, tiếp xúc tốt. Sinh hiệu ổn";
+                        let currentPainLine = "";
+                        for (let line of rawLines) {
+                            if ((line.startsWith("Đau") || line.startsWith("Còn đau")) && /cổ|vai|thắt lưng|gối|mông/i.test(line)) {
+                                currentPainLine = line;
+                                break;
+                            }
+                        }
+
+                        if (currentPainLine) {
+                            let processedPain = currentPainLine;
+                            if (currentPainLine === previousCorePain || (processedPain.match(/đau tăng/g) || []).length > 1) {
+                                const altVars = ["đau nhiều về đêm.", "vận động còn đau."];
+                                let selectedAlt = altVars[i % altVars.length];
+                                if (processedPain.includes("vận động hạn chế")) {
+                                    processedPain = processedPain.replace("vận động hạn chế", selectedAlt);
+                                } else {
+                                    processedPain = processedPain.replace(/,?\s*gặp lạnh đau tăng/g, ", " + selectedAlt);
+                                    processedPain = processedPain.replace(/,?\s*vận động đau tăng/g, ", " + selectedAlt);
+                                }
+                            } 
+                            newText = baseStatus + ". " + processedPain;
+                            previousCorePain = currentPainLine; 
+                        } else {
+                            newText = baseStatus + ".";
+                            previousCorePain = ""; 
+                        }
+                        
+                        let formattedArr = newText.split(". ");
+                        newText = cleanAndFormatText(formattedArr);
                     }
                 }
             }
             results.push({ 
                 date: dateStr, 
                 old: oldText, 
-                new: newText.replace(/\.\s*\./g, '.').replace(/,\s*\./g, '.').replace(/\s\s+/g, ' ').trim(), 
+                new: newText, 
                 weekend: isWeekend(dateStr) 
             });
         });
         return results;
     }
 
+    // Các hàm renderTable và copyToClipboard giữ nguyên như cũ...
     function renderTable(data) {
         let html = `<table><thead><tr><th style="width:120px">Ngày</th><th>Diễn biến (Cũ & Mới)</th></tr></thead><tbody>`;
         data.forEach((item, index) => {
