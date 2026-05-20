@@ -1,19 +1,6 @@
-<!-- 
-////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////
-//////////////Code được viết bởi Chauhuynh0104////////////////
-/////////////http://fb.com/chauhuynh0104/////////////////////
-//////////////////////079.567.9350//////////////////////////
-////////////Vui lòng tôn trọng bản quyền tác giả///////////
-//////////////////Không xoá dòng này /////////////////////
-/////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-!-->
-
 <!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
+<html lang="vi"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <title>Chauhuynh0104 - Kiểm tra tờ điều trị</title>
 <style>
 :root {
@@ -411,9 +398,13 @@ if (
         });
     });
 
-    // ===== 3. Vị thuốc + Sắc thuốc =====
+ // ===== 3. Vị thuốc + Sắc thuốc =====
     const vtBlockRegex = /Vị thuốc y học cổ truyền[\s\S]*?(x\s*\d+\s*thang)/g;
     let vtMatch;
+    
+    // Mảng lưu trữ tất cả các ngày hợp lệ nằm trong khoảng có đơn thuốc
+    const allValidPrescriptionDates = new Set();
+
     while ((vtMatch = vtBlockRegex.exec(html)) !== null) {
         const block = vtMatch[0];
         const dateMatch = block.match(/ng&agrave;y (\d{2}\/\d{2}\/\d{4}) đến ng&agrave;y (\d{2}\/\d{2}\/\d{4})/);
@@ -443,6 +434,9 @@ if (
         );
 
         daysInRange.forEach(d => {
+            // Thêm ngày này vào danh sách các ngày ĐÃ CÓ đơn thuốc hợp lệ
+            allValidPrescriptionDates.add(d.date);
+
             if (!d.content.includes("Sắc thuốc thang")) {
                 rawErrors.push({
                     date: d.date,
@@ -459,6 +453,17 @@ if (
             }
         });
     }
+
+    // --- LOGIC MỚI BỔ SUNG: Quét ngược lại để tìm Sắc thuốc thang mồ côi ---
+    validDays.forEach(d => {
+        // Nếu ngày này có thủ thuật Sắc thuốc thang nhưng KHÔNG nằm trong bất kỳ khoảng đơn thuốc nào
+        if (d.content.includes("Sắc thuốc thang") && !allValidPrescriptionDates.has(d.date)) {
+            rawErrors.push({
+                date: d.date,
+                msg: `Có thủ thuật <font color="red"><b>Sắc thuốc thang</b></font> nhưng ngày này <font color="red"><b>không có đơn thuốc Đông y</b></font> tương ứng`
+            });
+        }
+    });
 
 /*  
   // ===== 4. Thuốc viên =====
@@ -687,10 +692,11 @@ document.addEventListener("keydown", function (e) {
 });
 </script>
 
-</body>
-</html>
 
 
 
 
 
+
+
+</body></html>
