@@ -1,3 +1,4 @@
+
 <!-- 
 
 ///////////////////////////////////////////////
@@ -388,6 +389,210 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
     </div>
 
     <script>
+	
+	
+	// Cấu hình sự kiện bấm nút Thống kê tổng
+document.getElementById('totalStatsBtn').onclick = () => {
+    requirePassword(() => {
+        openTotalStatsModal();
+    });
+};
+
+// Hàm đóng mở modal thống kê tổng
+function openTotalStatsModal() {
+    initStatsMonthFilter(); // Tự động tạo danh sách tháng/năm dựa trên dữ liệu bệnh nhân
+    document.getElementById('totalStatsModal').classList.remove('hidden');
+    renderTotalStatsPopupData();
+}
+
+function closeTotalStatsModal() {
+    document.getElementById('totalStatsModal').classList.add('hidden');
+}
+
+// Khởi tạo danh sách Tháng/Năm tự động cho Dropdown dựa vào dữ liệu nhập viện của bệnh nhân
+function initStatsMonthFilter() {
+    const filterSelect = document.getElementById('statsMonthFilter');
+    const savedValue = filterSelect.value; // Giữ lại lựa chọn trước đó nếu có
+    filterSelect.innerHTML = '<option value="all">Tất cả thời gian</option>';
+
+    // Thu thập các Tháng/Năm duy nhất từ danh sách bệnh nhân dựa vào ngày vào hoặc ngày ra viện
+    let monthsSet = new Set();
+    patients.forEach(p => {
+        if (p.admissionDate) {
+            const dateIn = new Date(p.admissionDate);
+            if (!isNaN(dateIn)) {
+                const monthStr = `${(dateIn.getMonth() + 1).toString().padStart(2, '0')}/${dateIn.getFullYear()}`;
+                monthsSet.add(monthStr);
+            }
+        }
+        if (p.dischargeDate) {
+            const dateOut = new Date(p.dischargeDate);
+            if (!isNaN(dateOut)) {
+                const monthStr = `${(dateOut.getMonth() + 1).toString().padStart(2, '0')}/${dateOut.getFullYear()}`;
+                monthsSet.add(monthStr);
+            }
+        }
+    });
+
+    // Sắp xếp các tháng giảm dần (tháng mới nhất lên đầu)
+    let sortedMonths = Array.from(monthsSet).sort((a, b) => {
+        const [m1, y1] = a.split('/').map(Number);
+        const [m2, y2] = b.split('/').map(Number);
+        return y2 !== y1 ? y2 - y1 : m2 - m1;
+    });
+
+    sortedMonths.forEach(m => {
+        filterSelect.innerHTML += `<option value="${m}">Tháng ${m}</option>`;
+    });
+
+    // Chọn lại tháng cũ hoặc mặc định chọn tháng đầu tiên
+    if (savedValue && Array.from(filterSelect.options).some(o => o.value === savedValue)) {
+        filterSelect.value = savedValue;
+    } else if (sortedMonths.length > 0) {
+        filterSelect.value = sortedMonths[0];
+    } else {
+        filterSelect.value = 'all';
+    }
+}
+
+// Hàm kiểm tra và tính số ngày nằm tổng bằng: Ngày ra - Ngày vào + 1
+// Nếu thuộc tháng đang lọc, trả về số ngày nằm cố định này, ngược lại trả về 0
+function calculateFixedDays(p, filterValue) {
+    if (!p.admissionDate) return 0;
+
+    let startDate = new Date(p.admissionDate + 'T00:00:00');
+    let endDate = (p.dischargeDate && p.dischargeTime) 
+        ? new Date(p.dischargeDate + 'T00:00:00') 
+        : new Date(); // Nếu chưa ra viện thì tính đến ngày hiện tại
+    
+    startDate.setHours(0,0,0,0);
+    endDate.setHours(0,0,0,0);
+
+    // Tính tổng số ngày nằm cố định theo công thức: (Ngày ra - Ngày vào) + 1
+    const diffTime = endDate - startDate;
+    const totalDays = diffTime < 0 ? 0 : Math.floor(diffTime / 86400000) + 1;
+
+    // Nếu chọn tất cả thời gian, hiển thị luôn số ngày này
+    if (filterValue === 'all') return totalDays;
+
+    // Tách chuỗi lấy Tháng và Năm cần lọc
+    const [filterMonth, filterYear] = filterValue.split('/').map(Number);
+
+    // Định dạng ngày đầu tiên và ngày cuối cùng của tháng cần lọc
+    let firstDayOfMonth = new Date(filterYear, filterMonth - 1, 1);
+    let lastDayOfMonth = new Date(filterYear, filterMonth, 0);
+
+    // Kiểm tra xem khoảng điều trị của bệnh nhân có giao với tháng đang chọn hay không
+    let overlapStart = startDate > firstDayOfMonth ? startDate : firstDayOfMonth;
+    let overlapEnd = endDate < lastDayOfMonth ? endDate : lastDayOfMonth;
+
+    // Chỉ cần có nằm ít nhất 1 ngày trong tháng (khoảng giao hợp lệ) thì tính toàn bộ số ngày nằm của bệnh nhân đó
+    if (overlapStart <= overlapEnd) {
+        return totalDays; 
+    }
+    
+    return 0; // Không nằm ngày nào trong tháng này
+}
+
+// Hàm render dữ liệu bảng và dòng tổng kết
+function renderTotalStatsPopupData() {
+    const monthFilter = document.getElementById('statsMonthFilter').value;
+    const isSortByType = document.getElementById('statsSortTypeCheckbox').checked;
+    const tbody = document.getElementById('totalStatsPopupBody');
+
+    // Bước 1: Lọc danh sách bệnh nhân xuất hiện trong tháng chọn
+    let processedPatients = [];
+    patients.forEach(p => {
+        const days = calculateFixedDays(p, monthFilter);
+        if (days > 0) {
+            processedPatients.push({
+                ...p,
+                daysCount: days
+            });
+        }
+    });
+
+    // Bước 2: Sắp xếp theo logic yêu cầu
+    processedPatients.sort((a, b) => {
+        if (isSortByType) {
+            // Checkbox tích: Đẩy Ban ngày lên trước, Nội trú xuống sau
+            if (a.patientType !== b.patientType) {
+                return a.patientType === 'Ban ngày' ? -1 : 1;
+            }
+        }
+        // Luôn sắp xếp tăng dần theo ngày vào viện (ngày cũ nằm trên, ngày mới nằm dưới)
+        return new Date(a.admissionDate) - new Date(b.admissionDate);
+    });
+
+    // Bước 3: Tính toán dữ liệu dòng tổng kết (thay đổi động theo bộ lọc)
+    let totalPatients = processedPatients.length;
+    let totalInpatient = 0;
+    let totalOutpatient = 0;
+    let sumDays = 0;
+    let sumInpatientDays = 0;
+    let sumOutpatientDays = 0;
+
+    processedPatients.forEach(p => {
+        sumDays += p.daysCount;
+        if (p.patientType === 'Nội trú') {
+            totalInpatient++;
+            sumInpatientDays += p.daysCount;
+        } else if (p.patientType === 'Ban ngày') {
+            totalOutpatient++;
+            sumOutpatientDays += p.daysCount;
+        }
+    });
+
+    // Tính trung bình cộng số ngày nằm (làm tròn đến 1 chữ số thập phân)
+    let avgDays = totalPatients > 0 ? (sumDays / totalPatients).toFixed(1) : 0;
+    let avgInpatientDays = totalInpatient > 0 ? (sumInpatientDays / totalInpatient).toFixed(1) : 0;
+    let avgOutpatientDays = totalOutpatient > 0 ? (sumOutpatientDays / totalOutpatient).toFixed(1) : 0;
+
+    // Bước 4: Tạo dòng tổng kết (Đặt ở trên cùng bảng)
+    let html = `
+        <tr style="background-color: #e3f2fd; font-weight: bold; color: #0d47a1; border-bottom: 2px solid #90caf9; position: sticky; top: 40px; z-index: 5;">
+            <td style="text-align: center; color: #0d47a1;">Σ</td>
+            <td colspan="5">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 13px; padding: 5px 0;">
+                    <div>• Tổng bệnh nhân: <span style="color:red; font-size:15px;">${totalPatients}</span></div>
+                    <div>• Tổng nội trú: <span style="color:red; font-size:15px;">${totalInpatient}</span></div>
+                    <div>• Tổng ban ngày: <span style="color:red; font-size:15px;">${totalOutpatient}</span></div>
+                    <div>• TBC ngày nằm: <span style="color:green; font-size:15px;">${avgDays}</span> ngày</div>
+                    <div>• TBC nội trú nằm: <span style="color:green; font-size:15px;">${avgInpatientDays}</span> ngày</div>
+                    <div>• TBC ban ngày nằm: <span style="color:green; font-size:15px;">${avgOutpatientDays}</span> ngày</div>
+                </div>
+            </td>
+        </tr>
+    `;
+
+    // Bước 5: Render nội dung chi tiết từng bệnh nhân
+    if (processedPatients.length === 0) {
+        html += `<tr><td colspan="6" style="text-align: center; padding: 30px; color: #888;">Không có dữ liệu bệnh nhân nào trong thời gian này.</td></tr>`;
+    } else {
+        processedPatients.forEach((p, index) => {
+            const formattedInDate = p.admissionDate ? formatDate(p.admissionDate) : '-';
+            const formattedOutDate = (p.dischargeDate && isDischarged(p)) ? formatDate(p.dischargeDate) : 'Chưa ra viện';
+            
+            const typeClass = p.patientType === 'Nội trú' ? 'inpatient' : 'outpatient';
+
+            html += `
+                <tr style="background-color: ${p.patientType === 'Ban ngày' ? '#fffde7' : '#ffffff'};">
+                    <td style="text-align: center; font-weight: 600;">${index + 1}</td>
+                    <td style="font-weight: 600; color: #333;">${p.fullName}</td>
+                    <td><span class="patient-type ${typeClass}" style="padding: 4px 10px; font-size: 12px; border-radius: 12px;">${p.patientType}</span></td>
+                    <td>${formattedInDate}</td>
+                    <td style="color: ${formattedOutDate === 'Chưa ra viện' ? '#4caf50' : '#666'}; font-style: ${formattedOutDate === 'Chưa ra viện' ? 'italic' : 'normal'};">${formattedOutDate}</td>
+                    <td style="text-align: center; font-weight: bold; color: #f57c00; font-size: 15px;">${p.daysCount}</td>
+                </tr>
+            `;
+        });
+    }
+
+    tbody.innerHTML = html;
+}
+	
+	
+	
 	// Hàm xử lý tên thu gọn: VD: Kim Yến -> K.Yến nếu có >1 người tên Yến
 function formatDisplayName(p, allPatients) {
     const isNarrow = window.innerWidth < 410;
@@ -997,31 +1202,7 @@ async function savePatient() {
         document.getElementById('savePatientBtn').onclick = () => requirePassword(savePatient);
 		
 		
-		document.getElementById('totalStatsBtn').onclick = () => requirePassword(() => {
 
-    currentView = 'totalStats';
-
-    // Ẩn các view khác
-    document.getElementById('statsContent').classList.add('hidden');
-    document.getElementById('patientDetailContent').classList.add('hidden');
-
-    // Hiện thống kê tổng
-    document.getElementById('totalStatsContent').classList.remove('hidden');
-
-    // Cập nhật tiêu đề bên phải
-    document.getElementById('rightPanelTitle').innerHTML =
-        '<i class="fas fa-chart-pie"></i> THỐNG KÊ TỔNG';
-
-    // Đổ danh sách năm
-    const yearSelect = document.getElementById('totalYearSelect');
-    const years = getAvailableYears();
-
-    yearSelect.innerHTML =
-        `<option value="all">Tất cả năm</option>` +
-        years.map(y => `<option value="${y}">${y}</option>`).join('');
-
-    renderTotalStats();
-});
 
 		
 		
@@ -1408,90 +1589,8 @@ function calcMedicalStats(patients){
 
 
 
-function getAvailableYears() {
-    const years = new Set();
-    patients.forEach(p => {
-        if (p.admissionDate) {
-            years.add(new Date(p.admissionDate).getFullYear());
-        }
-    });
-    return Array.from(years).sort((a,b)=>b-a);
-}
-function renderTotalStats() {
-    const year = document.getElementById("totalYearSelect").value;
 
-    const today = new Date();
-    today.setHours(0,0,0,0);
 
-    const list = patients.filter(p => {
-        if (year === "all") return true;
-        return new Date(p.admissionDate).getFullYear() == year;
-    });
-
-    let total = list.length;
-    let noiTru = 0;
-    let banNgay = 0;
-    let noiTru20 = 0;
-    let banNgay14 = 0;
-
-    list.forEach(p => {
-        const start = new Date(p.admissionDate);
-        start.setHours(0,0,0,0);
-
-        const days = Math.floor((today - start) / 86400000) + 1;
-
-        if (p.patientType === "Nội trú") {
-            noiTru++;
-            if (days > 20) noiTru20++;
-        }
-
-        if (p.patientType === "Ban ngày") {
-            banNgay++;
-            if (days > 14) banNgay14++;
-        }
-    });
-
-    document.getElementById("totalStatsBody").innerHTML = `
-       <div class="patient-item">Tổng số bệnh nhân điều trị<b>${total}</b></div>
-       <div class="patient-item">Bệnh nhân nội trú<b>${noiTru}</b></div>
-       <div class="patient-item">Bệnh nhân ban ngày<b>${banNgay}</b></div>
-       <div class="patient-item">Nội trú nằm > 20 ngày<b>${noiTru20}</b></div>
-       <div class="patient-item">Ban ngày > 14 ngày<b>${banNgay14}</b></div>
-    `;
-
-    /* ===== THỐNG KÊ CẬN LÂM SÀNG – THỦ THUẬT ===== */
-    const m = calcMedicalStats(patients);
-    let extraHTML = "";
-
-    // XÉT NGHIỆM
-    const labTotal = Object.values(m.lab).reduce((a,b)=>a+b,0);
-    extraHTML += `<div class="patient-item">`;
-    extraHTML += `Xét nghiệm: ${labTotal}<br>`;
-    for(const k in m.lab){
-        extraHTML += `+ ${k}: ${m.lab[k]}<br>`;
-    }
-    extraHTML += `</div>`;
-
-    // HÌNH ẢNH
-    const imgTotal = Object.values(m.imaging).reduce((a,b)=>a+b,0);
-    extraHTML += `<div class="patient-item">`;
-    extraHTML += `Hình ảnh: ${imgTotal}<br>`;
-    for(const k in m.imaging){
-        extraHTML += `+ ${k}: ${m.imaging[k]}<br>`;
-    }
-    extraHTML += `</div>`;
-
-    // THỦ THUẬT
-    const proTotal = Object.values(m.procedure).reduce((a,b)=>a+b,0);
-    extraHTML += `<div class="patient-item">`;
-    extraHTML += `Thủ thuật: ${proTotal}<br>`;
-    for(const k in m.procedure){
-        extraHTML += `+ ${k}: ${m.procedure[k]}<br>`;
-    }
-    extraHTML += `</div>`;
-
-    document.getElementById("totalStatsContent").innerHTML += extraHTML;
-}
 
 let currentTarget = null;
 
@@ -2718,4 +2817,53 @@ bindProposalSortEvent();
         </div>
     </div>
 </div>
+
+
+
+
+<div id="totalStatsModal" class="overlay hidden">
+    <div class="modal" style="max-width: 1100px; width: 95%;">
+        <div class="modal-header">
+            <div>
+                <i class="fas fa-chart-pie"></i> Thống Kê Tổng Quan Bệnh Nhân
+            </div>
+            <button class="close-btn" onclick="closeTotalStatsModal()">×</button>
+        </div>
+        <div class="modal-content">
+            <div style="margin-bottom: 15px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; background: #fff3e0; padding: 12px; border-radius: 8px; border: 1px solid #ffcc80;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <label style="font-weight: bold; color: #f57c00;">Chọn Tháng/Năm:</label>
+                    <select id="statsMonthFilter" onchange="renderTotalStatsPopupData()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="statsSortTypeCheckbox" onchange="renderTotalStatsPopupData()" style="width: 18px; height: 18px; cursor: pointer;">
+                    <label for="statsSortTypeCheckbox" style="font-weight: bold; color: #333; cursor: pointer;">Ưu tiên xếp Loại bệnh nhân (Ban ngày lên trước)</label>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto; max-height: 55vh;">
+                <table class="stats-table" style="min-width: 800px;">
+                    <thead>
+                        <tr style="background-color: #ffe0b2; position: sticky; top: 0; z-index: 10;">
+                            <th style="width: 50px; font-weight: bold; text-align: center;">STT</th>
+                            <th style="font-weight: bold;">Tên bệnh nhân</th>
+                            <th style="width: 130px; font-weight: bold;">Loại bệnh nhân</th>
+                            <th style="width: 130px; font-weight: bold;">Ngày vào viện</th>
+                            <th style="width: 130px; font-weight: bold;">Ngày ra viện</th>
+                            <th style="width: 150px; font-weight: bold; text-align: center;">Số ngày nằm trong tháng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="totalStatsPopupBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeTotalStatsModal()">Đóng</button>
+        </div>
+    </div>
+</div>
+
+
 </body></html>
