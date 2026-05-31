@@ -495,12 +495,14 @@ function calculateFixedDays(p, filterValue) {
 }
 
 // Hàm render dữ liệu bảng và dòng tổng kết
+// Hàm render dữ liệu bảng và dòng tổng kết (Đã thêm Tổng số ngày nằm sau Tổng ban ngày)
 function renderTotalStatsPopupData() {
     const monthFilter = document.getElementById('statsMonthFilter').value;
     const isSortByType = document.getElementById('statsSortTypeCheckbox').checked;
+    const summaryBox = document.getElementById('statsSummaryBox');
     const tbody = document.getElementById('totalStatsPopupBody');
 
-    // Bước 1: Lọc danh sách bệnh nhân xuất hiện trong tháng chọn
+    // Bước 1: Lọc danh sách bệnh nhân có mặt trong tháng chọn
     let processedPatients = [];
     patients.forEach(p => {
         const days = calculateFixedDays(p, monthFilter);
@@ -512,19 +514,17 @@ function renderTotalStatsPopupData() {
         }
     });
 
-    // Bước 2: Sắp xếp theo logic yêu cầu
+    // Bước 2: Sắp xếp danh sách
     processedPatients.sort((a, b) => {
         if (isSortByType) {
-            // Checkbox tích: Đẩy Ban ngày lên trước, Nội trú xuống sau
             if (a.patientType !== b.patientType) {
                 return a.patientType === 'Ban ngày' ? -1 : 1;
             }
         }
-        // Luôn sắp xếp tăng dần theo ngày vào viện (ngày cũ nằm trên, ngày mới nằm dưới)
         return new Date(a.admissionDate) - new Date(b.admissionDate);
     });
 
-    // Bước 3: Tính toán dữ liệu dòng tổng kết (thay đổi động theo bộ lọc)
+    // Bước 3: Tính toán các thông số tổng kết
     let totalPatients = processedPatients.length;
     let totalInpatient = 0;
     let totalOutpatient = 0;
@@ -543,39 +543,39 @@ function renderTotalStatsPopupData() {
         }
     });
 
-    // Tính trung bình cộng số ngày nằm (làm tròn đến 1 chữ số thập phân)
     let avgDays = totalPatients > 0 ? (sumDays / totalPatients).toFixed(1) : 0;
     let avgInpatientDays = totalInpatient > 0 ? (sumInpatientDays / totalInpatient).toFixed(1) : 0;
     let avgOutpatientDays = totalOutpatient > 0 ? (sumOutpatientDays / totalOutpatient).toFixed(1) : 0;
 
-    // Bước 4: Tạo dòng tổng kết (Đặt ở trên cùng bảng)
-    let html = `
-        <tr style="background-color: #e3f2fd; font-weight: bold; color: #0d47a1; border-bottom: 2px solid #90caf9; position: sticky; top: 40px; z-index: 5;">
-            <td style="text-align: center; color: #0d47a1;">Σ</td>
-            <td colspan="5">
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 13px; padding: 5px 0;">
-                    <div>• Tổng bệnh nhân: <span style="color:red; font-size:15px;">${totalPatients}</span></div>
-                    <div>• Tổng nội trú: <span style="color:red; font-size:15px;">${totalInpatient}</span></div>
-                    <div>• Tổng ban ngày: <span style="color:red; font-size:15px;">${totalOutpatient}</span></div>
-                    <div>• TBC ngày nằm: <span style="color:green; font-size:15px;">${avgDays}</span> ngày</div>
-                    <div>• TBC nội trú nằm: <span style="color:green; font-size:15px;">${avgInpatientDays}</span> ngày</div>
-                    <div>• TBC ban ngày nằm: <span style="color:green; font-size:15px;">${avgOutpatientDays}</span> ngày</div>
-                </div>
-            </td>
-        </tr>
+    // Bước 4: Đổ dữ liệu vào khối hộp tổng kết (Nằm phía trên bảng)
+    summaryBox.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px; border-bottom: 1px solid #b3e5fc; padding-bottom: 5px; color: #0d47a1; font-weight: bold; font-size: 14px;">
+            <i class="fas fa-calculator"></i> SỐ LIỆU TỔNG KẾT KHÁM CHỮA BỆNH
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; font-size: 13px; font-weight: bold; color: #0d47a1;">
+            <div>• Tổng bệnh nhân: <span style="color:red; font-size:15px;">${totalPatients}</span></div>
+            <div>• Tổng nội trú: <span style="color:red; font-size:15px;">${totalInpatient}</span></div>
+            <div>• Tổng ban ngày: <span style="color:red; font-size:15px;">${totalOutpatient}</span></div>
+            <div style="background-color: #fff9c4; padding: 2px 8px; border-radius: 4px; border: 1px dashed #fbc02d; width: fit-content;">• Tổng số ngày nằm: <span style="color:blue; font-size:15px;">${sumDays}</span> ngày</div>
+            
+            <div>• TBC ngày nằm: <span style="color:green; font-size:15px;">${avgDays}</span> ngày</div>
+            <div>• TBC nội trú nằm: <span style="color:green; font-size:15px;">${avgInpatientDays}</span> ngày</div>
+            <div>• TBC ban ngày nằm: <span style="color:green; font-size:15px;">${avgOutpatientDays}</span> ngày</div>
+            <div></div>
+        </div>
     `;
 
-    // Bước 5: Render nội dung chi tiết từng bệnh nhân
+    // Bước 5: Render danh sách bệnh nhân chi tiết xuống dưới bảng dữ liệu
+    let tableHtml = ``;
     if (processedPatients.length === 0) {
-        html += `<tr><td colspan="6" style="text-align: center; padding: 30px; color: #888;">Không có dữ liệu bệnh nhân nào trong thời gian này.</td></tr>`;
+        tableHtml += `<tr><td colspan="6" style="text-align: center; padding: 30px; color: #888;">Không có dữ liệu bệnh nhân nào trong thời gian này.</td></tr>`;
     } else {
         processedPatients.forEach((p, index) => {
             const formattedInDate = p.admissionDate ? formatDate(p.admissionDate) : '-';
             const formattedOutDate = (p.dischargeDate && isDischarged(p)) ? formatDate(p.dischargeDate) : 'Chưa ra viện';
-            
             const typeClass = p.patientType === 'Nội trú' ? 'inpatient' : 'outpatient';
 
-            html += `
+            tableHtml += `
                 <tr style="background-color: ${p.patientType === 'Ban ngày' ? '#fffde7' : '#ffffff'};">
                     <td style="text-align: center; font-weight: 600;">${index + 1}</td>
                     <td style="font-weight: 600; color: #333;">${p.fullName}</td>
@@ -588,7 +588,7 @@ function renderTotalStatsPopupData() {
         });
     }
 
-    tbody.innerHTML = html;
+    tbody.innerHTML = tableHtml;
 }
 	
 	
@@ -2834,7 +2834,7 @@ bindProposalSortEvent();
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <label style="font-weight: bold; color: #f57c00;">Chọn Tháng/Năm:</label>
                     <select id="statsMonthFilter" onchange="renderTotalStatsPopupData()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-                        </select>
+                    </select>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <input type="checkbox" id="statsSortTypeCheckbox" onchange="renderTotalStatsPopupData()" style="width: 18px; height: 18px; cursor: pointer;">
@@ -2842,16 +2842,19 @@ bindProposalSortEvent();
                 </div>
             </div>
 
-            <div style="overflow-x: auto; max-height: 55vh;">
-                <table class="stats-table" style="min-width: 800px;">
+            <div id="statsSummaryBox" style="background-color: #e3f2fd; border: 1px solid #90caf9; border-radius: 8px; padding: 12px 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                </div>
+
+            <div style="overflow-x: auto; max-height: 48vh; border: 1px solid #eee; border-radius: 6px;">
+                <table class="stats-table" style="min-width: 800px; margin: 0;">
                     <thead>
                         <tr style="background-color: #ffe0b2; position: sticky; top: 0; z-index: 10;">
                             <th style="width: 50px; font-weight: bold; text-align: center;">STT</th>
-                            <th style="font-weight: bold;">Tên bệnh nhân</th>
-                            <th style="width: 130px; font-weight: bold;">Loại bệnh nhân</th>
-                            <th style="width: 130px; font-weight: bold;">Ngày vào viện</th>
-                            <th style="width: 130px; font-weight: bold;">Ngày ra viện</th>
-                            <th style="width: 150px; font-weight: bold; text-align: center;">Số ngày nằm trong tháng</th>
+                            <th style="font-weight: bold;">Tên</th>
+                            <th style="width: 130px; font-weight: bold;">Loại</th>
+                            <th style="width: 130px; font-weight: bold;">Ngày vv</th>
+                            <th style="width: 130px; font-weight: bold;">Ngày rv</th>
+                            <th style="width: 150px; font-weight: bold; text-align: center;">Σ</th>
                         </tr>
                     </thead>
                     <tbody id="totalStatsPopupBody">
