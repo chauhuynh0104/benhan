@@ -266,6 +266,7 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
 </h2>
                 <button id="viewStatsBtn" class="btn btn-secondary"><i class="fas fa-chart-bar"></i> Xem thống kê</button>
 				<button id="totalStatsBtn" class="btn btn-primary"><i class="fas fa-chart-pie"></i> Thống kê tổng</button>
+				<button id="dischargeBtn" class="btn btn-success" style="background-color: #2e7d32;"><i class="fas fa-door-open"></i> Ra viện</button>
             </div>
           <div class="panel-content" id="rightPanelContent">
 
@@ -387,7 +388,46 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
             </div>
         </div>
     </div>
+<div id="dischargeCustomModal" class="overlay hidden">
+    <div class="modal" style="max-width: 1100px; width: 95%;">
+        <div class="modal-header" style="background-color: #e8f5e9; color: #2e7d32; border-bottom: 1px solid #c8e6c9;">
+            <h4><i class="fas fa-hospital-user"></i> DANH SÁCH RA VIỆN</h4>
+            <button class="close-btn" id="closeDischargeCustomModalBtn">×</button>
+        </div>
+        <div class="modal-content" style="padding: 15px;">
+            <div style="background-color: #f1f8e9; border: 1px solid #dcedc8; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; font-weight: 600; color: #33691e;">
+    
+    <label style="cursor:pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="dischargeWeekFilter" value="last_two"> Tuần trước nữa</label>
+    <label style="cursor:pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="dischargeWeekFilter" value="last_one"> Tuần trước</label>
+    <label style="cursor:pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="dischargeWeekFilter" value="this_week" checked> Tuần này</label>
+    <label style="cursor:pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="dischargeWeekFilter" value="next_one"> Tuần sau</label>
+    <label style="cursor:pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="dischargeWeekFilter" value="next_two"> Tuần sau nữa</label>
+    <label style="cursor:pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="dischargeWeekFilter" value="all"> Tất cả</label>
+    
+</div>
 
+            <div style="overflow-x: auto; max-height: 100vh; border: 1px solid #e0e0e0; border-radius: 6px;">
+                <table class="stats-table" style="min-width: 850px; margin: 0;">
+                    <thead>
+                        <tr style="background-color: #c8e6c9; color: #1b5e20; position: sticky; top: 0; z-index: 10;">
+                            <th style="width: 50px; text-align: center; font-weight: bold;">STT</th>
+                            <th style="font-weight: bold;">Tên</th>
+                            <th style="font-weight: bold;">Loại</th>
+                            <th style="font-weight: bold;">Ngày vào</th>
+                            <th style="font-weight: bold;">Ngày ra</th>
+                            <th style="text-align: center; font-weight: bold;">Đã Nằm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dischargeCustomModalBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer" style="background-color: #fafafa; border-top: 1px solid #eee;">
+            <button class="btn btn-secondary" id="closeDischargeCustomModalFooterBtn">Đóng</button>
+        </div>
+    </div>
+</div>
     <script>
 	
 	
@@ -2616,8 +2656,225 @@ function bindProposalSortEvent() {
 
 // Gọi hàm này sau khi trang load
 bindProposalSortEvent();
+// Sự kiện click nút mở popup Ra viện (Yêu cầu mật khẩu nếu có setup)
+document.getElementById('dischargeBtn').onclick = () => {
+    if (typeof requirePassword === "function") {
+        requirePassword(() => {
+            openDischargeCustomModal();
+        });
+    } else {
+        openDischargeCustomModal();
+    }
+};
 
+// Đóng modal bằng các nút đóng
+document.getElementById('closeDischargeCustomModalBtn').onclick = closeDischargeCustomModal;
+document.getElementById('closeDischargeCustomModalFooterBtn').onclick = closeDischargeCustomModal;
 
+// Lắng nghe sự kiện thay đổi radio filter tuần
+document.querySelectorAll('input[name="dischargeWeekFilter"]').forEach(radio => {
+    radio.onchange = () => {
+        renderDischargeCustomTable();
+    };
+});
+
+function openDischargeCustomModal() {
+    document.getElementById('dischargeCustomModal').classList.remove('hidden');
+    // Reset bộ lọc về mặc định là 'Tuần này'
+    const defaultRadio = document.querySelector('input[name="dischargeWeekFilter"][value="this_week"]');
+    if (defaultRadio) defaultRadio.checked = true;
+    
+    renderDischargeCustomTable();
+}
+
+function closeDischargeCustomModal() {
+    document.getElementById('dischargeCustomModal').classList.add('hidden');
+}
+
+// Hàm bổ trợ lấy tên Thứ trong tuần tiếng Việt
+function getVNWeekdayName(dateObj) {
+    const day = dateObj.getDay();
+    return day === 0 ? "Chủ Nhật" : `Thứ ${day + 1}`;
+}
+
+// Hàm bổ trợ định dạng ngày kèm theo Thứ
+function formatDateWithWeekday(dateStr) {
+    if (!dateStr) return "-";
+    const dateObj = new Date(dateStr + 'T12:00:00'); // Ép giờ tránh lệch múi giờ
+    if (isNaN(dateObj)) return dateStr;
+    
+    const weekday = getVNWeekdayName(dateObj);
+    // Định dạng dd/mm/yyyy
+    const day = dateObj.getDate().toString().padStart(2, '0');
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+    const year = dateObj.getFullYear();
+    
+    return `${weekday} - ${day}/${month}/${year}`;
+}
+
+// Hàm kiểm tra một ngày thuộc tuần nào so với tuần hiện tại (Trả về offset tuần)
+function getDischargeWeekOffset(targetDateStr) {
+    const target = new Date(targetDateStr + 'T12:00:00');
+
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+
+    // Thứ 2 đầu tuần hiện tại
+    const currentMonday = new Date(today);
+    const day = currentMonday.getDay(); // CN=0
+    currentMonday.setDate(
+        currentMonday.getDate() - (day === 0 ? 6 : day - 1)
+    );
+    currentMonday.setHours(0, 0, 0, 0);
+
+    // Thứ 2 của tuần chứa ngày target
+    const targetMonday = new Date(target);
+    const targetDay = targetMonday.getDay();
+    targetMonday.setDate(
+        targetMonday.getDate() - (targetDay === 0 ? 6 : targetDay - 1)
+    );
+    targetMonday.setHours(0, 0, 0, 0);
+
+    return Math.round(
+        (targetMonday - currentMonday) / (7 * 24 * 60 * 60 * 1000)
+    );
+}
+
+// Hàm lấy ngày Đề xuất gốc chuẩn xác (Lấy đúng giá trị chuỗi định dạng 'yyyy-mm-dd')
+function getPureProposedDateStr(p) {
+    if (!p.admissionDate) return "";
+    let date = new Date(p.admissionDate + 'T12:00:00');
+    let daysToAdd = (p.patientType === 'Nội trú') ? 19 : 13;
+    date.setDate(date.getDate() + daysToAdd);
+    
+    // Logic lùi về thứ 6 nếu rơi vào thứ 7, chủ nhật, thứ 2
+    let exactDate = new Date(date);
+    let day = date.getDay();
+    if (day === 6) { // Thứ 7
+        date.setDate(date.getDate() - 1);
+    } else if (day === 0) { // Chủ Nhật
+        date.setDate(date.getDate() - 2);
+    } else if (day === 1) { // Thứ 2
+        date.setDate(date.getDate() - 3);
+    }
+    
+    // Trả về chuỗi ngày đề xuất YYYY-MM-DD
+    return date.toISOString().split('T')[0];
+}
+
+// Hàm render bảng dữ liệu chính cho popup
+function renderDischargeCustomTable() {
+    const tbody = document.getElementById('dischargeCustomModalBody');
+    if (!tbody) return;
+    
+    const filterValue = document.querySelector('input[name="dischargeWeekFilter"]:checked').value;
+    
+    // Bước 1: Thu thập và xử lý mảng dữ liệu bệnh nhân
+    let processedList = [];
+    
+    patients.forEach(p => {
+        if (!p.admissionDate) return;
+        
+        // Tính ngày đề xuất gốc chuẩn xác định dạng chuỗi yyyy-mm-dd
+        const proposedDateStr = getPureProposedDateStr(p);
+        
+        // Mặc định ngày hiển thị ra viện là ngày đề xuất
+        let finalDischargeDateStr = proposedDateStr;
+        let isModified = false;
+        
+        // Nếu đã nhập ngày ra viện (detailDischargeDate hoặc dischargeDate) mà khác ngày đề xuất
+        if (p.dischargeDate && p.dischargeDate !== proposedDateStr) {
+            finalDischargeDateStr = p.dischargeDate;
+            isModified = true;
+        }
+        
+        // Tính Số ngày nằm = (Ngày ra cuối cùng - Ngày vào) + 1
+        const admissionTime = new Date(p.admissionDate + 'T00:00:00');
+        const finalDischargeTime = new Date(finalDischargeDateStr + 'T00:00:00');
+        const diffTime = finalDischargeTime - admissionTime;
+        const daysSpent = diffTime < 0 ? 0 : Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        
+        // Xác định offset tuần dựa trên NGÀY ĐỀ XUẤT RA để thực hiện chức năng lọc tuần
+        const filterDateStr = isModified
+    ? finalDischargeDateStr
+    : proposedDateStr;
+
+const weekOffset = getDischargeWeekOffset(filterDateStr);
+        
+        // Lọc theo tuần đề xuất ra
+        let isMatchFilter = false;
+        if (filterValue === 'all') isMatchFilter = true;
+        else if (filterValue === 'last_two' && weekOffset === -2) isMatchFilter = true;
+        else if (filterValue === 'last_one' && weekOffset === -1) isMatchFilter = true;
+        else if (filterValue === 'this_week' && weekOffset === 0) isMatchFilter = true;
+        else if (filterValue === 'next_one' && weekOffset === 1) isMatchFilter = true;
+        else if (filterValue === 'next_two' && weekOffset === 2) isMatchFilter = true;
+        
+        if (isMatchFilter) {
+            processedList.push({
+                originData: p,
+                proposedDateStr: proposedDateStr,
+                finalDischargeDateStr: finalDischargeDateStr,
+                isModified: isModified,
+                daysSpent: daysSpent
+            });
+        }
+    });
+    
+    // Bước 2: Sắp xếp danh sách theo thứ tự đề xuất ra tăng dần (Ngày cũ/nhỏ nằm trên, ngày mới/lớn nằm dưới)
+processedList.sort((a, b) => {
+    const dateA = a.finalDischargeDateStr || a.proposedDateStr;
+    const dateB = b.finalDischargeDateStr || b.proposedDateStr;
+
+    return new Date(dateA + 'T00:00:00') -
+           new Date(dateB + 'T00:00:00');
+});
+    
+    // Bước 3: Đổ dữ liệu HTML vào thân bảng
+    if (processedList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: #888; font-style: italic;">Không có bệnh nhân nào khớp với bộ lọc tuần này.</td></tr>`;
+        return;
+    }
+    
+    let html = '';
+    processedList.forEach((item, index) => {
+        const p = item.originData;
+        
+        // Định dạng hiển thị Ngày vào kèm Thứ
+        const admissionDisplay = formatDateWithWeekday(p.admissionDate);
+        
+        // Logic hiển thị cột Ngày đề xuất ra viện theo điều kiện tô đỏ
+        let proposalCellContent = '';
+        if (item.isModified) {
+            // Trường hợp ngày ra viện đã nhập khác ngày đề xuất -> Thay bằng ngày nhập tô đỏ + hiển thị small ngày đề xuất
+           // Thay đoạn cũ bằng đoạn này:
+const timeDisplay = p.dischargeTime ? ` - ${p.dischargeTime}` : '';
+
+proposalCellContent = `<b style="color: #d32f2f;"><i class="fas fa-exclamation-circle"></i></b> ${formatDateWithWeekday(item.finalDischargeDateStr)}${timeDisplay}<br>` + 
+                      `<small style="font-size: 11px; color: #666; font-weight: normal;">Dự kiến: ${formatDateWithWeekday(item.proposedDateStr)}</small>`;
+        } else {
+            // Giữ nguyên ngày đề xuất bình thường
+proposalCellContent = `${formatDateWithWeekday(item.proposedDateStr)} ${p.dischargeTime ? '- ' + p.dischargeTime : ''}`;
+        }
+        
+        html += `
+            <tr style="background-color: ${p.patientType === 'Ban ngày' ? '#f9fbe7' : '#ffffff'};">
+                <td style="text-align: center; font-weight: 600; color: #555;">${index + 1}</td>
+                <td>${p.fullName}</td>
+                <td>
+                    <span class="patient-type ${p.patientType === 'Nội trú' ? 'inpatient' : 'outpatient'}" style="padding: 4px 10px; font-size: 12px; border-radius: 12px;">
+                        ${p.patientType}
+                    </span>
+                </td>
+                <td>${admissionDisplay}</td>
+                <td>${proposalCellContent}</td>
+                <td style="text-align: center; font-weight: bold; color: #e65100; font-size: 15px;">${item.daysSpent}</td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+}
 </script>
 <div id="labModal" class="overlay hidden">
   <div class="modal" style="max-width:500px">
@@ -2867,6 +3124,5 @@ bindProposalSortEvent();
         </div>
     </div>
 </div>
-
 
 </body></html>
