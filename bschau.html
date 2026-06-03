@@ -18,6 +18,7 @@
     <title>Quản Lý Bệnh Án</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <style>
  :root {
     --primary-color: #ff9800;
@@ -424,17 +425,39 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
                 </table>
             </div>
         </div>
-<div class="modal-footer" style="background-color: #fafafa; border-top: 1px solid #eee;">
+<div class="modal-footer"
+     style="background-color:#fafafa;border-top:1px solid #eee;">
 
-    <button class="btn btn-success" id="saveDischargeImageBtn">
-        <i class="fas fa-image"></i> Lưu
+    <button class="btn btn-success"
+            id="saveDischargeImageBtn">
+        <i class="fas fa-image"></i> Lưu ảnh
     </button>
 
-    <button class="btn btn-primary" id="saveDischargeFullImageBtn">
-        <i class="fas fa-camera"></i> Lưu Full
+    <button class="btn btn-primary"
+            id="saveDischargeFullImageBtn">
+        <i class="fas fa-camera"></i>Ảnh Full
     </button>
 
-    <button class="btn btn-secondary" id="closeDischargeCustomModalFooterBtn">
+    <button class="btn btn-danger"
+            id="saveDischargePdfBtn">
+        <i class="fas fa-file-pdf"></i> PDF A4
+    </button>
+
+    <button class="btn btn-danger"
+            id="saveDischargePdfFullBtn">
+        <i class="fas fa-file-pdf"></i> A4 Full
+    </button>
+<button class="btn btn-danger"
+        id="saveDischargePdfA5Btn">
+    <i class="fas fa-file-pdf"></i> PDF A5
+</button>
+
+<button class="btn btn-danger"
+        id="saveDischargePdfA5FullBtn">
+    <i class="fas fa-file-pdf"></i> A5 Full
+</button>
+    <button class="btn btn-secondary"
+            id="closeDischargeCustomModalFooterBtn">
         Đóng
     </button>
 
@@ -3134,6 +3157,294 @@ document.getElementById('dischargeTitle').onclick = () => {
                 hideDuKien ? 'none' : '';
         });
 };
+function askPdfOrientation(callback) {
+
+    const modal =
+        document.getElementById(
+            'pdfOrientationModal'
+        );
+
+    modal.style.display = 'flex';
+
+    const portraitBtn =
+        document.getElementById(
+            'pdfPortraitBtn'
+        );
+
+    const landscapeBtn =
+        document.getElementById(
+            'pdfLandscapeBtn'
+        );
+
+    const cancelBtn =
+        document.getElementById(
+            'pdfCancelBtn'
+        );
+
+    portraitBtn.onclick = () => {
+
+        modal.style.display = 'none';
+
+        callback('portrait');
+    };
+
+    landscapeBtn.onclick = () => {
+
+        modal.style.display = 'none';
+
+        callback('landscape');
+    };
+
+    cancelBtn.onclick = () => {
+
+        modal.style.display = 'none';
+
+        showToast('Đã huỷ lưu PDF', 'info');
+    };
+
+    // Click nền đen để đóng
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+}
+async function saveDischargePdf(
+    isFull = false,
+    paperSize = 'a4',
+    orientation = 'portrait'
+) {
+
+    const { jsPDF } = window.jspdf;
+
+    let modal, contentBox, tableWrapper;
+    let oldStyles = {};
+
+    try {
+
+        showToast(
+            `Đang tạo PDF ${paperSize.toUpperCase()}${isFull ? ' full' : ''}...`,
+            'info'
+        );
+
+        modal = document.querySelector(
+            '#dischargeCustomModal .modal'
+        );
+
+        contentBox = document.querySelector(
+            '#dischargeCustomModal .modal-content'
+        );
+
+        tableWrapper = document.querySelector(
+            '#dischargeCustomModal .modal-content > div:last-child'
+        );
+
+        // ===== FULL HEIGHT =====
+        if (isFull) {
+
+            oldStyles = {
+                modalMaxHeight: modal.style.maxHeight,
+                modalOverflow: modal.style.overflow,
+
+                contentMaxHeight: contentBox.style.maxHeight,
+                contentOverflow: contentBox.style.overflow,
+
+                wrapperMaxHeight: tableWrapper.style.maxHeight,
+                wrapperOverflow: tableWrapper.style.overflow
+            };
+
+            modal.style.maxHeight = 'none';
+            modal.style.overflow = 'visible';
+
+            contentBox.style.maxHeight = 'none';
+            contentBox.style.overflow = 'visible';
+
+            tableWrapper.style.maxHeight = 'none';
+            tableWrapper.style.overflow = 'visible';
+
+            await new Promise(resolve =>
+                setTimeout(resolve, 400)
+            );
+        }
+
+        // ===== CAPTURE =====
+        const canvas = await html2canvas(modal, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            scrollX: 0,
+            scrollY: 0,
+            width: modal.scrollWidth,
+            height: modal.scrollHeight,
+            windowWidth: modal.scrollWidth,
+            windowHeight: modal.scrollHeight
+        });
+
+        const imgData =
+            canvas.toDataURL('image/png');
+
+        // ===== PDF =====
+       const pdf = new jsPDF({
+    orientation,
+    unit: 'mm',
+    format: paperSize
+});
+
+let pageWidth =
+    paperSize === 'a5' ? 148 : 210;
+
+let pageHeight =
+    paperSize === 'a5' ? 210 : 297;
+
+// Nếu xoay ngang thì đảo kích thước
+if (orientation === 'landscape') {
+    [pageWidth, pageHeight] =
+        [pageHeight, pageWidth];
+}
+
+        const imgWidth = pageWidth;
+
+        const imgHeight =
+            (canvas.height * imgWidth) /
+            canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        // Trang đầu
+        pdf.addImage(
+            imgData,
+            'PNG',
+            0,
+            position,
+            imgWidth,
+            imgHeight
+        );
+
+        heightLeft -= pageHeight;
+
+        // Tự chia nhiều trang
+        while (heightLeft > 0) {
+
+            position =
+                heightLeft - imgHeight;
+
+            pdf.addPage();
+
+            pdf.addImage(
+                imgData,
+                'PNG',
+                0,
+                position,
+                imgWidth,
+                imgHeight
+            );
+
+            heightLeft -= pageHeight;
+        }
+
+        // ===== SAVE =====
+        const now = new Date();
+
+        const fileName =
+            `DanhSachRaVien_${paperSize.toUpperCase()}` +
+            `${isFull ? '_FULL' : ''}_` +
+            `${now.getFullYear()}-` +
+            `${String(now.getMonth()+1).padStart(2,'0')}-` +
+            `${String(now.getDate()).padStart(2,'0')}_` +
+            `${String(now.getHours()).padStart(2,'0')}-` +
+            `${String(now.getMinutes()).padStart(2,'0')}.pdf`;
+
+        pdf.save(fileName);
+
+        showToast(
+            `Đã lưu PDF ${paperSize.toUpperCase()}!`,
+            'success'
+        );
+
+    } catch (err) {
+
+        console.error(err);
+        showToast('Lỗi tạo PDF!', 'error');
+
+    } finally {
+
+        // ===== RESTORE STYLE =====
+        if (isFull && modal) {
+
+            modal.style.maxHeight =
+                oldStyles.modalMaxHeight || '';
+
+            modal.style.overflow =
+                oldStyles.modalOverflow || '';
+
+            contentBox.style.maxHeight =
+                oldStyles.contentMaxHeight || '';
+
+            contentBox.style.overflow =
+                oldStyles.contentOverflow || '';
+
+            tableWrapper.style.maxHeight =
+                oldStyles.wrapperMaxHeight || '';
+
+            tableWrapper.style.overflow =
+                oldStyles.wrapperOverflow || '';
+        }
+    }
+}
+// ===== A4 =====
+document.getElementById(
+    'saveDischargePdfBtn'
+).onclick = () => {
+
+    askPdfOrientation(orientation => {
+        saveDischargePdf(
+            false,
+            'a4',
+            orientation
+        );
+    });
+};
+
+document.getElementById(
+    'saveDischargePdfFullBtn'
+).onclick = () => {
+
+    askPdfOrientation(orientation => {
+        saveDischargePdf(
+            true,
+            'a4',
+            orientation
+        );
+    });
+};
+
+// ===== A5 =====
+document.getElementById(
+    'saveDischargePdfA5Btn'
+).onclick = () => {
+
+    askPdfOrientation(orientation => {
+        saveDischargePdf(
+            false,
+            'a5',
+            orientation
+        );
+    });
+};
+
+document.getElementById(
+    'saveDischargePdfA5FullBtn'
+).onclick = () => {
+
+    askPdfOrientation(orientation => {
+        saveDischargePdf(
+            true,
+            'a5',
+            orientation
+        );
+    });
+};
 </script>
 <div id="labModal" class="overlay hidden">
   <div class="modal" style="max-width:500px">
@@ -3383,5 +3694,70 @@ document.getElementById('dischargeTitle').onclick = () => {
         </div>
     </div>
 </div>
+<div id="pdfOrientationModal"
+     style="
+        display:none;
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.45);
+        z-index:999999;
+        align-items:center;
+        justify-content:center;
+     ">
 
+    <div style="
+        background:#fff;
+        border-radius:16px;
+        width:340px;
+        padding:22px;
+        box-shadow:0 10px 35px rgba(0,0,0,.2);
+        text-align:center;
+    ">
+
+        <div style="
+            font-size:20px;
+            font-weight:700;
+            margin-bottom:10px;
+            color:#2e7d32;
+        ">
+            Chọn hướng PDF
+        </div>
+
+        <div style="
+            color:#666;
+            margin-bottom:22px;
+            font-size:14px;
+        ">
+            Bạn muốn xoay ngang hay giữ nguyên?
+        </div>
+
+        <div style="
+            display:flex;
+            gap:10px;
+            justify-content:center;
+            flex-wrap:wrap;
+        ">
+
+            <button id="pdfPortraitBtn"
+                    class="btn btn-danger"
+                    style="min-width:90px;">
+                📄 Dọc
+            </button>
+
+            <button id="pdfLandscapeBtn"
+                    class="btn btn-primary"
+                    style="min-width:90px;">
+                📑 Ngang
+            </button>
+
+            <button id="pdfCancelBtn"
+                    class="btn btn-danger"
+                    style="min-width:90px;">
+                ❌ Huỷ
+            </button>
+
+        </div>
+
+    </div>
+</div>
 </body></html>
