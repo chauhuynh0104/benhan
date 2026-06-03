@@ -17,6 +17,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Bệnh Án</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
  :root {
     --primary-color: #ff9800;
@@ -280,7 +281,7 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
                         <th>Tên</th>
                         <th>Phòng</th>
                         <th>Giờ</th>
-                        <th>Ngày</th>
+                        <th style="display: none;">Ngày</th>
                         <th>Loại</th>
                         <th>Trạng thái</th>
                     </tr>
@@ -391,7 +392,7 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
 <div id="dischargeCustomModal" class="overlay hidden">
     <div class="modal" style="max-width: 1100px; width: 95%;">
         <div class="modal-header" style="background-color: #e8f5e9; color: #2e7d32; border-bottom: 1px solid #c8e6c9;">
-            <h4><i class="fas fa-hospital-user"></i> DANH SÁCH RA VIỆN</h4>
+            <h4 id="dischargeTitle" style="cursor:pointer;"><i class="fas fa-hospital-user"></i> DANH SÁCH RA VIỆN</h4>
             <button class="close-btn" id="closeDischargeCustomModalBtn">×</button>
         </div>
         <div class="modal-content" style="padding: 15px;">
@@ -423,9 +424,21 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
                 </table>
             </div>
         </div>
-        <div class="modal-footer" style="background-color: #fafafa; border-top: 1px solid #eee;">
-            <button class="btn btn-secondary" id="closeDischargeCustomModalFooterBtn">Đóng</button>
-        </div>
+<div class="modal-footer" style="background-color: #fafafa; border-top: 1px solid #eee;">
+
+    <button class="btn btn-success" id="saveDischargeImageBtn">
+        <i class="fas fa-image"></i> Lưu
+    </button>
+
+    <button class="btn btn-primary" id="saveDischargeFullImageBtn">
+        <i class="fas fa-camera"></i> Lưu Full
+    </button>
+
+    <button class="btn btn-secondary" id="closeDischargeCustomModalFooterBtn">
+        Đóng
+    </button>
+
+</div>
     </div>
 </div>
     <script>
@@ -917,7 +930,7 @@ function renderPatientList() {
     <td ${nameTooltip}>${displayName}</td>
     <td>${p.room}</td>
     <td>${formatHourHM(p.examinationTime)}</td>
-    <td>${isNarrow ? days : days + ' ngày'}</td>
+    <td style="display: none;">${isNarrow ? days : days + ' ngày'}</td>
     <td ${patientTypeTooltip}>${patientTypeText}</td>
     <td><span class="${statusClass}" ${statusTooltip}>${statusText}</span></td>
 </tr>`;
@@ -2685,6 +2698,7 @@ function openDischargeCustomModal() {
     if (defaultRadio) defaultRadio.checked = true;
     
     renderDischargeCustomTable();
+	setupDischargeTableColumnToggle();
 }
 
 function closeDischargeCustomModal() {
@@ -2850,8 +2864,8 @@ processedList.sort((a, b) => {
            // Thay đoạn cũ bằng đoạn này:
 const timeDisplay = p.dischargeTime ? ` - ${p.dischargeTime}` : '';
 
-proposalCellContent = `<b style="color: #d32f2f;"><i class="fas fa-exclamation-circle"></i></b> ${formatDateWithWeekday(item.finalDischargeDateStr)}${timeDisplay}<br>` + 
-                      `<small style="font-size: 11px; color: #666; font-weight: normal;">Dự kiến: ${formatDateWithWeekday(item.proposedDateStr)}</small>`;
+proposalCellContent = `<b style="color: #d32f2f;"class="du-kien-row"><i class="fas fa-exclamation-circle"></i></b> ${formatDateWithWeekday(item.finalDischargeDateStr)}${timeDisplay}<br>` + 
+                      `<small style="font-size: 11px; color: #666; font-weight: normal;"class="du-kien-row">Dự kiến: ${formatDateWithWeekday(item.proposedDateStr)}</small>`;
         } else {
             // Giữ nguyên ngày đề xuất bình thường
 proposalCellContent = `${formatDateWithWeekday(item.proposedDateStr)} ${p.dischargeTime ? '- ' + p.dischargeTime : ''}`;
@@ -2875,6 +2889,251 @@ proposalCellContent = `${formatDateWithWeekday(item.proposedDateStr)} ${p.discha
     
     tbody.innerHTML = html;
 }
+
+document.getElementById('saveDischargeImageBtn').onclick = async () => {
+    try {
+        showToast('Đang tạo ảnh...', 'info');
+
+        const modal = document.querySelector('#dischargeCustomModal .modal');
+        const contentBox = document.querySelector('#dischargeCustomModal .modal-content');
+        const tableWrapper = document.querySelector(
+            '#dischargeCustomModal .modal-content > div:last-child'
+        );
+
+        // Backup style cũ
+        const oldModalMaxHeight = modal.style.maxHeight;
+        const oldContentMaxHeight = contentBox.style.maxHeight;
+        const oldContentOverflow = contentBox.style.overflow;
+        const oldWrapperMaxHeight = tableWrapper.style.maxHeight;
+        const oldWrapperOverflow = tableWrapper.style.overflow;
+
+        // Bung full để chụp toàn bộ danh sách
+        modal.style.maxHeight = 'none';
+        contentBox.style.maxHeight = 'none';
+        contentBox.style.overflow = 'visible';
+
+        tableWrapper.style.maxHeight = 'none';
+        tableWrapper.style.overflow = 'visible';
+
+        // Chờ render lại
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Chụp ảnh
+        const canvas = await html2canvas(modal, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            scrollY: -window.scrollY,
+            windowWidth: modal.scrollWidth,
+            windowHeight: modal.scrollHeight
+        });
+
+        // Khôi phục style cũ
+        modal.style.maxHeight = oldModalMaxHeight;
+        contentBox.style.maxHeight = oldContentMaxHeight;
+        contentBox.style.overflow = oldContentOverflow;
+
+        tableWrapper.style.maxHeight = oldWrapperMaxHeight;
+        tableWrapper.style.overflow = oldWrapperOverflow;
+
+        // Convert canvas -> blob
+        const blob = await new Promise(resolve =>
+            canvas.toBlob(resolve, 'image/png')
+        );
+
+        // ===== 1. COPY CLIPBOARD =====
+        try {
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    'image/png': blob
+                })
+            ]);
+        } catch (clipboardError) {
+            console.warn('Clipboard lỗi:', clipboardError);
+        }
+
+        // ===== 2. TỰ LƯU FILE PNG =====
+        const link = document.createElement('a');
+
+        const now = new Date();
+        const fileName =
+            `DanhSachRaVien_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}.png`;
+
+        link.download = fileName;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+
+        // Cleanup memory
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+
+        showToast(
+            'Đã lưu ảnh',
+            'success'
+        );
+
+    } catch (err) {
+        console.error(err);
+        showToast('Lỗi tạo ảnh!', 'error');
+    }
+};
+document.getElementById('saveDischargeFullImageBtn').onclick = async () => {
+    let modal, contentBox, tableWrapper;
+    let oldStyles = {};
+
+    try {
+        showToast('Đang tạo ảnh full...', 'info');
+
+        modal = document.querySelector('#dischargeCustomModal .modal');
+        contentBox = document.querySelector('#dischargeCustomModal .modal-content');
+        tableWrapper = document.querySelector(
+            '#dischargeCustomModal .modal-content > div:last-child'
+        );
+
+        if (!modal || !contentBox || !tableWrapper) {
+            throw new Error('Không tìm thấy modal');
+        }
+
+        // ===== Backup style cũ =====
+        oldStyles = {
+            modalMaxHeight: modal.style.maxHeight,
+            modalOverflow: modal.style.overflow,
+
+            contentMaxHeight: contentBox.style.maxHeight,
+            contentOverflow: contentBox.style.overflow,
+
+            wrapperMaxHeight: tableWrapper.style.maxHeight,
+            wrapperOverflow: tableWrapper.style.overflow
+        };
+
+        // ===== Bung FULL HEIGHT =====
+        modal.style.maxHeight = 'none';
+        modal.style.overflow = 'visible';
+
+        contentBox.style.maxHeight = 'none';
+        contentBox.style.overflow = 'visible';
+
+        tableWrapper.style.maxHeight = 'none';
+        tableWrapper.style.overflow = 'visible';
+
+        // Đợi render hoàn tất
+        await new Promise(resolve => setTimeout(resolve, 400));
+
+        // ===== Chụp FULL =====
+        const canvas = await html2canvas(modal, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            scrollX: 0,
+            scrollY: 0,
+            width: modal.scrollWidth,
+            height: modal.scrollHeight,
+            windowWidth: modal.scrollWidth,
+            windowHeight: modal.scrollHeight
+        });
+
+        // ===== Canvas -> Blob =====
+        const blob = await new Promise((resolve, reject) => {
+            canvas.toBlob(blob => {
+                if (blob) resolve(blob);
+                else reject(new Error('Không tạo được blob'));
+            }, 'image/png');
+        });
+
+        // ===== COPY CLIPBOARD =====
+        try {
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    'image/png': blob
+                })
+            ]);
+        } catch (clipboardError) {
+            console.warn('Clipboard lỗi:', clipboardError);
+        }
+
+        // ===== AUTO SAVE FILE =====
+        const link = document.createElement('a');
+
+        const now = new Date();
+        const fileName =
+            `DanhSachRaVien_FULL_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}.png`;
+
+        link.download = fileName;
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => {
+            URL.revokeObjectURL(link.href);
+        }, 1000);
+
+        showToast(
+            'Đã lưu ảnh',
+            'success'
+        );
+
+    } catch (err) {
+        console.error(err);
+        showToast('Lỗi tạo ảnh FULL!', 'error');
+
+    } finally {
+        // ===== LUÔN restore style dù lỗi =====
+        if (modal && contentBox && tableWrapper) {
+            modal.style.maxHeight = oldStyles.modalMaxHeight || '';
+            modal.style.overflow = oldStyles.modalOverflow || '';
+
+            contentBox.style.maxHeight = oldStyles.contentMaxHeight || '';
+            contentBox.style.overflow = oldStyles.contentOverflow || '';
+
+            tableWrapper.style.maxHeight = oldStyles.wrapperMaxHeight || '';
+            tableWrapper.style.overflow = oldStyles.wrapperOverflow || '';
+        }
+    }
+};
+function setupDischargeTableColumnToggle() {
+    const table = document.querySelector('#dischargeCustomModal table');
+
+    if (!table) return;
+
+    const headers = table.querySelectorAll('thead th');
+
+    headers.forEach((th, columnIndex) => {
+
+        th.style.cursor = 'pointer';
+        th.title = 'Double click để ẩn cột';
+
+        th.ondblclick = () => {
+
+            const rows = table.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const cells = row.children;
+
+                if (cells[columnIndex]) {
+                    const currentDisplay =
+                        cells[columnIndex].style.display;
+
+                    cells[columnIndex].style.display =
+                        currentDisplay === 'none'
+                            ? ''
+                            : 'none';
+                }
+            });
+        };
+    });
+}
+let hideDuKien = false;
+
+document.getElementById('dischargeTitle').onclick = () => {
+
+    hideDuKien = !hideDuKien;
+
+    document.querySelectorAll('.du-kien-row')
+        .forEach(el => {
+            el.style.display =
+                hideDuKien ? 'none' : '';
+        });
+};
 </script>
 <div id="labModal" class="overlay hidden">
   <div class="modal" style="max-width:500px">
