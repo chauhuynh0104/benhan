@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Hệ thống quản lý lịch trình - Điện châm & Thủy châm</title>
+    <title>Giờ thủ thuật</title>
     <style>
         * {
             box-sizing: border-box;
@@ -554,7 +554,7 @@ function updatePatientNameColors() {
         const dischargeDate = new Date(patient.dischargeDate);
 
         // dischargeDate > hôm nay => đỏ
-        if (dischargeDate > today) {
+        if (dischargeDate < today) {
             nameCell.style.color = '#d60000';
             nameCell.style.fontWeight = 'bold';
         }
