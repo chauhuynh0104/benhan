@@ -467,7 +467,7 @@ async function loadPatientsJson() {
     {
         method: "POST",
         headers: {
-            "Authorization": `Bearer ${DROPBOX_TOKEN}`,
+            "Authorization": `Bearer ${accessToken}`,
             "Dropbox-API-Arg": JSON.stringify({
                 path: "/patients.json"
             })
