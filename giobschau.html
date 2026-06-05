@@ -364,7 +364,7 @@
     <div style="overflow-x: auto;">
         <table id="mainScheduleTable">
             <thead>
-                <tr><th>Tên</th><th>Điện châm</th><th>Máy</th><th>Chiếu đèn</th><th>Đèn</th><th>Xoa bóp</th><th>Thuỷ châm</th></tr>
+                <tr><th>STT</th><th>Tên</th><th>Điện châm</th><th>Máy</th><th>Chiếu đèn</th><th>Đèn</th><th>Xoa bóp</th><th>Thuỷ châm</th></tr>
             </thead>
             <tbody id="tableBody">
                 <!-- Dữ liệu sẽ được inject bằng js giữ nguyên số dòng và cấu trúc -->
@@ -656,6 +656,15 @@ function updatePatientNameColors() {
         tbody.innerHTML = '';
         scheduleData.forEach((row, idx) => {
             const tr = document.createElement('tr');
+			
+			// --- Thêm cột STT ---
+        const tdSTT = document.createElement('td');
+        tdSTT.innerText = idx + 1; // STT bắt đầu từ 1
+        tdSTT.style.textAlign = 'center';
+        tr.appendChild(tdSTT);
+        // --------------------
+			
+			
            const tdName = document.createElement('td');
 tdName.setAttribute('contenteditable', 'true');
 tdName.classList.add('editable-name');
@@ -872,14 +881,14 @@ document.addEventListener('keydown', async function(e) {
         requestPassword(saveToDropbox);
     }
 });
+
+
 document.addEventListener('keydown', function(e) {
     if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
         e.preventDefault(); // Ngăn trình duyệt tải lại toàn bộ trang
         loadFromDropbox();   // Chỉ gọi hàm tải dữ liệu của bạn
     }
 });
-
-
 
 
 
