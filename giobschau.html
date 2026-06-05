@@ -872,7 +872,12 @@ document.addEventListener('keydown', async function(e) {
         requestPassword(saveToDropbox);
     }
 });
-
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+        e.preventDefault(); // Ngăn trình duyệt tải lại toàn bộ trang
+        loadFromDropbox();   // Chỉ gọi hàm tải dữ liệu của bạn
+    }
+});
 
 
 
