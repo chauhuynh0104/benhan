@@ -133,6 +133,7 @@
             opacity: 1;
         }
         .modal-container {
+		height: 80vh;
             background: #ffffff;
             border-radius: 32px;
             width: 760px;
@@ -358,6 +359,7 @@
 </div>
 <div class="container">
     <div class="toolbar">
+	<button class="btn" id="listPatientBtn" style="background: #e67e22; color: white;">📋 DS Bệnh chờ</button>
         <button class="btn btn-primary" id="refreshBtn">🔄 Tải lại dữ liệu</button>
         <button class="btn btn-save" id="saveToDropboxBtn">💾 Lưu toàn bộ dữ liệu</button>
     </div>
@@ -400,6 +402,9 @@
                 </div>
             </div>
         </div>
+	
+		
+		
 <div class="modal-footer">
     <button id="deleteModalBtn" style="background: #e53e3e; color: white; margin-right: auto; display: none; border-radius: 50px; border: none; font-weight: bold; padding: 10px 20px; cursor: pointer;">🗑️ Xóa lịch</button>
     <button class="btn-modal btn-cancel" id="cancelModalBtn">Huỷ</button>
@@ -408,6 +413,26 @@
     </div>
 </div>
 
+
+
+		<div id="patientListModal" class="modal-overlay">
+    <div class="modal-container" style="width: 1300px; max-width: 95%;">
+        <div class="modal-header">
+            🏥 Danh sách bệnh nhân chưa nhập thủ thuật
+            <span onclick="document.getElementById('patientListModal').classList.remove('active')">&times;</span>
+        </div>
+        <div class="modal-body" style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                    <tr style="background: #f1f5f9;">
+                        <th>STT</th><th>Họ tên</th><th>Tuổi</th><th>Phòng</th><th>Loại</td><th>Vào</th><th>Ra</th><th>Nằm</th>
+                    </tr>
+                </thead>
+                <tbody id="patientListBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 <!-- Toast thông báo thay thế alert -->
 <div id="globalToast" class="toast-notify">
     <span>📢</span> <span id="toastMessage">Thông báo</span>
@@ -865,6 +890,53 @@ async function loadFromDropbox() {
     }
 }
 
+
+
+document.getElementById('listPatientBtn').addEventListener('click', () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 1. Lấy danh sách tên đã có trong lịch
+    const scheduledNames = new Set(
+        scheduleData.map(item => normalizePatientName(item.patientName)).filter(name => name !== "")
+    );
+
+    // 2. Lọc bệnh nhân trong patientsData
+    const pendingPatients = patientsData.filter(p => {
+        const name = normalizePatientName(p.fullName);
+        const discharge = new Date(p.dischargeDate);
+        // Điều kiện: Chưa ra viện (dischargeDate >= today) và chưa có trong lịch
+        return discharge >= today && !scheduledNames.has(name);
+    });
+
+    // 3. Render vào modal
+    const tbody = document.getElementById('patientListBody');
+    tbody.innerHTML = '';
+    
+    pendingPatients.forEach((p, idx) => {
+        const admission = new Date(p.admissionDate);
+        const discharge = new Date(p.dischargeDate);
+        const days = Math.floor((discharge - admission) / (1000 * 60 * 60 * 24)) + 1;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="text-align:center">${idx + 1}</td>
+            <td style="padding: 8px;">${p.fullName}</td>
+            <td style="text-align:center">${p.age}</td>
+            <td style="text-align:center">${p.room}</td>
+			<td>${p.patientType}</td>
+         <td>${formatDate(p.admissionDate)}</td>
+    <td>${formatDate(p.dischargeDate)}</td>
+            <td style="text-align:center; font-weight:bold">${days}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('patientListModal').classList.add('active');
+});
+
+
+
 // Sửa lại sự kiện nút Lưu
 document.getElementById('saveToDropboxBtn').addEventListener('click', () => {
     requestPassword(saveToDropbox);
@@ -890,7 +962,11 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+}
 
 
 
