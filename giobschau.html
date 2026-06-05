@@ -313,9 +313,49 @@
         @media (max-width: 640px) {
             .toast-notify { white-space: normal; width: 85%; text-align: center; font-size: 0.8rem; padding: 10px 20px; }
         }
+/* Loading Modal */
+.loader-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.loader-box {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    text-align: center;
+}
+.spinner {
+    width: 40px; height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2c6e9e;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+<div id="passwordModal" class="modal-overlay">
+    <div class="modal-container" style="width: 350px;">
+        <div class="modal-header">🔑 Xác thực</div>
+        <div class="modal-body">
+            <label>Nhập mật khẩu:</label>
+            <input type="password" id="passInput" style="width: 100%; padding: 10px; border-radius: 20px; border: 1px solid #ccc;">
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal btn-cancel" id="cancelPassBtn">Huỷ</button>
+            <button class="btn-modal btn-confirm" id="confirmPassBtn">Xác nhận</button>
+        </div>
+    </div>
+</div>
 <div class="container">
     <div class="toolbar">
         <button class="btn btn-primary" id="refreshBtn">🔄 Tải lại dữ liệu</button>
@@ -374,6 +414,7 @@
 </div>
 
 <script>
+
     // ---------- CẤU HÌNH DROPBOX ----------
     const DROPBOX_REFRESH_TOKEN = "yvVdSnOoxgsAAAAAAAAAAYwqRQmU9NPgvKrMmzAL2JY9QqutemeEsykD9LmlQcRr"; // refresh token (dùng để lấy access)
     const APP_KEY = "qzy5kclrf827aey";
@@ -413,6 +454,36 @@
         const data = await response.json();
         return data.access_token;
     }
+const ADMIN_PASSWORD = "1!"; 
+
+const passModal = document.getElementById('passwordModal');
+const passInput = document.getElementById('passInput');
+
+// Hàm hiển thị modal mật khẩu
+function requestPassword(callback) {
+    passModal.classList.add('active');
+    passInput.focus();
+    
+    // Xử lý nút xác nhận
+    const confirmHandler = () => {
+        if (passInput.value === ADMIN_PASSWORD) {
+            passModal.classList.remove('active');
+            passInput.value = "";
+            callback();
+        } else {
+            showToast("Mật khẩu không đúng!", "error");
+        }
+    };
+
+    document.getElementById('confirmPassBtn').onclick = confirmHandler;
+    passInput.onkeydown = (e) => { if (e.key === 'Enter') confirmHandler(); };
+}
+
+document.getElementById('cancelPassBtn').onclick = () => passModal.classList.remove('active');
+
+
+
+
 
     // Dữ liệu mẫu gốc 33 dòng (giống y file)
     const rawRowsData = [
@@ -750,51 +821,72 @@ setTimeout(updatePatientNameColors, 50);
         }
     }
 
-    async function loadFromDropbox() {
-        try {
-            const accessToken = await getDropboxAccessToken();
-            const response = await fetch("https://content.dropboxapi.com/2/files/download", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`,
-                    "Dropbox-API-Arg": JSON.stringify({ path: DROPBOX_PATH })
-                }
-            });
-            if (response.status === 409) {
-                showToast("Chưa có file lưu trữ, bắt đầu với dữ liệu mặc định.", "warning");
-                return;
-            }
-            if (!response.ok) throw new Error("Tải file lỗi");
-            const fileJson = await response.json();
-            if (fileJson && fileJson.schedule && Array.isArray(fileJson.schedule)) {
-                scheduleData = fileJson.schedule;
-                renderTable();
-				loadPatientsJson();
-                showToast("📥 Đã tải dữ liệu thành công!", "success");
-            } else {
-                showToast("Dữ liệu không hợp lệ, giữ nguyên bảng hiện tại.", "warning");
-            }
-        } catch (err) {
-            console.warn(err);
-            showToast("Không thể tải file từ máy chủ, giữ dữ liệu hiện tại.", "error");
-        }
-    }
+async function loadFromDropbox() {
+    const loader = document.getElementById('loadingModal');
+    loader.style.display = 'flex'; // Hiển thị popup
 
-    document.getElementById('saveToDropboxBtn').addEventListener('click', saveToDropbox);
+    try {
+        const accessToken = await getDropboxAccessToken();
+        const response = await fetch("https://content.dropboxapi.com/2/files/download", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Dropbox-API-Arg": JSON.stringify({ path: DROPBOX_PATH })
+            }
+        });
+
+        if (response.status === 409) {
+            showToast("Chưa có file lưu trữ.", "warning");
+            return;
+        }
+        if (!response.ok) throw new Error("Tải file lỗi");
+        
+        const fileJson = await response.json();
+        if (fileJson && fileJson.schedule) {
+            scheduleData = fileJson.schedule;
+            renderTable();
+            loadPatientsJson();
+            showToast("📥 Đã tải thành công!", "success");
+        }
+    } catch (err) {
+        console.warn(err);
+        showToast("Lỗi khi tải dữ liệu", "error");
+    } finally {
+        loader.style.display = 'none'; // Ẩn popup khi xong
+    }
+}
+
+// Sửa lại sự kiện nút Lưu
+document.getElementById('saveToDropboxBtn').addEventListener('click', () => {
+    requestPassword(saveToDropbox);
+});
+
     document.getElementById('refreshBtn').addEventListener('click', loadFromDropbox);
     renderTable();
 	loadPatientsJson();
     setTimeout(() => loadFromDropbox().catch(e => console.warn), 300);
-    document.addEventListener('keydown', async function(e) {
-
+// Sửa lại sự kiện phím tắt (Ctrl+S)
+document.addEventListener('keydown', async function(e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-
-        await saveToDropbox();
+        requestPassword(saveToDropbox);
     }
-
 });
+
+
+
+
+
+
+
+
 </script>
 
+<div id="loadingModal" class="loader-overlay">
+    <div class="loader-box">
+        <div class="spinner"></div>
+        <div style="font-weight: bold; color: #1e466e;">Đang tải dữ liệu...</div>
+    </div>
+</div>
 </body>
 </html>
