@@ -628,7 +628,7 @@ function updatePatientNameColors() {
 
     document.querySelectorAll('#tableBody tr').forEach(tr => {
 
-        const nameCell = tr.children[0];
+        const nameCell = tr.children[1];
         if (!nameCell) return;
 
         const name = normalizePatientName(nameCell.textContent);
