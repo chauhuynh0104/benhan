@@ -373,7 +373,9 @@
             </tbody>
         </table>
     </div>
-    <footer>Design by Dr.Châu</footer>
+    <footer>Design by Dr.Châu
+<button id="toggleDesktopBtn" class="btn"style="background: #e67e22; color: white;">Giao diện máy tính</button>
+</footer>
 </div>
 
 <!-- Modal popup đẹp cho thủy châm -->
@@ -998,7 +1000,16 @@ function formatDate(dateStr) {
     return `${day}/${month}/${year}`;
 }
 
+document.getElementById('toggleDesktopBtn').addEventListener('click', function() {
+    // Tìm thẻ meta viewport
+    let viewport = document.querySelector('meta[name="viewport"]');
 
+    // Nếu tìm thấy, thay đổi content để ép trình duyệt hiển thị toàn bộ nội dung máy tính
+    if (viewport) {
+        viewport.setAttribute('content', 'width=1200'); 
+        alert('Đã chuyển sang chế độ máy tính.');
+    }
+});
 
 </script>
 
