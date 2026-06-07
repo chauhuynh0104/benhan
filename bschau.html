@@ -318,7 +318,7 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
         </div>
     </div>
 
-    <footer>© 2014-2026 By Dr.Châu</footer>
+    <footer>© 2014-2026 By Dr.Châu<br><button id="toggleDesktopBtn" class="btn btn-danger">Giao diện máy tính</button></footer>
     <div id="toastContainer"></div>
 
     <!-- Password Modal-->
@@ -3536,6 +3536,15 @@ document.getElementById(
         );
     });
 };
+document.getElementById('toggleDesktopBtn').addEventListener('click', function() {
+    // Tìm thẻ meta viewport
+    let viewport = document.querySelector('meta[name="viewport"]');
+
+    // Nếu tìm thấy, thay đổi content để ép trình duyệt hiển thị toàn bộ nội dung máy tính
+    if (viewport) {
+        viewport.setAttribute('content', 'width=1200'); 
+    }
+});
 </script>
 <div id="labModal" class="overlay hidden">
   <div class="modal" style="max-width:500px">
