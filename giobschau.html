@@ -555,7 +555,7 @@ document.getElementById('cancelPassBtn').onclick = () => passModal.classList.rem
 
 let patientsData = [];
 let patientLatestMap = new Map();
-
+let pendingPatientName = ""; // Biến lưu tên bệnh nhân đã chọn từ danh sách
 async function loadPatientsJson() {
     try {
 	const accessToken = await getDropboxAccessToken();
@@ -676,34 +676,49 @@ function updatePatientNameColors() {
         "14h03-14h28", "14h14-14h39", "14h25-14h50", "14h36-15h01", "14h47-15h12"
     ];
 
-    function renderTable() {
+function renderTable() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
         scheduleData.forEach((row, idx) => {
             const tr = document.createElement('tr');
-			
-			// --- Thêm cột STT ---
-        const tdSTT = document.createElement('td');
-        tdSTT.innerText = idx + 1; // STT bắt đầu từ 1
-        tdSTT.style.textAlign = 'center';
-        tr.appendChild(tdSTT);
-        // --------------------
-			
-			
-           const tdName = document.createElement('td');
-tdName.setAttribute('contenteditable', 'true');
-tdName.classList.add('editable-name');
-tdName.innerText = row.patientName;
+            
+            // --- Thêm cột STT (với tính năng click để dán) ---
+            const tdSTT = document.createElement('td');
+            tdSTT.innerText = idx + 1;
+            tdSTT.style.textAlign = 'center';
+            tdSTT.style.cursor = 'pointer';
+            tdSTT.style.backgroundColor = '#f8fafc';
+            tdSTT.title = "Click để dán tên bệnh nhân đã chọn";
+            
+            tdSTT.onclick = () => {
+                if (typeof pendingPatientName !== 'undefined' && pendingPatientName) {
+                    scheduleData[idx].patientName = pendingPatientName;
+                    renderTable(); // Vẽ lại bảng để cập nhật tên
+                    showToast(`Đã dán: ${pendingPatientName} vào dòng ${idx + 1}`, "success");
+                    pendingPatientName = ""; // Reset sau khi dán
+                } else {
+                    showToast("Vui lòng chọn tên bệnh nhân từ danh sách trước!", "warning");
+                }
+            };
+            tr.appendChild(tdSTT);
+            // --------------------
+            
+            const tdName = document.createElement('td');
+            tdName.setAttribute('contenteditable', 'true');
+            tdName.classList.add('editable-name');
+            tdName.innerText = row.patientName;
 
-tdName.addEventListener('blur', (e) => {
-    scheduleData[idx].patientName = e.target.innerText.trim();
-    updatePatientNameColors();
-});
+            tdName.addEventListener('blur', (e) => {
+                scheduleData[idx].patientName = e.target.innerText.trim();
+                updatePatientNameColors();
+            });
+
             const tdDienCham = createTd(row.dienCham);
             const tdMay = createTd(row.may);
             const tdChieuDen = createTd(row.chieuDen);
             const tdDen = createTd(row.den);
             const tdXoaBop = createTd(row.xoaBop);
+            
             const tdThuyCham = document.createElement('td');
             tdThuyCham.classList.add('thuy-cham-cell');
             let thuyText = "";
@@ -718,6 +733,7 @@ tdName.addEventListener('blur', (e) => {
                 e.stopPropagation();
                 openModalForRow(idx);
             });
+
             tr.appendChild(tdName);
             tr.appendChild(tdDienCham);
             tr.appendChild(tdMay);
@@ -725,11 +741,11 @@ tdName.addEventListener('blur', (e) => {
             tr.appendChild(tdDen);
             tr.appendChild(tdXoaBop);
             tr.appendChild(tdThuyCham);
-         tbody.appendChild(tr);
-});
+            tbody.appendChild(tr);
+        });
 
-setTimeout(updatePatientNameColors, 50);
-}
+        setTimeout(updatePatientNameColors, 50);
+    }
 
     function createTd(content) { const td = document.createElement('td'); td.innerText = content; return td; }
 
@@ -896,45 +912,59 @@ document.getElementById('listPatientBtn').addEventListener('click', () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // 1. Lấy danh sách tên đã có trong lịch
     const scheduledNames = new Set(
         scheduleData.map(item => normalizePatientName(item.patientName)).filter(name => name !== "")
     );
 
-    // 2. Lọc bệnh nhân trong patientsData
     const pendingPatients = patientsData.filter(p => {
         const name = normalizePatientName(p.fullName);
         const discharge = new Date(p.dischargeDate);
-        // Điều kiện: Chưa ra viện (dischargeDate >= today) và chưa có trong lịch
         return discharge >= today && !scheduledNames.has(name);
     });
 
-    // 3. Render vào modal
     const tbody = document.getElementById('patientListBody');
+    const tableEl = tbody.parentElement;
+    const headerRow = tableEl.querySelector('thead');
+    
     tbody.innerHTML = '';
     
-    pendingPatients.forEach((p, idx) => {
-        const admission = new Date(p.admissionDate);
-        const discharge = new Date(p.dischargeDate);
-        const days = Math.floor((discharge - admission) / (1000 * 60 * 60 * 24)) + 1;
+    if (pendingPatients.length === 0) {
+        headerRow.style.display = 'none';
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color: #067647; font-weight: bold;">✅ Đã cập nhập tất cả bệnh nhân!</td></tr>`;
+    } else {
+        headerRow.style.display = 'table-header-group';
+        pendingPatients.forEach((p, idx) => {
+            const admission = new Date(p.admissionDate);
+            const discharge = new Date(p.dischargeDate);
+            const days = Math.floor((discharge - admission) / (1000 * 60 * 60 * 24)) + 1;
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td style="text-align:center">${idx + 1}</td>
-            <td style="padding: 8px;">${p.fullName}</td>
-            <td style="text-align:center">${p.age}</td>
-            <td style="text-align:center">${p.room}</td>
-			<td>${p.patientType}</td>
-         <td>${formatDate(p.admissionDate)}</td>
-    <td>${formatDate(p.dischargeDate)}</td>
-            <td style="text-align:center; font-weight:bold">${days}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-
+            const tr = document.createElement('tr');
+            // Cấu trúc cột tên có thêm sự kiện click để copy
+            tr.innerHTML = `
+                <td style="text-align:center">${idx + 1}</td>
+                <td style="padding: 8px; cursor: pointer; color: #2c6e9e; font-weight: bold;" title="Click để chọn tên này">
+                    ${p.fullName}
+                </td>
+                <td style="text-align:center">${p.age}</td>
+                <td style="text-align:center">${p.room}</td>
+                <td>${p.patientType}</td>
+                <td>${formatDate(p.admissionDate)}</td>
+                <td>${formatDate(p.dischargeDate)}</td>
+                <td style="text-align:center; font-weight:bold">${days}</td>
+            `;
+            
+            // Xử lý click copy tên
+            tr.querySelector('td:nth-child(2)').onclick = () => {
+                pendingPatientName = p.fullName;
+                showToast(`Đã chọn: ${p.fullName}. Hãy click vào số STT để dán!`, "success");
+                document.getElementById('patientListModal').classList.remove('active');
+            };
+            
+            tbody.appendChild(tr);
+        });
+    }
     document.getElementById('patientListModal').classList.add('active');
 });
-
 
 
 // Sửa lại sự kiện nút Lưu
