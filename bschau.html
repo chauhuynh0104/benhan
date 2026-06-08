@@ -214,6 +214,18 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
 .btn-size:active {
     background-color: #ddd !important;
 }
+		/* Mặc định ẩn nút trên màn hình lớn */
+#toggleDesktopBtn {
+    display: none;
+}
+
+/* Chỉ hiển thị nút khi màn hình có độ rộng tối đa 768px (mobile) */
+@media (max-width: 768px) {
+    #toggleDesktopBtn {
+        display: inline-flex; /* Hoặc 'block' tùy vào layout của bạn */
+        margin-top: 10px;    /* Tạo khoảng cách phía trên */
+    }
+}
     </style>
 </head>
 <body>
