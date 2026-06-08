@@ -341,6 +341,18 @@
     margin: 0 auto 15px;
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+/* Mặc định ẩn nút trên màn hình lớn */
+#toggleDesktopBtn {
+    display: none;
+}
+
+/* Chỉ hiển thị nút khi màn hình có độ rộng tối đa 768px (mobile) */
+@media (max-width: 768px) {
+    #toggleDesktopBtn {
+        display: inline-flex; /* Hoặc 'block' tùy vào layout của bạn */
+        margin-top: 10px;    /* Tạo khoảng cách phía trên */
+    }
+}
     </style>
 </head>
 <body>
@@ -651,7 +663,7 @@ function updatePatientNameColors() {
 
         const dischargeDate = new Date(patient.dischargeDate);
 
-        // dischargeDate > hôm nay => đỏ
+        // dischargeDate < hôm nay => đỏ
         if (dischargeDate < today) {
             nameCell.style.color = '#d60000';
             nameCell.style.fontWeight = 'bold';
@@ -920,8 +932,12 @@ document.getElementById('listPatientBtn').addEventListener('click', () => {
 
     const pendingPatients = patientsData.filter(p => {
         const name = normalizePatientName(p.fullName);
-        const discharge = new Date(p.dischargeDate);
-        return discharge >= today && !scheduledNames.has(name);
+        const discharge = p.dischargeDate ? new Date(p.dischargeDate) : null;
+        
+        // Nếu không có dischargeDate (null) hoặc ngày >= today thì hiển thị
+        const isStillValid = !discharge || discharge >= today;
+        
+        return isStillValid && !scheduledNames.has(name);
     });
 
     const tbody = document.getElementById('patientListBody');
@@ -937,11 +953,10 @@ document.getElementById('listPatientBtn').addEventListener('click', () => {
         headerRow.style.display = 'table-header-group';
         pendingPatients.forEach((p, idx) => {
             const admission = new Date(p.admissionDate);
-            const discharge = new Date(p.dischargeDate);
+            const discharge = p.dischargeDate ? new Date(p.dischargeDate) : new Date(); // Dùng ngày hiện tại nếu chưa có ngày ra
             const days = Math.floor((discharge - admission) / (1000 * 60 * 60 * 24)) + 1;
 
             const tr = document.createElement('tr');
-            // Cấu trúc cột tên có thêm sự kiện click để copy
             tr.innerHTML = `
                 <td style="text-align:center">${idx + 1}</td>
                 <td style="padding: 8px; cursor: pointer; color: #2c6e9e; font-weight: bold;" title="Click để chọn tên này">
@@ -951,11 +966,10 @@ document.getElementById('listPatientBtn').addEventListener('click', () => {
                 <td style="text-align:center">${p.room}</td>
                 <td>${p.patientType}</td>
                 <td>${formatDate(p.admissionDate)}</td>
-                <td>${formatDate(p.dischargeDate)}</td>
+                <td>${p.dischargeDate ? formatDate(p.dischargeDate) : "---"}</td>
                 <td style="text-align:center; font-weight:bold">${days}</td>
             `;
             
-            // Xử lý click copy tên
             tr.querySelector('td:nth-child(2)').onclick = () => {
                 pendingPatientName = p.fullName;
                 showToast(`Đã chọn: ${p.fullName}. Hãy click vào số STT để dán!`, "success");
@@ -967,7 +981,6 @@ document.getElementById('listPatientBtn').addEventListener('click', () => {
     }
     document.getElementById('patientListModal').classList.add('active');
 });
-
 
 // Sửa lại sự kiện nút Lưu
 document.getElementById('saveToDropboxBtn').addEventListener('click', () => {
