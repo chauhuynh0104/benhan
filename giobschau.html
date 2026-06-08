@@ -948,7 +948,7 @@ document.getElementById('listPatientBtn').addEventListener('click', () => {
     
     if (pendingPatients.length === 0) {
         headerRow.style.display = 'none';
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color: #067647; font-weight: bold;">✅ Đã cập nhập tất cả bệnh nhân!</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color: #067647; font-weight: bold;">Đã cập nhập tất cả bệnh nhân!</td></tr>`;
     } else {
         headerRow.style.display = 'table-header-group';
         pendingPatients.forEach((p, idx) => {
