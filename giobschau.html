@@ -677,10 +677,14 @@ async function loadPatientsJson() {
             return;
         }
 
-        patientsData = await response.json();
+patientsData = await response.json();
 
-        buildLatestPatientMap();
-        updatePatientNameColors();
+buildLatestPatientMap();
+
+// Render lại bảng để áp dụng làm mờ ngay
+renderTable();
+
+updatePatientNameColors();
 
     } catch (err) {
         console.error('Lỗi đọc patients.json:', err);
@@ -1024,9 +1028,13 @@ async function loadFromDropbox() {
         const fileJson = await response.json();
         if (fileJson && fileJson.schedule) {
             scheduleData = fileJson.schedule;
-            renderTable();
-            loadPatientsJson();
-            showToast("📥 Đã tải thành công!", "success");
+
+// Chờ patients.json tải xong rồi render
+await loadPatientsJson();
+
+renderTable();
+
+showToast("📥 Đã tải thành công!", "success");
         }
     } catch (err) {
         console.warn(err);
@@ -1104,9 +1112,8 @@ document.getElementById('saveToDropboxBtn').addEventListener('click', () => {
 });
 
     document.getElementById('refreshBtn').addEventListener('click', loadFromDropbox);
-    renderTable();
-	loadPatientsJson();
-    setTimeout(() => loadFromDropbox().catch(e => console.warn), 300);
+  renderTable();
+setTimeout(() => loadFromDropbox().catch(console.warn), 300);
 // Sửa lại sự kiện phím tắt (Ctrl+S)
 document.addEventListener('keydown', async function(e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
