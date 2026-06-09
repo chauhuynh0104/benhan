@@ -314,114 +314,36 @@
         @media (max-width: 640px) {
             .toast-notify { white-space: normal; width: 85%; text-align: center; font-size: 0.8rem; padding: 10px 20px; }
         }
-/* HACKER LOADING */
+/* Loading Modal */
 .loader-overlay {
     position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.92);
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 99999;
-    overflow: hidden;
-    font-family: Consolas, monospace;
+    z-index: 9999;
 }
-
-.loader-overlay::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        repeating-linear-gradient(
-            to bottom,
-            rgba(0,255,100,0.03),
-            rgba(0,255,100,0.03) 2px,
-            transparent 2px,
-            transparent 4px
-        );
-    animation: scanMove 10s linear infinite;
-}
-
 .loader-box {
-    position: relative;
-    width: 520px;
-    max-width: 92%;
-    background: rgba(0,20,0,0.95);
-    border: 1px solid rgba(0,255,100,0.3);
-    border-radius: 18px;
-    padding: 28px;
-    box-shadow:
-        0 0 20px rgba(0,255,100,0.15),
-        inset 0 0 20px rgba(0,255,100,0.08);
-    color: #00ff88;
+    background: white;
+    padding: 30px 40px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    text-align: center;
 }
-
-.loader-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 18px;
-    text-shadow: 0 0 8px rgba(0,255,100,0.5);
+.spinner {
+    width: 40px; height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2c6e9e;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
 }
-
-.loader-line {
-    margin: 8px 0;
-    opacity: 0;
-    animation: fadeLine 0.5s forwards;
-}
-
-.loader-line:nth-child(2) { animation-delay: 0.4s; }
-.loader-line:nth-child(3) { animation-delay: 1s; }
-.loader-line:nth-child(4) { animation-delay: 1.6s; }
-.loader-line:nth-child(5) { animation-delay: 2.2s; }
-
-.loading-dots::after {
-    content: '';
-    animation: dots 1.2s infinite;
-}
-
-.progress-bar {
-    margin-top: 22px;
-    height: 10px;
-    border-radius: 20px;
-    overflow: hidden;
-    background: rgba(255,255,255,0.08);
-}
-
-.progress-fill {
-    height: 100%;
-    width: 0%;
-    background: #00ff88;
-    box-shadow: 0 0 15px #00ff88;
-    animation: loadingBar 2.8s ease-in-out infinite;
-}
-
-@keyframes loadingBar {
-    0% { width: 0%; }
-    50% { width: 75%; }
-    100% { width: 100%; }
-}
-
-@keyframes dots {
-    0% { content: ''; }
-    33% { content: '.'; }
-    66% { content: '..'; }
-    100% { content: '...'; }
-}
-
-@keyframes fadeLine {
-    from {
-        opacity: 0;
-        transform: translateX(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes scanMove {
-    from { transform: translateY(-100%); }
-    to { transform: translateY(100%); }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+/* Mặc định ẩn nút trên màn hình lớn */
+#toggleDesktopBtn {
+    display: none;
 }
 
 /* Chỉ hiển thị nút khi màn hình có độ rộng tối đa 768px (mobile) */
@@ -612,39 +534,39 @@ document.getElementById('cancelPassBtn').onclick = () => passModal.classList.rem
 
     // Dữ liệu mẫu gốc 33 dòng (giống y file)
     const rawRowsData = [
-        { dienCham: "08h00 - 08h25", may: "ĐA28", chieuDen: "08h06 - 08h21", den: "8", xoaBop: "8h32-9h02 (Minh)" },
-        { dienCham: "08h07 - 08h32", may: "ĐA29", chieuDen: "08h13 - 08h28", den: "5", xoaBop: "7h30-8h00 (Minh)" },
-        { dienCham: "08h14 - 08h39", may: "ĐA30", chieuDen: "08h20 - 08h35", den: "3", xoaBop: "9h34-10h04 (Khiêm)" },
-        { dienCham: "08h27 - 08h52", may: "MED10", chieuDen: "08h33 - 08h48", den: "8", xoaBop: "9h34-10h04 (Minh)" },
-        { dienCham: "08h34 - 08h59", may: "TQ36", chieuDen: "08h40 - 08h55", den: "5", xoaBop: "9h03-9h33 (Khiêm)" },
-        { dienCham: "08h41 - 09h06", may: "ĐA19", chieuDen: "08h47 - 09h02", den: "3", xoaBop: "10h05-10h35 (Minh)" },
-        { dienCham: "08h54 - 09h19", may: "ĐA20", chieuDen: "09h00 - 09h15", den: "8", xoaBop: "10h05-10h35 (Khiêm)" },
-        { dienCham: "09h01 - 09h26", may: "ĐA21", chieuDen: "09h07 - 09h22", den: "5", xoaBop: "8h01-8h31 (Khiêm)" },
-        { dienCham: "09h08 - 09h33", may: "MED5", chieuDen: "09h14 - 09h29", den: "3", xoaBop: "8h32-9h02 (Khiêm)" },
-        { dienCham: "09h21 - 09h46", may: "MED6", chieuDen: "09h27 - 09h42", den: "8", xoaBop: "7h30-8h00 (Khiêm)" },
-        { dienCham: "09h28 - 09h53", may: "ĐA28", chieuDen: "09h34 - 09h49", den: "5", xoaBop: "8h01-8h31 (Minh)" },
-        { dienCham: "09h35 - 10h00", may: "ĐA29", chieuDen: "09h41 - 09h56", den: "3", xoaBop: "9h03-9h33 (Minh)" },
-        { dienCham: "09h48 - 10h13", may: "ĐA30", chieuDen: "09h54 - 10h09", den: "8", xoaBop: "10h36-11h06 (Minh)" },
-        { dienCham: "09h55 - 10h20", may: "MED10", chieuDen: "10h01 - 10h16", den: "5", xoaBop: "10h36-11h06 (Khiêm)" },
-        { dienCham: "10h02 - 10h27", may: "TQ36", chieuDen: "10h08 - 10h23", den: "3", xoaBop: "13h30-14h00 (Khiêm)" },
-        { dienCham: "10h15 - 10h40", may: "ĐA19", chieuDen: "10h21 - 10h36", den: "8", xoaBop: "13h30-14h00(Minh)" },
-        { dienCham: "10h22 - 10h47", may: "ĐA20", chieuDen: "10h28 - 10h43", den: "5", xoaBop: "14h01-14h31 (Minh)" },
-        { dienCham: "10h29 - 10h54", may: "ĐA21", chieuDen: "10h35 - 10h50", den: "3", xoaBop: "14h01-14h31 (Khiêm)" },
-        { dienCham: "10h42 - 11h07", may: "MED5", chieuDen: "10h48 - 11h03", den: "8", xoaBop: "14h32-15h02 (Khiêm)" },
-        { dienCham: "10h49 - 11h14", may: "MED6", chieuDen: "10h55 - 11h10", den: "5", xoaBop: "14h32-15h02 (Minh)" },
-        { dienCham: "10h56 - 11h21", may: "ĐA28", chieuDen: "11h02 - 11h17", den: "3", xoaBop: "15h03-15h33 (Minh)" },
-        { dienCham: "15h00 - 15h25", may: "ĐA28", chieuDen: "15h06 - 15h21", den: "8", xoaBop: "" },
-        { dienCham: "15h07 - 15h32", may: "ĐA29", chieuDen: "15h13 - 15h28", den: "5", xoaBop: "" },
-        { dienCham: "15h14 - 15h39", may: "ĐA30", chieuDen: "15h20 - 15h35", den: "3", xoaBop: "" },
-        { dienCham: "15h27 - 15h52", may: "MED10", chieuDen: "15h33 - 15h48", den: "8", xoaBop: "" },
-        { dienCham: "15h34 - 15h59", may: "TQ36", chieuDen: "15h40 - 15h55", den: "5", xoaBop: "" },
-        { dienCham: "15h41 - 16h06", may: "ĐA19", chieuDen: "15h47 - 16h02", den: "3", xoaBop: "" },
-        { dienCham: "15h54 - 16h19", may: "ĐA20", chieuDen: "16h00 - 16h15", den: "8", xoaBop: "" },
-        { dienCham: "16h01 - 16h26", may: "ĐA21", chieuDen: "16h07 - 16h22", den: "5", xoaBop: "" },
-        { dienCham: "16h08 - 16h33", may: "MED5", chieuDen: "16h14 - 16h29", den: "3", xoaBop: "" },
-        { dienCham: "16h21 - 16h46", may: "MED6", chieuDen: "16h27 - 16h42", den: "8", xoaBop: "" },
-        { dienCham: "16h28 - 16h53", may: "ĐA28", chieuDen: "16h34 - 16h49", den: "5", xoaBop: "" },
-        { dienCham: "16h35 - 17h00", may: "ĐA29", chieuDen: "16h41 - 16h56", den: "3", xoaBop: "" }
+   { dienCham: "08:00 - 08:25", may: "ĐA28", chieuDen: "08:06 - 08:21", den: "8", xoaBop: "08:32-9:02 (Minh)" },
+        { dienCham: "08:07 - 08:32", may: "ĐA29", chieuDen: "08:13 - 08:28", den: "5", xoaBop: "07:30-8:00 (Minh)" },
+        { dienCham: "08:14 - 08:39", may: "ĐA30", chieuDen: "08:20 - 08:35", den: "3", xoaBop: "09:34-10:04 (Khiêm)" },
+        { dienCham: "08:27 - 08:52", may: "MED10", chieuDen: "08:33 - 08:48", den: "8", xoaBop: "09:34-10:04 (Minh)" },
+        { dienCham: "08:34 - 08:59", may: "TQ36", chieuDen: "08:40 - 08:55", den: "5", xoaBop: "09:03-9:33 (Khiêm)" },
+        { dienCham: "08:41 - 09:06", may: "ĐA19", chieuDen: "08:47 - 09:02", den: "3", xoaBop: "10:05-10:35 (Minh)" },
+        { dienCham: "08:54 - 09:19", may: "ĐA20", chieuDen: "09:00 - 09:15", den: "8", xoaBop: "10:05-10:35 (Khiêm)" },
+        { dienCham: "09:01 - 09:26", may: "ĐA21", chieuDen: "09:07 - 09:22", den: "5", xoaBop: "08:01-8:31 (Khiêm)" },
+        { dienCham: "09:08 - 09:33", may: "MED5", chieuDen: "09:14 - 09:29", den: "3", xoaBop: "08:32-9:02 (Khiêm)" },
+        { dienCham: "09:21 - 09:46", may: "MED6", chieuDen: "09:27 - 09:42", den: "8", xoaBop: "07:30-8:00 (Khiêm)" },
+        { dienCham: "09:28 - 09:53", may: "ĐA28", chieuDen: "09:34 - 09:49", den: "5", xoaBop: "08:01-8:31 (Minh)" },
+        { dienCham: "09:35 - 10:00", may: "ĐA29", chieuDen: "09:41 - 09:56", den: "3", xoaBop: "09:03-9:33 (Minh)" },
+        { dienCham: "09:48 - 10:13", may: "ĐA30", chieuDen: "09:54 - 10:09", den: "8", xoaBop: "10:36-11:06 (Minh)" },
+        { dienCham: "09:55 - 10:20", may: "MED10", chieuDen: "10:01 - 10:16", den: "5", xoaBop: "10:36-11:06 (Khiêm)" },
+        { dienCham: "10:02 - 10:27", may: "TQ36", chieuDen: "10:08 - 10:23", den: "3", xoaBop: "13:30-14:00 (Khiêm)" },
+        { dienCham: "10:15 - 10:40", may: "ĐA19", chieuDen: "10:21 - 10:36", den: "8", xoaBop: "13:30-14:00(Minh)" },
+        { dienCham: "10:22 - 10:47", may: "ĐA20", chieuDen: "10:28 - 10:43", den: "5", xoaBop: "14:01-14:31 (Minh)" },
+        { dienCham: "10:29 - 10:54", may: "ĐA21", chieuDen: "10:35 - 10:50", den: "3", xoaBop: "14:01-14:31 (Khiêm)" },
+        { dienCham: "10:42 - 11:07", may: "MED5", chieuDen: "10:48 - 11:03", den: "8", xoaBop: "14:32-15:02 (Khiêm)" },
+        { dienCham: "10:49 - 11:14", may: "MED6", chieuDen: "10:55 - 11:10", den: "5", xoaBop: "14:32-15:02 (Minh)" },
+        { dienCham: "10:56 - 11:21", may: "ĐA28", chieuDen: "11:02 - 11:17", den: "3", xoaBop: "15:03-15:33 (Minh)" },
+        { dienCham: "15:00 - 15:25", may: "ĐA28", chieuDen: "15:06 - 15:21", den: "8", xoaBop: "" },
+        { dienCham: "15:07 - 15:32", may: "ĐA29", chieuDen: "15:13 - 15:28", den: "5", xoaBop: "" },
+        { dienCham: "15:14 - 15:39", may: "ĐA30", chieuDen: "15:20 - 15:35", den: "3", xoaBop: "" },
+        { dienCham: "15:27 - 15:52", may: "MED10", chieuDen: "15:33 - 15:48", den: "8", xoaBop: "" },
+        { dienCham: "15:34 - 15:59", may: "TQ36", chieuDen: "15:40 - 15:55", den: "5", xoaBop: "" },
+        { dienCham: "15:41 - 16:06", may: "ĐA19", chieuDen: "15:47 - 16:02", den: "3", xoaBop: "" },
+        { dienCham: "15:54 - 16:19", may: "ĐA20", chieuDen: "16:00 - 16:15", den: "8", xoaBop: "" },
+        { dienCham: "16:01 - 16:26", may: "ĐA21", chieuDen: "16:07 - 16:22", den: "5", xoaBop: "" },
+        { dienCham: "16:08 - 16:33", may: "MED5", chieuDen: "16:14 - 16:29", den: "3", xoaBop: "" },
+        { dienCham: "16:21 - 16:46", may: "MED6", chieuDen: "16:27 - 16:42", den: "8", xoaBop: "" },
+        { dienCham: "16:28 - 16:53", may: "ĐA28", chieuDen: "16:34 - 16:49", den: "5", xoaBop: "" },
+        { dienCham: "16:35 - 17:00", may: "ĐA29", chieuDen: "16:41 - 16:56", den: "3", xoaBop: "" }
     ];
 
     let scheduleData = [];
@@ -677,7 +599,7 @@ async function loadPatientsJson() {
             return;
         }
 
-patientsData = await response.json();
+     patientsData = await response.json();
 
 buildLatestPatientMap();
 
@@ -817,7 +739,7 @@ function renderTable() {
                 updatePatientNameColors();
             });
 
-          const patientName = normalizePatientName(row.patientName);
+        const patientName = normalizePatientName(row.patientName);
 const patient = patientLatestMap.get(patientName);
 const procedure = patient?.procedure || {};
 
@@ -1028,13 +950,9 @@ async function loadFromDropbox() {
         const fileJson = await response.json();
         if (fileJson && fileJson.schedule) {
             scheduleData = fileJson.schedule;
-
-// Chờ patients.json tải xong rồi render
-await loadPatientsJson();
-
-renderTable();
-
-showToast("📥 Đã tải thành công!", "success");
+            renderTable();
+            loadPatientsJson();
+            showToast("📥 Đã tải thành công!", "success");
         }
     } catch (err) {
         console.warn(err);
@@ -1112,8 +1030,9 @@ document.getElementById('saveToDropboxBtn').addEventListener('click', () => {
 });
 
     document.getElementById('refreshBtn').addEventListener('click', loadFromDropbox);
-  renderTable();
-setTimeout(() => loadFromDropbox().catch(console.warn), 300);
+    renderTable();
+	loadPatientsJson();
+    setTimeout(() => loadFromDropbox().catch(e => console.warn), 300);
 // Sửa lại sự kiện phím tắt (Ctrl+S)
 document.addEventListener('keydown', async function(e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
@@ -1151,21 +1070,8 @@ document.getElementById('toggleDesktopBtn').addEventListener('click', function()
 
 <div id="loadingModal" class="loader-overlay">
     <div class="loader-box">
-        <div class="loader-title">
-            ⚠ Thông báo
-        </div>
-
-        <div class="loader-line">
-            > Đang kết nối tới máy chủ...
-        </div>
-   
-        <div class="loader-line loading-dots">
-            > Kết nối thành công
-        </div>
-
-        <div class="progress-bar">
-            <div class="progress-fill"></div>
-        </div>
+        <div class="spinner"></div>
+        <div style="font-weight: bold; color: #1e466e;">Đang tải dữ liệu...</div>
     </div>
 </div>
 </body>
