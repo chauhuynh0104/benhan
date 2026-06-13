@@ -1229,7 +1229,7 @@ setTimeout(() => {
     function showStatsView() {
     currentView = 'stats'; currentPatientId = null;
 	document.getElementById('totalStatsContent').classList.add('hidden');
-    document.getElementById('rightPanelTitle').innerHTML = '<i class="fas fa-chart-bar"></i> THỐNG KÊ GIỜ KHÁM';
+    document.getElementById('rightPanelTitle').innerHTML = '<i class="fas fa-chart-bar"></i> <span class="desktop-text">THỐNG KÊ GIỜ KHÁM</span><span class="mobile-text">TKGK</span>';
     document.getElementById('statsContent').classList.remove('hidden');
     document.getElementById('patientDetailContent').classList.add('hidden');
     
