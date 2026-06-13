@@ -226,6 +226,23 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
         margin-top: 10px;    /* Tạo khoảng cách phía trên */
     }
 }
+/* Mặc định trên PC: Hiện chữ đầy đủ, ẩn chữ viết tắt */
+.desktop-text {
+    display: inline;
+}
+.mobile-text {
+    display: none;
+}
+
+/* Khi màn hình nhỏ hơn 768px (Mobile) */
+@media (max-width: 767px) {
+    .desktop-text {
+        display: none !important;
+    }
+    .mobile-text {
+        display: inline !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -278,22 +295,22 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
                 <h2 id="rightPanelTitle" style="cursor:pointer">
     <i class="fas fa-chart-bar"></i> THỐNG KÊ GIỜ KHÁM
 </h2>
-             <button id="viewStatsBtn" class="btn btn-secondary">
+            <button id="viewStatsBtn" class="btn btn-secondary">
     <i class="fas fa-chart-bar"></i> 
-    <span class="d-none d-md-inline">Xem thống kê</span>
-    <span class="d-inline d-md-none">XTK</span>
+    <span class="desktop-text">Xem thống kê</span>
+    <span class="mobile-text">XTK</span>
 </button>
 
 <button id="totalStatsBtn" class="btn btn-primary">
     <i class="fas fa-chart-pie"></i> 
-    <span class="d-none d-md-inline">Thống kê tổng</span>
-    <span class="d-inline d-md-none">TKT</span>
+    <span class="desktop-text">Thống kê tổng</span>
+    <span class="mobile-text">TKT</span>
 </button>
 
 <button id="dischargeBtn" class="btn btn-success" style="background-color: #2e7d32;">
     <i class="fas fa-door-open"></i> 
-    <span class="d-none d-md-inline">Ra viện</span>
-    <span class="d-inline d-md-none">RV</span>
+    <span class="desktop-text">Ra viện</span>
+    <span class="mobile-text">RV</span>
 </button>
             </div>
           <div class="panel-content" id="rightPanelContent">
