@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Xử lý Bệnh án chuyên sâu - Dr. Châu</title>
+    <title>Diễn Biến Kỹ Thuật PHCN - Bs Châu</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -203,32 +203,48 @@
                         previousCorePain = ""; 
                     } else {
                         let baseStatus = (i % 2 === 0) ? "Tỉnh, tiếp xúc tốt" : "Tỉnh, tiếp xúc tốt. Sinh hiệu ổn";
-                        let currentPainLine = "";
-                        for (let line of rawLines) {
-                            if ((line.startsWith("Đau") || line.startsWith("Còn đau")) && /cổ|vai|thắt lưng|gối|mông/i.test(line)) {
-                                currentPainLine = line;
-                                break;
-                            }
-                        }
+let matchedLines = []; // Dùng mảng để chứa tất cả các dòng thỏa mãn
+for (let line of rawLines) {
+    // 1. Kiểm tra điều kiện cần: Bắt đầu bằng Đau/Còn đau/Mắt/Nếp nhăn và chứa cổ/vai/thắt lưng/không kín/mờ
+    const isTargetSymptom = (line.startsWith("Đau") || line.startsWith("Còn đau") || line.startsWith("Mắt") || line.startsWith("nếp nhăn trán")|| line.startsWith("Nhân trung")|| line.startsWith("Rãnh mũi má")|| line.startsWith("Liệt mặt")) && /cổ|vai|thắt lưng|không kín|mờ|miệng méo|cải thiện/i.test(line);
 
-                        if (currentPainLine) {
-                            let processedPain = currentPainLine;
-                            if (currentPainLine === previousCorePain || (processedPain.match(/đau tăng/g) || []).length > 1) {
-                                const altVars = ["đau nhiều về đêm.", "vận động còn đau."];
-                                let selectedAlt = altVars[i % altVars.length];
-                                if (processedPain.includes("vận động hạn chế")) {
-                                    processedPain = processedPain.replace("vận động hạn chế", selectedAlt);
-                                } else {
-                                    processedPain = processedPain.replace(/,?\s*gặp lạnh đau tăng/g, ", " + selectedAlt);
-                                    processedPain = processedPain.replace(/,?\s*vận động đau tăng/g, ", " + selectedAlt);
-                                }
-                            } 
-                            newText = baseStatus + ". " + processedPain;
-                            previousCorePain = currentPainLine; 
-                        } else {
-                            newText = baseStatus + ".";
-                            previousCorePain = ""; 
-                        }
+
+    // 2. Kiểm tra điều kiện đủ: Dòng đó KHÔNG được chứa chữ "gối" (không phân biệt hoa thường)
+    const hasNoGoi = !/gối/i.test(line);
+
+    // Nếu thỏa mãn cả 2 thì mới đưa vào xử lý
+    if (isTargetSymptom && hasNoGoi) {
+        matchedLines.push(line);
+    }
+}
+
+if (matchedLines.length > 0) {
+    // Xử lý biến đổi logic đau tăng / hạn chế vận động cho từng dòng nếu cần
+    let processedLines = matchedLines.map(currentPainLine => {
+        let processedPain = currentPainLine;
+        if (currentPainLine === previousCorePain || (processedPain.match(/đau tăng/g) || []).length > 1) {
+            const altVars = ["đau nhiều về đêm.", "vận động còn đau."];
+            let selectedAlt = altVars[i % altVars.length];
+            if (processedPain.includes("vận động hạn chế")) {
+                processedPain = processedPain.replace("vận động hạn chế", selectedAlt);
+            } else {
+                processedPain = processedPain.replace(/,?\s*gặp lạnh đau tăng/g, ", " + selectedAlt);
+                processedPain = processedPain.replace(/,?\s*vận động đau tăng/g, ", " + selectedAlt);
+            }
+        }
+        return processedPain;
+    });
+
+    // Nối các dòng tìm được bằng dấu chấm
+    let combinedPain = processedLines.join(". ");
+    newText = baseStatus + ". " + combinedPain;
+    
+    // Lưu lại trạng thái dòng đầu tiên thỏa mãn để so sánh cho ngày tiếp theo
+    previousCorePain = matchedLines[0]; 
+} else {
+    newText = baseStatus + ".";
+    previousCorePain = ""; 
+}
                         
                         let formattedArr = newText.split(". ");
                         newText = cleanAndFormatText(formattedArr);
