@@ -186,7 +186,7 @@
                 while ((m = spanRegex.exec(contentMatch[1])) !== null) {
                     let decodedText = decodeHTMLEntities(m[1]);
                     let text = decodedText.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
-                    if (text && !text.includes('{SignLibrary') && !/đau đầu|âm ỉ/i.test(text)) {
+                    if (text && !text.includes('{SignLibrary') && !/đau đầu âm ỉ/i.test(text)) {
                         rawLines.push(text);
                     }
                 }
