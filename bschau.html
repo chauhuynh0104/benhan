@@ -879,18 +879,45 @@ function formatDisplayName(p, allPatients) {
             accessToken = data.access_token;
         }
 
-        async function loadFromDropbox() {
-            try {
-                await getAccessToken();
-                const res = await fetch('https://content.dropboxapi.com/2/files/download', {
+async function loadFromDropbox() {
+    while (true) {
+        try {
+            await getAccessToken();
+
+            const res = await fetch(
+                'https://content.dropboxapi.com/2/files/download',
+                {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${accessToken}`, 'Dropbox-API-Arg': JSON.stringify({ path: '/patients.json' }) }
-                });
-                if (res.status === 409) return [];
-                if (!res.ok) throw new Error('Download failed');
-                return await res.json();
-            } catch { return []; }
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Dropbox-API-Arg': JSON.stringify({
+                            path: '/patients.json'
+                        })
+                    }
+                }
+            );
+
+            // File chưa tồn tại
+            if (res.status === 409) {
+                return [];
+            }
+
+            if (!res.ok) throw new Error();
+
+            const data = await res.json();
+
+            // Thành công
+            return data;
+
+        } catch (e) {
+
+            console.log("Lỗi tải Dropbox, thử lại sau 3 giây...", e);
+
+            // chờ 3 giây rồi thử lại
+            await new Promise(r => setTimeout(r, 3000));
         }
+    }
+}
 
         async function saveToDropbox(data) {
             await getAccessToken();
@@ -1479,8 +1506,14 @@ async function initApp() {
     showStatsLoading(true);
     showNotificationLoading(true);
     
-    patients = await loadFromDropbox();
-	isDataLoaded = true;  
+  patients = await loadFromDropbox();
+
+isDataLoaded = true;
+
+renderPatientList();
+renderStatsTable();
+updateNotifications();
+showStatsView();
     renderPatientList();
     renderStatsTable();       // sẽ tự ẩn loading
     updateNotifications();    // sẽ tự ẩn loading
