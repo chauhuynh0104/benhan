@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Đơn Thuốc</title>
+<style>
+  :root{
+    --bg:#eef2f7;
+    --card:#ffffff;
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --accent:#2563a6;
+    --accent-dark:#1d4d85;
+    --accent-light:#e8f1fb;
+    --border:#dde3ec;
+    --danger:#c0392b;
+    --danger-light:#fdecea;
+    --ok:#1f8a4c;
+    --radius:12px;
+    --shadow:0 1px 3px rgba(20,30,50,.08),0 1px 2px rgba(20,30,50,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:14px;}
+  header.topbar{
+    background:linear-gradient(135deg,var(--accent-dark),var(--accent));
+    color:#fff;padding:16px 18px;border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+    box-shadow:var(--shadow);margin-bottom:14px;
+  }
+  header.topbar h1{font-size:19px;margin:0;font-weight:700;letter-spacing:.2px;}
+  header.topbar .meta{font-size:12.5px;opacity:.9;}
+  .idbadge{
+    background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);
+    border-radius:8px;padding:8px 12px;font-size:13px;line-height:1.5;
+  }
+  .idbadge b{font-size:15px;}
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px;margin-bottom:14px;box-shadow:var(--shadow);
+  }
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
+  .card-head h2{font-size:15px;margin:0;color:var(--accent-dark);display:flex;align-items:center;gap:8px;}
+  .card-head h2 .n{
+    background:var(--accent);color:#fff;width:22px;height:22px;border-radius:6px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+  }
+  .btn{
+    border:1px solid var(--border);background:#fff;color:var(--ink);padding:8px 13px;
+    border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;transition:.15s;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  .btn:hover{background:#f3f6fa;}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn.primary:hover{background:var(--accent-dark);}
+  .btn.danger{background:var(--danger-light);border-color:#f3c8c3;color:var(--danger);}
+  .btn.danger:hover{background:#fbdad5;}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--accent);padding:6px 8px;}
+  .btn.small{padding:5px 9px;font-size:12px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px;}
+  .field label{font-size:12px;color:var(--muted);font-weight:600;}
+  .field input,.field select,.field textarea{
+    border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:14px;
+    font-family:inherit;background:#fbfcfe;color:var(--ink);
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent-light);border-color:var(--accent);}
+  .field textarea{resize:vertical;min-height:56px;}
+  .toolbar-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .collapse-body.collapsed{display:none;}
+  .drug-row{
+    border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:#fbfcfe;position:relative;
+  }
+  .drug-row .drug-top{display:flex;gap:10px;flex-wrap:wrap;}
+  .drug-row .drug-times{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+  .drug-row .drug-times .field{min-width:80px;flex:0 0 80px;}
+  .drug-row .timing-wrap{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:8px;}
+  .remove-drug{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;font-weight:700;padding:2px 6px;border-radius:6px;}
+  .remove-drug:hover{background:var(--danger-light);}
+  .empty-hint{color:var(--muted);font-size:13px;padding:10px 2px;}
+  .badge-num{
+    background:var(--accent-light);color:var(--accent-dark);border-radius:6px;padding:2px 8px;
+    font-size:12px;font-weight:700;display:inline-block;margin-bottom:6px;
+  }
+  /* Modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(20,30,45,.55);display:none;align-items:center;justify-content:center;
+    z-index:100;padding:14px;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:#fff;border-radius:14px;max-width:520px;width:100%;max-height:95vh;overflow:auto;
+    box-shadow:0 10px 40px rgba(0,0,0,.25);
+  }
+  .modal-head{
+    padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;background:#fff;z-index:2;
+  }
+  .modal-head h3{margin:0;font-size:15px;}
+  .modal-body{padding:14px 16px;}
+  .close-x{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;padding:4px;}
+  .search-box{
+    width:100%;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:14px;margin-bottom:10px;
+  }
+  .list-item{
+    border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:.12s;
+  }
+  .list-item:hover{background:var(--accent-light);border-color:var(--accent);}
+  .list-item .li-name{font-weight:700;font-size:14px;}
+  .list-item .li-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .history-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+  .history-item .hi-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+  .history-item .hi-name{font-weight:700;font-size:14px;}
+  .history-item .hi-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+  .history-item .hi-actions{display:flex;gap:6px;margin-top:8px;}
+  .status-banner{
+    padding:9px 12px;border-radius:9px;font-size:13px;margin-bottom:12px;display:none;
+  }
+  .status-banner.show{display:block;}
+  .status-banner.err{background:var(--danger-light);color:var(--danger);}
+  .status-banner.ok{background:#eafaf0;color:var(--ok);}
+  .status-banner.info{background:var(--accent-light);color:var(--accent-dark);}
+  footer.actions{
+    position:sticky;bottom:0;background:linear-gradient(0deg,var(--bg) 60%,rgba(238,242,247,0));
+    padding:14px 0 4px;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;
+  }
+  /* ===== A5 Print sheet ===== */
+  #printSheet{
+    width:148mm;min-height:200mm;background:#fff;color:#000;margin:0 auto;
+    padding:10mm 11mm;font-family:"Times New Roman",Times,serif;font-size:12.5pt;line-height:1.42;
+    border:1px solid #ddd;
+  }
+  #printSheet .ps-head{display:flex;justify-content:space-between;font-size:11.5pt;margin-bottom:2mm;}
+  #printSheet h2.title{text-align:center;font-size:17pt;letter-spacing:1px;margin:2mm 0 5mm;}
+  #printSheet .ps-patient div{margin-bottom:1.6mm;}
+  #printSheet .ps-drugs-label{margin:4mm 0 2mm;}
+  #printSheet .ps-drug{margin-bottom:3mm;}
+  #printSheet .ps-drug .dline1{display:flex;justify-content:space-between;font-weight:700;gap:8px;}
+  #printSheet .ps-drug .dline2{margin-top:.6mm;padding-left:4mm;}
+  #printSheet .ps-bottom{display:flex;margin-top:8mm;gap:6mm;}
+  #printSheet .ps-bottom .left{flex:1;}
+  #printSheet .ps-bottom .right{flex:1.3;text-align:center;}
+  #printSheet .ps-bottom .right .bs-label{font-style:italic;margin-top:1mm;}
+  #printSheet .ps-bottom .right .bs-name{font-weight:700;margin-top:11mm;}
+  #printSheet .underline-fill{border-bottom:1px dotted #666;display:inline-block;min-width:40mm;}
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{position:absolute;top:0;left:0;width:148mm;margin:0;padding:0;}
+    #printSheet{border:none;width:148mm;padding:8mm 10mm;}
+    @page{size:148mm 210mm;margin:0;}
+  }
+  @media (max-width:640px){
+    header.topbar{flex-direction:column;align-items:flex-start;}
+    .drug-row .drug-times .field{flex:1 1 70px;min-width:70px;}
+  }
+  /* ===== Toast ===== */
+
+#toastContainer{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:99999;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    pointer-events:none;
+}
+
+.toast{
+    min-width:260px;
+    max-width:360px;
+    padding:14px 18px;
+    border-radius:12px;
+    color:#fff;
+    font-size:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    opacity:0;
+    transform:translateY(20px);
+    animation:toastIn .25s forwards;
+}
+
+.toast.hide{
+    animation:toastOut .25s forwards;
+}
+
+.toast.ok{
+    background:#16a34a;
+}
+
+.toast.err{
+    background:#dc2626;
+}
+
+.toast.info{
+    background:#2563eb;
+}
+
+@keyframes toastIn{
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@keyframes toastOut{
+    to{
+        opacity:0;
+        transform:translateY(20px);
+    }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <div>
+      <h1>🩺 Đơn Thuốc</h1>
+
+    </div>
+    <div class="idbadge">
+      Mã đơn thuốc: <b id="badgeMaDon">…</b><br>
+      <p style="display:none">Ngày kê: <b id="badgeNgay">…</b></p>
+    </div>
+  </header>
+
+<div id="toastContainer"></div>
+
+  <!-- BỆNH NHÂN -->
+  <div class="card">
+    <div class="card-head">
+      <h2><span class="n">1</span> Thông tin bệnh nhân</h2>
+     
+      <div class="toolbar-actions">
+        <button class="btn primary small" id="openPatientPicker">📋 Chọn bệnh nhân</button>
+        <button class="btn small" id="manualPatient">✎ Nhập</button>
+      </div>
+    </div>
+
+      <div class="row">
+        <div class="field" style="flex:2;min-width:220px;">
+          <label>Họ và tên</label>
+          <input type="text" id="pFullName" placeholder="Họ và tên bệnh nhân">
+        </div>
+        <div class="field">
+          <label>Tuổi</label>
+          <input type="number" id="pAge" min="0" max="130" placeholder="Tuổi">
+        </div>
+        <div class="field">
+          <label>Giới</label>
+          <select id="pGender">
+            <option value="">-- Chọn --</option>
+            <option value="Nam">Nam</option>
+            <option value="Nữ">Nữ</option>
+            <option value="Khác">Khác</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <div class="field">
+          <label>Chẩn đoán</label>
+          <input type="text" id="pDiagnosis">
+        </div>
+      </div>
+ 
+  </div>
+
+  <!-- THUỐC -->
+  <div class="card">
+    <div class="card-head">
+      <h2><span class="n">2</span> Thuốc điều trị</h2>
+      <button class="btn primary small" id="addDrugBtn">+ Thêm thuốc</button>
+    </div>
+    <div id="drugList"></div>
+    <div id="drugEmptyHint" class="empty-hint">Chưa có thuốc nào. Bấm "+ Thêm thuốc" để bắt đầu.</div>
+  </div>
+
+  <!-- LỜI DẶN + BÁC SĨ -->
+  <div class="card">
+    <div class="card-head"><h2><span class="n">3</span> Lời dặn &amp; Bác sĩ</h2>
+	 <button class="btn ghost small" id="togglePatient">Ẩn/Hiện</button>
+	</div>
+	 <div class="collapse-body collapsed" id="patientBody">
+    <div class="row">
+      <div class="field" style="flex:2;">
+        <label>Lời dặn</label>
+        <textarea id="loiDan" placeholder="Lời dặn của bác sĩ..."></textarea>
+      </div>    </div>
+	      <div class="row">
+      <div class="field">
+        <label>Bác sĩ khám bệnh</label>
+        <input type="text" id="bacSi" placeholder="Tên bác sĩ">
+      </div></div>
+      <div class="field"style="display:none">
+        <label>Ngày kê đơn (ddMMyy)</label>
+        <input type="text" id="ngayKeInput" placeholder="010726" maxlength="6">
+      </div>
+</div>
+  </div>
+
+  <footer class="actions">
+    <button class="btn danger" id="clearFormBtn"style="display:none">🗑 Xoá đơn (làm mới)</button>
+    <button class="btn" id="historyBtn">🕘 Lịch sử đơn</button>
+    <button class="btn primary" id="saveBtn">💾 Lưu đơn thuốc</button>
+  </footer>
+
+</div>
+
+<!-- PATIENT PICKER MODAL -->
+<div class="overlay" id="patientOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Chọn bệnh nhân</h3>
+      <button class="close-x" data-close="patientOverlay">✕</button>
+    </div>
+    <div class="modal-body">
+      <input class="search-box" id="patientSearch" placeholder="Tìm theo tên bệnh nhân...">
+      <div id="patientListBox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="overlay" id="historyOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Lịch sử đơn thuốc</h3>
+      <button class="close-x" data-close="historyOverlay">✕</button>
+    </div>
+    <div class="modal-body">
+      <input class="search-box" id="historySearch" placeholder="Tìm theo mã đơn hoặc tên bệnh nhân...">
+      <div id="historyListBox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT PREVIEW MODAL -->
+<div class="overlay" id="printOverlay">
+  <div class="modal" style="max-width:170mm;">
+    <div class="modal-head">
+      <h3>Đơn thuốc</h3>
+      <div style="display:flex;gap:8px;">
+        <button class="btn primary small" id="doPrintBtn">🖨 In</button>
+		<button class="btn small" id="addBrBtn">➕ Đẩy dòng</button>
+        <button class="close-x" data-close="printOverlay">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" style="background:#e9edf3;">
+      <div id="printArea"><div id="printSheet"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ CONFIG ============ */
+const APP_KEY = "qzy5kclrf827aey";
+const APP_SECRET = "6jlsunzjqr3s3nh";
+const REFRESH_TOKEN = "yvVdSnOoxgsAAAAAAAAAAYwqRQmU9NPgvKrMmzAL2JY9QqutemeEsykD9LmlQcRr";
+const PATIENTS_PATH = "/patients.json";
+const ORDERS_PATH = "/dtbschau.json";
+const START_MA_DON = 49000001;
+const DRUG_SUGGESTIONS = ["Eperison 50mg","Meloxicam 7.5mg","Celecoxib 200mg","Piracetam 800mg","Cinnarizine 25mg"];
+const TIMING_OPTIONS = ["Trước ăn","Sau ăn","Trước ăn 60 phút","Trước ăn 30 phút","Sau ăn 60 phút","Khác"];
+
+/* ============ STATE ============ */
+let accessToken = null, tokenExpiry = 0;
+let patients = [];
+let ordersData = { nextId: START_MA_DON, orders: [] };
+let currentDrugs = [];
+let drugSeq = 1;
+let extraBr = 0;
+document.getElementById("addBrBtn").addEventListener("click", ()=>{
+
+    extraBr++;
+
+    const sheet = document.getElementById("printSheet");
+
+    if(sheet.innerHTML){
+        sheet.innerHTML = sheet.innerHTML.replace(
+            '<div class="ps-bottom">',
+            "<br>".repeat(extraBr) + '<div class="ps-bottom">'
+        );
+    }
+
+});
+function confirmDialog(message,title="Xác nhận"){
+
+    return new Promise(resolve=>{
+
+        document.getElementById("confirmTitle").textContent=title;
+        document.getElementById("confirmMessage").textContent=message;
+
+        openModal("confirmOverlay");
+
+        const ok=document.getElementById("confirmOK");
+        const cancel=document.getElementById("confirmCancel");
+
+        function cleanup(result){
+            closeModal("confirmOverlay");
+
+            ok.removeEventListener("click",okFn);
+            cancel.removeEventListener("click",cancelFn);
+
+            resolve(result);
+        }
+
+        function okFn(){ cleanup(true); }
+
+        function cancelFn(){ cleanup(false); }
+
+        ok.addEventListener("click",okFn);
+        cancel.addEventListener("click",cancelFn);
+
+    });
+
+}
+const DELETE_PASSWORD = "1!";
+function confirmDeletePassword(){
+
+    return new Promise(resolve=>{
+
+        const overlay=document.getElementById("passwordOverlay");
+        const input=document.getElementById("deletePassword");
+        const err=document.getElementById("deletePasswordError");
+
+        input.value="";
+        err.style.display="none";
+
+        openModal("passwordOverlay");
+
+        // tự focus
+        setTimeout(()=>input.focus(),100);
+
+        function close(result){
+            closeModal("passwordOverlay");
+
+            ok.removeEventListener("click",okClick);
+            cancel.removeEventListener("click",cancelClick);
+            input.removeEventListener("keydown",enterPress);
+
+            resolve(result);
+        }
+
+        function okClick(){
+
+            if(input.value!==DELETE_PASSWORD){
+                err.style.display="block";
+                input.select();
+                return;
+            }
+
+            close(true);
+        }
+
+        function cancelClick(){
+            close(false);
+        }
+
+        function enterPress(e){
+            if(e.key==="Enter"){
+                okClick();
+            }
+        }
+
+        const ok=document.getElementById("deleteOK");
+        const cancel=document.getElementById("deleteCancel");
+
+        ok.addEventListener("click",okClick);
+        cancel.addEventListener("click",cancelClick);
+        input.addEventListener("keydown",enterPress);
+
+    });
+
+}
+/* ============ UTIL ============ */
+function pad2(n){ return String(n).padStart(2,"0"); }
+function todayISO(){
+  const d = new Date();
+  return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
+}
+function formatDDMMYY(d){
+  return pad2(d.getDate())+pad2(d.getMonth()+1)+String(d.getFullYear()).slice(-2);
+}
+function parseAnyDate(str){
+  if(!str) return null;
+  let d = new Date(str);
+  if(!isNaN(d.getTime())) return d;
+  const m = String(str).match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if(m){
+    let [,dd,mm,yy] = m;
+    if(yy.length===2) yy = "20"+yy;
+    d = new Date(+yy, +mm-1, +dd);
+    if(!isNaN(d.getTime())) return d;
+  }
+  return null;
+}
+function normalize(str){
+  return (str||"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+}
+function transformDiagnosis(raw){
+  if(!raw) return "";
+  const m = String(raw).match(/\[([^\]]+)\][^\[]*\[([^\]]+)\]/);
+  if(m) return `${m[2].trim()} (${m[1].trim()})`;
+  return raw;
+}
+function escapeHtml(s){
+  return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function showStatus(msg,type="info"){
+
+    const container=document.getElementById("toastContainer");
+
+    const toast=document.createElement("div");
+    toast.className="toast "+type;
+
+
+    toast.innerHTML=`${escapeHtml(msg)}`;
+
+    container.appendChild(toast);
+
+    setTimeout(()=>{
+        toast.classList.add("hide");
+
+        setTimeout(()=>{
+            toast.remove();
+        },250);
+
+    },1000);
+
+}
+
+/* ============ DROPBOX API ============ */
+async function getAccessToken(){
+  if(accessToken && Date.now() < tokenExpiry) return accessToken;
+  const res = await fetch("https://api.dropbox.com/oauth2/token", {
+    method:"POST",
+    headers:{ "Content-Type":"application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type:"refresh_token",
+      refresh_token: REFRESH_TOKEN,
+      client_id: APP_KEY,
+      client_secret: APP_SECRET
+    })
+  });
+  if(!res.ok) throw new Error("Không lấy được access token Dropbox");
+  const data = await res.json();
+  accessToken = data.access_token;
+  tokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
+  return accessToken;
+}
+
+async function dbxDownloadJSON(path){
+  const token = await getAccessToken();
+  const res = await fetch("https://content.dropboxapi.com/2/files/download", {
+    method:"POST",
+    headers:{
+      "Authorization":"Bearer "+token,
+      "Dropbox-API-Arg": JSON.stringify({ path })
+    }
+  });
+  if(res.status===409) return null; // file not found
+  if(!res.ok) throw new Error("Lỗi tải file "+path);
+  const text = await res.text();
+  try{ return JSON.parse(text); } catch(e){ return null; }
+}
+
+async function dbxUploadJSON(path, obj){
+  const token = await getAccessToken();
+  const res = await fetch("https://content.dropboxapi.com/2/files/upload", {
+    method:"POST",
+    headers:{
+      "Authorization":"Bearer "+token,
+      "Dropbox-API-Arg": JSON.stringify({ path, mode:"overwrite", mute:true }),
+      "Content-Type":"application/octet-stream"
+    },
+    body: JSON.stringify(obj, null, 2)
+  });
+  if(!res.ok) throw new Error("Lỗi lưu file "+path);
+  return await res.json();
+}
+
+/* ============ LOAD DATA ============ */
+async function loadAll(){
+  showStatus("Đang tải dữ liệu từ máy chủ...", "info");
+  try{
+    const [pData, oData] = await Promise.all([
+      dbxDownloadJSON(PATIENTS_PATH).catch(()=>null),
+      dbxDownloadJSON(ORDERS_PATH).catch(()=>null)
+    ]);
+    patients = Array.isArray(pData) ? pData : (pData && Array.isArray(pData.patients) ? pData.patients : []);
+    if(oData && typeof oData === "object"){
+      ordersData = {
+        nextId: oData.nextId || START_MA_DON,
+        orders: Array.isArray(oData.orders) ? oData.orders : []
+      };
+    } else {
+      ordersData = { nextId: START_MA_DON, orders: [] };
+    }
+    updateBadges();
+    showStatus("Đã tải dữ liệu thành công.", "ok");
+  }catch(err){
+    console.error(err);
+    showStatus("⚠ Không thể kết nối máy chủ: "+err.message, "err");
+  }
+}
+
+function updateBadges(){
+  document.getElementById("badgeMaDon").textContent = ordersData.nextId;
+  const inputNgay = document.getElementById("ngayKeInput");
+  document.getElementById("badgeNgay").textContent = inputNgay.value || formatDDMMYY(new Date());
+}
+
+/* ============ PATIENT SECTION ============ */
+document.getElementById("togglePatient").addEventListener("click", ()=>{
+  document.getElementById("patientBody").classList.toggle("collapsed");
+});
+
+document.getElementById("manualPatient").addEventListener("click", ()=>{
+  document.getElementById("pFullName").value = "";
+  document.getElementById("pAge").value = "";
+  document.getElementById("pGender").value = "";
+  document.getElementById("pDiagnosis").value = "";
+  document.getElementById("pFullName").focus();
+});
+
+document.getElementById("openPatientPicker").addEventListener("click", ()=>{
+  renderPatientList();
+  openModal("patientOverlay");
+});
+
+function eligiblePatients(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  return patients.filter(p=>{
+    // Nếu không có ngày xuất viện (trống, null, undefined)
+    if (!p.dischargeDate) return true; 
+
+    const dd = parseAnyDate(p.dischargeDate);
+    // Phòng trường hợp có dữ liệu nhưng sai định dạng không parse được
+    if(!dd) return false; 
+    
+    dd.setHours(0,0,0,0);
+    return today <= dd;
+  });
+}
+
+function renderPatientList(){
+  const box = document.getElementById("patientListBox");
+  const q = normalize(document.getElementById("patientSearch").value);
+  const list = eligiblePatients().filter(p=>!q || normalize(p.fullName).includes(q));
+  if(list.length===0){
+    box.innerHTML = '<div class="empty-hint">Không có bệnh nhân nào còn trong đợt điều trị.</div>';
+    return;
+  }
+  box.innerHTML = list.map((p,i)=>`
+    <div class="list-item" data-idx="${patients.indexOf(p)}">
+      <div class="li-name">${escapeHtml(p.fullName||"")}</div>
+      <div class="li-sub">${escapeHtml(p.age||"")} tuổi · ${escapeHtml(p.gender||"")}</div>
+      <div class="li-sub">${escapeHtml(p.diagnosis||"")}</div>
+    </div>`).join("");
+  box.querySelectorAll(".list-item").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const p = patients[+el.dataset.idx];
+      document.getElementById("pFullName").value = p.fullName || "";
+      document.getElementById("pAge").value = p.age || "";
+      document.getElementById("pGender").value = p.gender || "";
+      document.getElementById("pDiagnosis").value = transformDiagnosis(p.diagnosis);
+      closeModal("patientOverlay");
+    });
+  });
+}
+document.getElementById("patientSearch").addEventListener("input", renderPatientList);
+
+/* ============ DRUGS SECTION ============ */
+function addDrugRow(initial){
+  currentDrugs.push(Object.assign({
+    id: "d"+(drugSeq++),
+    name: "", soLuong: "", sang: "", trua: "", toi: "",
+    cachDung: "Sau ăn", cachDungKhac: ""
+  }, initial||{}));
+  renderDrugs();
+}
+function removeDrugRow(id){
+  currentDrugs = currentDrugs.filter(d=>d.id!==id);
+  renderDrugs();
+}
+function drugRowTemplate(d, idx){
+  const timingOpts = TIMING_OPTIONS.map(t=>`<option value="${t}" ${d.cachDung===t?"selected":""}>${t}</option>`).join("");
+  return `
+  <div class="drug-row" data-id="${d.id}">
+    <button class="remove-drug" data-remove="${d.id}" title="Xoá thuốc">✕</button>
+    <span class="badge-num">${idx+1}.</span>
+    <div class="drug-top">
+      <div class="field" style="flex:2;min-width:200px;">
+        <label>Tên thuốc</label>
+        <input type="text" list="drugSuggestList" data-field="name" value="${escapeHtml(d.name)}" placeholder="">
+      </div>
+      <div class="field" style="min-width:120px;flex:0 0 130px;">
+        <label>Số lượng (viên)</label>
+        <input type="number" min="0" data-field="soLuong" value="${escapeHtml(d.soLuong)}" placeholder="0">
+      </div>
+    </div>
+    <div class="drug-times">
+      <div class="field"><label>Sáng</label><input type="number" min="0" data-field="sang" value="${escapeHtml(d.sang)}"></div>
+      <div class="field"><label>Trưa</label><input type="number" min="0" data-field="trua" value="${escapeHtml(d.trua)}"></div>
+      <div class="field"><label>Tối</label><input type="number" min="0" data-field="toi" value="${escapeHtml(d.toi)}"></div>
+    </div>
+    <div class="timing-wrap">
+      <div class="field" style="min-width:170px;">
+        <label>Cách dùng</label>
+        <select data-field="cachDung">${timingOpts}</select>
+      </div>
+      ${d.cachDung==="Khác" ? `<div class="field" style="min-width:170px;">
+        <label>Cách dùng khác</label>
+        <input type="text" data-field="cachDungKhac" value="${escapeHtml(d.cachDungKhac)}" placeholder="Nhập cách dùng...">
+      </div>` : ""}
+    </div>
+  </div>`;
+}
+function padDose(v){
+    if(v==="" || v==null) return "00";
+    return String(parseInt(v || 0)).padStart(2,"0");
+}
+function renderDrugs(){
+  const list = document.getElementById("drugList");
+  const hint = document.getElementById("drugEmptyHint");
+  list.innerHTML = currentDrugs.map((d,i)=>drugRowTemplate(d,i)).join("");
+  hint.style.display = currentDrugs.length ? "none" : "block";
+}
+document.getElementById("addDrugBtn").addEventListener("click", ()=>addDrugRow());
+document.getElementById("drugList").addEventListener("click", (e)=>{
+  const rid = e.target.getAttribute("data-remove");
+  if(rid) removeDrugRow(rid);
+});
+document.getElementById("drugList").addEventListener("input", (e)=>{
+  const row = e.target.closest(".drug-row");
+  if(!row) return;
+  const id = row.dataset.id;
+  const field = e.target.getAttribute("data-field");
+  if(!field) return;
+  const d = currentDrugs.find(x=>x.id===id);
+  if(!d) return;
+  d[field] = e.target.value;
+});
+document.getElementById("drugList").addEventListener("change", (e)=>{
+  const field = e.target.getAttribute("data-field");
+  if(field==="cachDung"){
+    const row = e.target.closest(".drug-row");
+    const d = currentDrugs.find(x=>x.id===row.dataset.id);
+    d.cachDung = e.target.value;
+    renderDrugs();
+  }
+});
+
+/* datalist for drug suggestions */
+(function initDatalist(){
+  const dl = document.createElement("datalist");
+  dl.id = "drugSuggestList";
+  dl.innerHTML = DRUG_SUGGESTIONS.map(s=>`<option value="${escapeHtml(s)}">`).join("");
+  document.body.appendChild(dl);
+})();
+
+/* ============ MODAL HELPERS ============ */
+function openModal(id){ document.getElementById(id).classList.add("open"); }
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.addEventListener("click", ()=>closeModal(btn.getAttribute("data-close")));
+});
+document.querySelectorAll(".overlay").forEach(ov=>{
+  ov.addEventListener("click", (e)=>{ if(e.target===ov) closeModal(ov.id); });
+});
+
+/* ============ HISTORY ============ */
+document.getElementById("historyBtn").addEventListener("click", ()=>{
+  renderHistory();
+  openModal("historyOverlay");
+});
+function renderHistory(){
+  const box = document.getElementById("historyListBox");
+  const q = normalize(document.getElementById("historySearch").value);
+  let list = [...ordersData.orders].sort((a,b)=> (b.maDon||0)-(a.maDon||0));
+  if(q){
+    list = list.filter(o=>
+      String(o.maDon).includes(q) ||
+      normalize(o.patient && o.patient.fullName).includes(q)
+    );
+  }
+  if(list.length===0){
+    box.innerHTML = '<div class="empty-hint">Không tìm thấy đơn thuốc nào.</div>';
+    return;
+  }
+  box.innerHTML = list.map(o=>`
+    <div class="history-item" data-ma="${o.maDon}">
+      <div class="hi-top">
+        <div>
+          <div class="hi-name">${escapeHtml(o.patient?.fullName || "(chưa có tên)")}</div>
+          <div class="hi-sub">Mã đơn: ${o.maDon} · Ngày: ${escapeHtml(o.ngayKe||"")}</div>
+        </div>
+      </div>
+      <div class="hi-actions">
+        <button class="btn small" data-print="${o.maDon}">🖨 In lại</button>
+        <button class="btn danger small" data-del="${o.maDon}">🗑 Xoá</button>
+      </div>
+    </div>`).join("");
+  box.querySelectorAll("[data-print]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const o = ordersData.orders.find(x=>String(x.maDon)===b.getAttribute("data-print"));
+      if(o){ closeModal("historyOverlay"); openPrintPreview(o); }
+    });
+  });
+  box.querySelectorAll("[data-del]").forEach(b=>{
+    b.addEventListener("click", async ()=>{
+if(!(await confirmDeletePassword()))
+    return;
+      ordersData.orders = ordersData.orders.filter(x=>String(x.maDon)!==b.getAttribute("data-del"));
+      try{
+        await dbxUploadJSON(ORDERS_PATH, ordersData);
+        showStatus("Đã xoá đơn thuốc.", "ok");
+        renderHistory();
+      }catch(err){
+        showStatus("⚠ Lỗi khi xoá: "+err.message, "err");
+      }
+    });
+  });
+}
+document.getElementById("historySearch").addEventListener("input", renderHistory);
+
+/* ============ CLEAR FORM ============ */
+document.getElementById("clearFormBtn").addEventListener("click", ()=>{
+
+  document.getElementById("pFullName").value = "";
+  document.getElementById("pAge").value = "";
+  document.getElementById("pGender").value = "";
+  document.getElementById("pDiagnosis").value = "";
+  document.getElementById("loiDan").value = "";
+  document.getElementById("bacSi").value = "";
+  currentDrugs = [];
+  renderDrugs();
+  showStatus("Đã làm mới đơn.", "info");
+});
+
+/* ============ NGAY KE INPUT ============ */
+const ngayInput = document.getElementById("ngayKeInput");
+ngayInput.value = formatDDMMYY(new Date());
+ngayInput.addEventListener("input", updateBadges);
+
+/* ============ SAVE ============ */
+document.getElementById("saveBtn").addEventListener("click", async ()=>{
+  const fullName = document.getElementById("pFullName").value.trim();
+  const drugsClean = currentDrugs
+    .filter(d=>d.name && d.name.trim())
+    .map(d=>({
+      name: d.name.trim(),
+      soLuong: d.soLuong || "",
+      sang: d.sang || "0",
+      trua: d.trua || "0",
+      toi: d.toi || "0",
+      cachDung: d.cachDung === "Khác" ? (d.cachDungKhac||"").trim() : d.cachDung
+    }));
+
+  if(!fullName){
+    if(!(await confirmDialog("Chưa nhập tên bệnh nhân. Vẫn muốn lưu?")))
+    return;
+  }
+  if(drugsClean.length===0){
+    if(!(await confirmDialog("Chưa có thuốc nào. Vẫn muốn lưu?")))
+    return;
+  }
+
+  const now = new Date();
+  const order = {
+    maDon: ordersData.nextId,
+    ngayKe: ngayInput.value || formatDDMMYY(now),
+    ngayISO: todayISO(),
+    patient: {
+      fullName,
+      age: document.getElementById("pAge").value.trim(),
+      gender: document.getElementById("pGender").value.trim(),
+      diagnosis: document.getElementById("pDiagnosis").value.trim()
+    },
+    drugs: drugsClean,
+    loiDan: document.getElementById("loiDan").value.trim(),
+    bacSi: document.getElementById("bacSi").value.trim(),
+    createdAt: now.getTime()
+  };
+
+  try{
+    showStatus("Đang lưu đơn thuốc...", "info");
+    ordersData.orders.push(order);
+    ordersData.nextId = ordersData.nextId + 1;
+    await dbxUploadJSON(ORDERS_PATH, ordersData);
+    updateBadges();
+    showStatus("✅ Đã lưu đơn thuốc mã "+order.maDon, "ok");
+    openPrintPreview(order);
+  }catch(err){
+    ordersData.orders.pop();
+    ordersData.nextId = ordersData.nextId - 1;
+    showStatus("⚠ Lỗi khi lưu: "+err.message, "err");
+  }
+});
+
+/* ============ PRINT PREVIEW (A5) ============ */
+function buildPrintHTML(o){
+  const p = o.patient || {};
+  const drugsHtml = (o.drugs||[]).map((d,i)=>{
+    const parts = [];
+  if(+d.sang>0) parts.push(`Sáng: ${padDose(d.sang)} viên`);
+if(+d.trua>0) parts.push(`Trưa: ${padDose(d.trua)} viên`);
+if(+d.toi>0) parts.push(`Tối: ${padDose(d.toi)} viên`);
+    const timeLine = parts.length ? parts.join(" - ")+".  ("+(d.cachDung||"")+")" : `(${d.cachDung||""})`;
+    return `<div class="ps-drug">
+      <div class="dline1"><span>${i+1}. ${escapeHtml(d.name)}</span><span>Số lượng: ${escapeHtml(d.soLuong)} viên</span></div>
+      <div class="dline2">${escapeHtml(timeLine)}</div>
+    </div>`;
+  }).join("");
+
+  const d = o.ngayISO ? new Date(o.ngayISO) : new Date();
+  const ngayChu = `Đà Nẵng, ngày ${pad2(d.getDate())} tháng ${pad2(d.getMonth()+1)} năm ${d.getFullYear()}`;
+
+  return `
+    <div class="ps-head">
+      <div>Mã đơn thuốc: ${o.maDon}</div>
+      <div>${escapeHtml(o.ngayKe||"")}</div>
+    </div>
+    <h2 class="title">ĐƠN THUỐC</h2>
+    <div class="ps-patient">
+      <div>Họ và tên: <b>${escapeHtml(p.fullName)}</b></div>
+      <div>Tuổi: ${escapeHtml(p.age)} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Giới: ${escapeHtml(p.gender)}</div>
+      <div>Chẩn đoán: ${escapeHtml(p.diagnosis)}</div>
+    </div>
+    <div class="ps-drugs-label"><b>Thuốc điều trị:</b></div>
+    ${drugsHtml || '<div class="empty-hint">(chưa có thuốc)</div>'}
+    <div class="ps-bottom">
+      <div class="left">
+        <b>Lời dặn:</b><br>${escapeHtml(o.loiDan).replace(/\n/g,"<br>") || "&nbsp;"}
+      </div>
+      <div class="right">
+        <div>${ngayChu}</div>
+        <div class="bs-label">Bác sĩ khám bệnh</div>
+        <div class="bs-name">${escapeHtml(o.bacSi)}</div>
+      </div>
+    </div>
+  `;
+}
+function openPrintPreview(order){
+extraBr = 0;
+  document.getElementById("printSheet").innerHTML = buildPrintHTML(order);
+  openModal("printOverlay");
+}
+document.getElementById("doPrintBtn").addEventListener("click", ()=>window.print());
+
+/* ============ INIT ============ */
+addDrugRow();
+loadAll();
+
+</script>
+<!-- CONFIRM MODAL -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <h3 id="confirmTitle">Xác nhận</h3>
+    </div>
+
+    <div class="modal-body">
+      <div id="confirmMessage" style="font-size:15px;line-height:1.6"></div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+        <button class="btn" id="confirmCancel">Huỷ</button>
+        <button class="btn primary" id="confirmOK">Đồng ý</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="passwordOverlay">
+    <div class="modal" style="max-width:360px">
+        <div class="modal-head">
+            <h3>🔒 Xác nhận xoá</h3>
+        </div>
+
+        <div class="modal-body">
+            <div style="margin-bottom:12px">
+                Nhập mật khẩu để xoá đơn thuốc
+            </div>
+
+            <input
+                id="deletePassword"
+                type="password"
+                class="search-box"
+                placeholder="Mật khẩu">
+
+            <div id="deletePasswordError"
+                 style="display:none;color:#c0392b;font-size:13px;margin-top:8px">
+                Sai mật khẩu.
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+                <button class="btn" id="deleteCancel">Huỷ</button>
+                <button class="btn danger" id="deleteOK">Xoá</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
