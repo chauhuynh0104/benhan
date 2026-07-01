@@ -941,7 +941,7 @@ if(+d.toi>0) parts.push(`Tối: ${padDose(d.toi)} viên`);
     ${drugsHtml || '<div class="empty-hint">(chưa có thuốc)</div>'}
     <div class="ps-bottom">
       <div class="left">
-        <b>Lời dặn:</b><br>${escapeHtml(o.loiDan).replace(/\n/g,"<br>") || "&nbsp;"}
+        <i><u>Lời dặn</u></i>:<br>${escapeHtml(o.loiDan).replace(/\n/g,"<br>") || "&nbsp;"}
       </div>
       <div class="right">
         <div>${ngayChu}</div>
