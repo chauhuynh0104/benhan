@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BS CHÂU TT06</title>
+<style>
+  :root {
+    --ink: #1c2321;
+    --paper: #faf8f4;
+    --line: #ddd6c9;
+    --accent: #7a3b2e;
+    --accent-soft: #f1e4dc;
+    --muted: #6b6459;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    padding: 20px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: clamp(1.15rem, 1rem + 1vw, 1.4rem);
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: var(--accent);
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  #search {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 16px; /* prevents iOS zoom on focus */
+    background: #fff;
+  }
+  #search:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  #count {
+    font-size: 0.82rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.88rem;
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--accent);
+    color: #fff;
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: #fdfbf8; }
+  tbody tr:hover { background: var(--accent-soft); }
+  td.tt { color: var(--muted); width: 34px; }
+  td.code {
+    font-family: "Consolas", "SFMono-Regular", monospace;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  td.danh { white-space: nowrap; }
+  tr.hidden { display: none; }
+  mark {
+    background: #ffe6a8;
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+  footer {
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* ---------- Responsive: card layout below 720px ---------- */
+  @media (max-width: 720px) {
+    body { padding: 14px; }
+    .controls { margin-bottom: 12px; }
+    #count { width: 100%; text-align: left; }
+
+    .table-scroll {
+      overflow-x: visible;
+      border: none;
+      background: transparent;
+    }
+
+    table, thead, tbody, th, tr, td {
+      display: block;
+      width: 100%;
+    }
+
+    thead {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+    }
+
+    tbody tr {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      position: relative;
+    }
+    tbody tr:nth-child(even) { background: #fff; }
+    tbody tr:hover { background: #fff; }
+
+    tbody td {
+      border-bottom: none;
+      padding: 5px 0 5px 46%;
+      position: relative;
+      min-height: 22px;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    tbody td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 0;
+      top: 5px;
+      width: 42%;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    td.tt {
+      display: inline-block;
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      padding: 2px 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      width: auto;
+    }
+    td.tt::before { content: none; }
+
+    td.code { font-size: 0.9rem; }
+
+    footer { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>BS CHÂU TT06</h1>
+  <div class="sub">© 2014-2026 By Bs Châu</div>
+
+  <div class="controls">
+    <input type="text" id="search" placeholder="Tìm theo mã ICD, mã YHCT, tên bệnh hoặc bệnh danh…">
+    <span id="count"></span>
+  </div>
+
+  <div class="table-scroll">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>TT</th>
+          <th>YHHĐ</th>
+          <th>YHCT</th>
+          <th>Tên bệnh</th>
+          <th>Bệnh danh</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td class="tt" data-label="TT">1</td>
+        <td class="code" data-label="YHHĐ">M54.36</td>
+        <td class="code" data-label="YHCT">U62.391</td>
+        <td data-label="Tên bệnh">Đau dây thần kinh hông to [dây thần kinh toạ], vùng thắt lưng</td>
+        <td class="danh" data-label="Bệnh danh">Toạ cốt phong</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">2</td>
+        <td class="code" data-label="YHHĐ">M54.39</td>
+        <td class="code" data-label="YHCT">U62.391</td>
+        <td data-label="Tên bệnh">Đau dây thần kinh hông to [dây thần kinh toạ], vị trí không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Toạ cốt phong</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">3</td>
+        <td class="code" data-label="YHHĐ">M54.37</td>
+        <td class="code" data-label="YHCT">U62.391</td>
+        <td data-label="Tên bệnh">Đau dây thần kinh hông to [dây thần kinh tọa], vùng thắt lưng - cùng</td>
+        <td class="danh" data-label="Bệnh danh">Toạ cốt phong</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">4</td>
+        <td class="code" data-label="YHHĐ">M54.56</td>
+        <td class="code" data-label="YHCT">U62.392.5</td>
+        <td data-label="Tên bệnh">Đau thắt lưng, vùng thắt lưng</td>
+        <td class="danh" data-label="Bệnh danh">Yêu thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">5</td>
+        <td class="code" data-label="YHHĐ">M54.57</td>
+        <td class="code" data-label="YHCT">U62.392.5</td>
+        <td data-label="Tên bệnh">Đau thắt lưng, vùng thắt lưng - cùng</td>
+        <td class="danh" data-label="Bệnh danh">Yêu thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">6</td>
+        <td class="code" data-label="YHHĐ">M53.12</td>
+        <td class="code" data-label="YHCT">U62.292</td>
+        <td data-label="Tên bệnh">Hội chứng cổ vai cánh tay, vùng cổ</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">7</td>
+        <td class="code" data-label="YHHĐ">M53.19</td>
+        <td class="code" data-label="YHCT">U62.292</td>
+        <td data-label="Tên bệnh">Hội chứng cổ vai cánh tay, vị trí không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">8</td>
+        <td class="code" data-label="YHHĐ">M54.22</td>
+        <td class="code" data-label="YHCT">U62.311</td>
+        <td data-label="Tên bệnh">Đau vai gáy, vùng cổ</td>
+        <td class="danh" data-label="Bệnh danh">Lạc chẩm</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">9</td>
+        <td class="code" data-label="YHHĐ">M54.22</td>
+        <td class="code" data-label="YHCT">U62.313</td>
+        <td data-label="Tên bệnh">Đau vai gáy, vùng cổ</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">10</td>
+        <td class="code" data-label="YHHĐ">M54.29</td>
+        <td class="code" data-label="YHCT">U62.313</td>
+        <td data-label="Tên bệnh">Đau vai gáy, vị trí không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">11</td>
+        <td class="code" data-label="YHHĐ">M75.1</td>
+        <td class="code" data-label="YHCT">U62.281.1</td>
+        <td data-label="Tên bệnh">Hội chứng chóp xoay</td>
+        <td class="danh" data-label="Bệnh danh">Kiên tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">12</td>
+        <td class="code" data-label="YHHĐ">M75.9</td>
+        <td class="code" data-label="YHCT">U62.281.9</td>
+        <td data-label="Tên bệnh">Tổn thương vai, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Kiên tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">13</td>
+        <td class="code" data-label="YHHĐ">M77.0</td>
+        <td class="code" data-label="YHCT">U62.412.0</td>
+        <td data-label="Tên bệnh">Viêm điểm bám gân lồi cầu trong xương cánh tay</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">14</td>
+        <td class="code" data-label="YHHĐ">M77.1</td>
+        <td class="code" data-label="YHCT">U62.412.1</td>
+        <td data-label="Tên bệnh">Viêm điểm bám gân lồi cầu ngoài xương cánh tay</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">15</td>
+        <td class="code" data-label="YHHĐ">M77.3</td>
+        <td class="code" data-label="YHCT">U62.412.3</td>
+        <td data-label="Tên bệnh">Gai xương gót chân</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">16</td>
+        <td class="code" data-label="YHHĐ">M79.13</td>
+        <td class="code" data-label="YHCT">U62.421</td>
+        <td data-label="Tên bệnh">Đau cơ, cẳng tay</td>
+        <td class="danh" data-label="Bệnh danh">Nhục tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">17</td>
+        <td class="code" data-label="YHHĐ">M79.16</td>
+        <td class="code" data-label="YHCT">U62.421</td>
+        <td data-label="Tên bệnh">Đau cơ, cẳng chân</td>
+        <td class="danh" data-label="Bệnh danh">Nhục tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">18</td>
+        <td class="code" data-label="YHHĐ">K29.7</td>
+        <td class="code" data-label="YHCT">U60.471.7</td>
+        <td data-label="Tên bệnh">Viêm dạ dày, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Vị quản thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">19</td>
+        <td class="code" data-label="YHHĐ">K29.9</td>
+        <td class="code" data-label="YHCT">U60.471.9</td>
+        <td data-label="Tên bệnh">Viêm dạ dày tá tràng, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Vị quản thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">20</td>
+        <td class="code" data-label="YHHĐ">I69.1</td>
+        <td class="code" data-label="YHCT">U58.011</td>
+        <td data-label="Tên bệnh">Di chứng xuất huyết não</td>
+        <td class="danh" data-label="Bệnh danh">Bán thân bất toại</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">21</td>
+        <td class="code" data-label="YHHĐ">I69.3</td>
+        <td class="code" data-label="YHCT">U58.021</td>
+        <td data-label="Tên bệnh">Di chứng nhồi máu não</td>
+        <td class="danh" data-label="Bệnh danh">Bán thân bất toại</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">22</td>
+        <td class="code" data-label="YHHĐ">I69.8</td>
+        <td class="code" data-label="YHCT">U58.061.8</td>
+        <td data-label="Tên bệnh">Di chứng bệnh mạch máu não khác và/hoặc không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Chứng nuy</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">23</td>
+        <td class="code" data-label="YHHĐ">G51.0</td>
+        <td class="code" data-label="YHCT">U55.571</td>
+        <td data-label="Tên bệnh">Liệt Bell</td>
+        <td class="danh" data-label="Bệnh danh">Khẩu nhãn oa tà</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">24</td>
+        <td class="code" data-label="YHHĐ">G50.0</td>
+        <td class="code" data-label="YHCT">U55.501.0</td>
+        <td data-label="Tên bệnh">Đau dây thần kinh sinh ba [tam thoa] [V]</td>
+        <td class="danh" data-label="Bệnh danh">Diện thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">25</td>
+        <td class="code" data-label="YHHĐ">G61.9</td>
+        <td class="code" data-label="YHCT">U55.441.9</td>
+        <td data-label="Tên bệnh">Bệnh lý viêm đa dây thần kinh, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">26</td>
+        <td class="code" data-label="YHHĐ">F51.0</td>
+        <td class="code" data-label="YHCT">U54.211.0</td>
+        <td data-label="Tên bệnh">Mất ngủ không thực tổn</td>
+        <td class="danh" data-label="Bệnh danh">Thất miên</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">27</td>
+        <td class="code" data-label="YHHĐ">F48.0</td>
+        <td class="code" data-label="YHCT">U53.222</td>
+        <td data-label="Tên bệnh">Suy nhược thần kinh</td>
+        <td class="danh" data-label="Bệnh danh">Thất miên</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">28</td>
+        <td class="code" data-label="YHHĐ">E11.8</td>
+        <td class="code" data-label="YHCT">U53.241.8</td>
+        <td data-label="Tên bệnh">Bệnh đái tháo đường típ 2, kèm biến chứng không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Tiêu khát</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">29</td>
+        <td class="code" data-label="YHHĐ">E11.4†</td>
+        <td class="code" data-label="YHCT">U53.241.4</td>
+        <td data-label="Tên bệnh">Bệnh đái tháo đường típ 2, kèm biến chứng thần kinh</td>
+        <td class="danh" data-label="Bệnh danh">Tiêu khát</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">30</td>
+        <td class="code" data-label="YHHĐ">E11.9</td>
+        <td class="code" data-label="YHCT">U53.241.9</td>
+        <td data-label="Tên bệnh">Bệnh đái tháo đường típ 2, không kèm biến chứng</td>
+        <td class="danh" data-label="Bệnh danh">Tiêu khát</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">31</td>
+        <td class="code" data-label="YHHĐ">E10.9</td>
+        <td class="code" data-label="YHCT">U53.231.9</td>
+        <td data-label="Tên bệnh">Bệnh đái tháo đường típ 1, không kèm biến chứng</td>
+        <td class="danh" data-label="Bệnh danh">Tiêu khát</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">32</td>
+        <td class="code" data-label="YHHĐ">E10.4†</td>
+        <td class="code" data-label="YHCT">U53.231.4</td>
+        <td data-label="Tên bệnh">Bệnh đái tháo đường típ 1, kèm biến chứng thần kinh</td>
+        <td class="danh" data-label="Bệnh danh">Tiêu khát</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">33</td>
+        <td class="code" data-label="YHHĐ">E10.8</td>
+        <td class="code" data-label="YHCT">U53.231.8</td>
+        <td data-label="Tên bệnh">Bệnh đái tháo đường típ 1, kèm biến chứng không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Tiêu khát</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">34</td>
+        <td class="code" data-label="YHHĐ">L50.1</td>
+        <td class="code" data-label="YHCT">U61.012.1</td>
+        <td data-label="Tên bệnh">Bệnh mày đay vô căn</td>
+        <td class="danh" data-label="Bệnh danh">Ẩn chẩn</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">35</td>
+        <td class="code" data-label="YHHĐ">L50.9</td>
+        <td class="code" data-label="YHCT">U61.012.9</td>
+        <td data-label="Tên bệnh">Bệnh mày đay, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Ẩn chẩn</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">36</td>
+        <td class="code" data-label="YHHĐ">K59.0</td>
+        <td class="code" data-label="YHCT">U60.151.0</td>
+        <td data-label="Tên bệnh">Táo bón</td>
+        <td class="danh" data-label="Bệnh danh">Tiện bí</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">37</td>
+        <td class="code" data-label="YHHĐ">K59.1</td>
+        <td class="code" data-label="YHCT">U60.151.1</td>
+        <td data-label="Tên bệnh">Tiêu chảy chức năng</td>
+        <td class="danh" data-label="Bệnh danh">Tiết tả</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">38</td>
+        <td class="code" data-label="YHHĐ">M06.00</td>
+        <td class="code" data-label="YHCT">U62.031</td>
+        <td data-label="Tên bệnh">Viêm khớp dạng thấp huyết thanh âm tính, nhiều vị trí</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">39</td>
+        <td class="code" data-label="YHHĐ">M06.04</td>
+        <td class="code" data-label="YHCT">U62.031</td>
+        <td data-label="Tên bệnh">Viêm khớp dạng thấp huyết thanh âm tính, bàn tay</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">40</td>
+        <td class="code" data-label="YHHĐ">M06.07</td>
+        <td class="code" data-label="YHCT">U62.031</td>
+        <td data-label="Tên bệnh">Viêm khớp dạng thấp huyết thanh âm tính, cổ chân và/hoặc bàn chân</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">41</td>
+        <td class="code" data-label="YHHĐ">M06.09</td>
+        <td class="code" data-label="YHCT">U62.031</td>
+        <td data-label="Tên bệnh">Viêm khớp dạng thấp huyết thanh âm tính, vị trí không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">42</td>
+        <td class="code" data-label="YHHĐ">H81.9</td>
+        <td class="code" data-label="YHCT">U57.011.9</td>
+        <td data-label="Tên bệnh">Rối loạn chức năng tiền đình, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Huyễn vựng</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">43</td>
+        <td class="code" data-label="YHHĐ">I20.0</td>
+        <td class="code" data-label="YHCT">U58.601.0</td>
+        <td data-label="Tên bệnh">Cơn đau thắt ngực không ổn định</td>
+        <td class="danh" data-label="Bệnh danh">Tâm thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">44</td>
+        <td class="code" data-label="YHHĐ">I20.9</td>
+        <td class="code" data-label="YHCT">U58.601</td>
+        <td data-label="Tên bệnh">Cơn đau thắt ngực, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Tâm thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">45</td>
+        <td class="code" data-label="YHHĐ">N23</td>
+        <td class="code" data-label="YHCT">U63.561</td>
+        <td data-label="Tên bệnh">Cơn đau quặn thận không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Phúc thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">46</td>
+        <td class="code" data-label="YHHĐ">N20.0</td>
+        <td class="code" data-label="YHCT">U63.361.0</td>
+        <td data-label="Tên bệnh">Sỏi thận</td>
+        <td class="danh" data-label="Bệnh danh">Thạch lâm</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">47</td>
+        <td class="code" data-label="YHHĐ">N20.1</td>
+        <td class="code" data-label="YHCT">U63.361.1</td>
+        <td data-label="Tên bệnh">Sỏi niệu quản</td>
+        <td class="danh" data-label="Bệnh danh">Thạch lâm</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">48</td>
+        <td class="code" data-label="YHHĐ">N20.2</td>
+        <td class="code" data-label="YHCT">U63.361.2</td>
+        <td data-label="Tên bệnh">Sỏi thận kèm sỏi niệu quản</td>
+        <td class="danh" data-label="Bệnh danh">Thạch lâm</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">49</td>
+        <td class="code" data-label="YHHĐ">N20.9</td>
+        <td class="code" data-label="YHCT">U63.361.9</td>
+        <td data-label="Tên bệnh">Sỏi tiết niệu, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Thạch lâm</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">50</td>
+        <td class="code" data-label="YHHĐ">R10.4</td>
+        <td class="code" data-label="YHCT">U66.281.4</td>
+        <td data-label="Tên bệnh">Đau bụng khác và/hoặc không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Phúc thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">51</td>
+        <td class="code" data-label="YHHĐ">G57.0</td>
+        <td class="code" data-label="YHCT">U55.651</td>
+        <td data-label="Tên bệnh">Tổn thương dây thần kinh hông to [dây thần kinh tọa]</td>
+        <td class="danh" data-label="Bệnh danh">Yêu cước thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">52</td>
+        <td class="code" data-label="YHHĐ">N39.9</td>
+        <td class="code" data-label="YHCT">U63.471.9</td>
+        <td data-label="Tên bệnh">Rối loạn hệ tiết niệu, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Thủy thũng</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">53</td>
+        <td class="code" data-label="YHHĐ">N40</td>
+        <td class="code" data-label="YHCT">U63.271</td>
+        <td data-label="Tên bệnh">Phì đại [tăng sản] tuyến tiền liệt</td>
+        <td class="danh" data-label="Bệnh danh">Long bế</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">54</td>
+        <td class="code" data-label="YHHĐ">K76.9</td>
+        <td class="code" data-label="YHCT">U60.021.9</td>
+        <td data-label="Tên bệnh">Bệnh của gan, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Kinh quyết</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">55</td>
+        <td class="code" data-label="YHHĐ">E75.5</td>
+        <td class="code" data-label="YHCT">U53.141.5</td>
+        <td data-label="Tên bệnh">Rối loạn tích lũy lipid khác</td>
+        <td class="danh" data-label="Bệnh danh">Chứng đàm</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">56</td>
+        <td class="code" data-label="YHHĐ">E58</td>
+        <td class="code" data-label="YHCT">U53.181</td>
+        <td data-label="Tên bệnh">Thiếu calci do chế độ ăn</td>
+        <td class="danh" data-label="Bệnh danh"></td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">57</td>
+        <td class="code" data-label="YHHĐ">E60</td>
+        <td class="code" data-label="YHCT"></td>
+        <td data-label="Tên bệnh">Thiếu kẽm do chế độ ăn</td>
+        <td class="danh" data-label="Bệnh danh"></td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">58</td>
+        <td class="code" data-label="YHHĐ">M10.00</td>
+        <td class="code" data-label="YHCT">U62.371</td>
+        <td data-label="Tên bệnh">Bệnh gút vô căn, nhiều vị trí</td>
+        <td class="danh" data-label="Bệnh danh">Thống phong</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">59</td>
+        <td class="code" data-label="YHHĐ">M10.07</td>
+        <td class="code" data-label="YHCT">U62.371</td>
+        <td data-label="Tên bệnh">Bệnh gút vô căn, cổ chân và/hoặc bàn chân</td>
+        <td class="danh" data-label="Bệnh danh">Thống phong</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">60</td>
+        <td class="code" data-label="YHHĐ">M10.09</td>
+        <td class="code" data-label="YHCT">U62.371</td>
+        <td data-label="Tên bệnh">Bệnh gút vô căn, vị trí không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Thống phong</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">61</td>
+        <td class="code" data-label="YHHĐ">M10.04</td>
+        <td class="code" data-label="YHCT">U62.371</td>
+        <td data-label="Tên bệnh">Bệnh gút vô căn, bàn tay</td>
+        <td class="danh" data-label="Bệnh danh">Thống phong</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">62</td>
+        <td class="code" data-label="YHHĐ">M50.9</td>
+        <td class="code" data-label="YHCT">U62.192.9</td>
+        <td data-label="Tên bệnh">Rối loạn đĩa đệm đốt sống cổ, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Lạc chẩm</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">63</td>
+        <td class="code" data-label="YHHĐ">M13.00</td>
+        <td class="code" data-label="YHCT">U62.141</td>
+        <td data-label="Tên bệnh">Viêm đa khớp, không xác định, nhiều vị trí</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">64</td>
+        <td class="code" data-label="YHHĐ">M13.09</td>
+        <td class="code" data-label="YHCT">U62.141</td>
+        <td data-label="Tên bệnh">Viêm đa khớp, không xác định, vị trí không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">65</td>
+        <td class="code" data-label="YHHĐ">M13.83</td>
+        <td class="code" data-label="YHCT">U62.141</td>
+        <td data-label="Tên bệnh">Viêm khớp xác định khác, cẳng tay</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">66</td>
+        <td class="code" data-label="YHHĐ">M13.84</td>
+        <td class="code" data-label="YHCT">U62.141</td>
+        <td data-label="Tên bệnh">Viêm khớp xác định khác, bàn tay</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">67</td>
+        <td class="code" data-label="YHHĐ">M13.90</td>
+        <td class="code" data-label="YHCT">U62.141</td>
+        <td data-label="Tên bệnh">Viêm khớp, không xác định, nhiều vị trí</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">68</td>
+        <td class="code" data-label="YHHĐ">M16.0</td>
+        <td class="code" data-label="YHCT">U62.161.0</td>
+        <td data-label="Tên bệnh">Thoái hóa khớp háng nguyên phát, hai bên</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">69</td>
+        <td class="code" data-label="YHHĐ">M16.9</td>
+        <td class="code" data-label="YHCT">U62.161.9</td>
+        <td data-label="Tên bệnh">Thoái hóa khớp háng, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">70</td>
+        <td class="code" data-label="YHHĐ">M16.1</td>
+        <td class="code" data-label="YHCT">U62.161.1</td>
+        <td data-label="Tên bệnh">Thoái hóa khớp háng nguyên phát khác</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">71</td>
+        <td class="code" data-label="YHHĐ">M17.0</td>
+        <td class="code" data-label="YHCT">U62.261.0</td>
+        <td data-label="Tên bệnh">Thoái hóa khớp gối nguyên phát, hai bên</td>
+        <td class="danh" data-label="Bệnh danh">Hạc tất phong</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">72</td>
+        <td class="code" data-label="YHHĐ">M17.1</td>
+        <td class="code" data-label="YHCT">U62.261.1</td>
+        <td data-label="Tên bệnh">Thoái hóa khớp gối nguyên phát khác</td>
+        <td class="danh" data-label="Bệnh danh">Hạc tất phong</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">73</td>
+        <td class="code" data-label="YHHĐ">M17.9</td>
+        <td class="code" data-label="YHCT">U62.261.9</td>
+        <td data-label="Tên bệnh">Thoái hóa khớp gối, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Hạc tất phong</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">74</td>
+        <td class="code" data-label="YHHĐ">L20.9</td>
+        <td class="code" data-label="YHCT">U61.191.9</td>
+        <td data-label="Tên bệnh">Viêm da cơ địa, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Thấp chẩn</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">75</td>
+        <td class="code" data-label="YHHĐ">G53.0*</td>
+        <td class="code" data-label="YHCT">U55.211</td>
+        <td data-label="Tên bệnh">Đau dây thần kinh sau zona (B02.2†)</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">76</td>
+        <td class="code" data-label="YHHĐ">G58.0</td>
+        <td class="code" data-label="YHCT">U55.531</td>
+        <td data-label="Tên bệnh">Bệnh lý dây thần kinh liên sườn</td>
+        <td class="danh" data-label="Bệnh danh">Hiếp thống</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">77</td>
+        <td class="code" data-label="YHHĐ">M15.9</td>
+        <td class="code" data-label="YHCT">U62.151.9</td>
+        <td data-label="Tên bệnh">Thoái hóa đa khớp, không xác định</td>
+        <td class="danh" data-label="Bệnh danh">Chứng tý</td>
+      </tr>
+      <tr>
+        <td class="tt" data-label="TT">78</td>
+        <td class="code" data-label="YHHĐ">D51.3</td>
+        <td class="code" data-label="YHCT">U52.071.3</td>
+        <td data-label="Tên bệnh">Thiếu máu thiếu vitamin B12 trong chế độ ăn khác</td>
+        <td class="danh" data-label="Bệnh danh">Huyết hư</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>Tổng cộng 78 mã bệnh</footer>
+</div>
+
+<script>
+const searchInput = document.getElementById('search');
+const rows = Array.from(document.querySelectorAll('#dataTable tbody tr'));
+const countEl = document.getElementById('count');
+
+function updateCount(visible) {
+  countEl.textContent = visible + ' / ' + rows.length + ' dòng';
+}
+
+function highlight(td, term) {
+  const text = td.textContent;
+  const idx = text.toLowerCase().indexOf(term);
+  if (idx === -1) { td.innerHTML = text; return; }
+  td.innerHTML = text.slice(0, idx) + '<mark>' + text.slice(idx, idx + term.length) + '</mark>' + text.slice(idx + term.length);
+}
+
+searchInput.addEventListener('input', () => {
+  const term = searchInput.value.trim().toLowerCase();
+  let visible = 0;
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    const text = row.textContent.toLowerCase();
+    const match = term === '' || text.includes(term);
+    row.classList.toggle('hidden', !match);
+    if (match) visible++;
+    cells.forEach(td => {
+      if (term === '') {
+        td.innerHTML = td.textContent;
+      } else {
+        highlight(td, term);
+      }
+    });
+  });
+  updateCount(visible);
+});
+
+updateCount(rows.length);
+</script>
+</body>
+</html>
