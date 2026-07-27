@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Diễn Biến Kỹ Thuật PHCN - Bs Châu</title>
+    <title>Diễn Biến Kỹ Thuật PHCN - Dr. Châu</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -15,11 +15,12 @@
         .old-content { color: #888; font-size: 0.85em; background: #f9f9f9; padding: 8px; border-radius: 4px; margin-bottom: 8px; display: block; border-left: 3px solid #ccc; font-style: italic; }
         .new-content { color: #202124; font-weight: 500; font-size: 1.05em; line-height: 1.5; display: block; padding: 5px; }
         .weekend { background-color: #fff4e5; }
-        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 15px; }
-        #processBtn { background: #1a73e8; color: white; }
-        #toggleOldBtn { background: #5f6368; color: white; }
-        button:hover { opacity: 0.9; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        button, select { padding: 10px 14px; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; transition: 0.2s; font-size: 14px; height: 42px; }
+        #processBtn { background: #1a73e8; color: white; border: none; flex: 1; cursor: pointer; }
+        #toggleOldBtn { background: #5f6368; color: white; border: none; cursor: pointer; }
+        #diseaseSelect { background: #ffffff; color: #1a73e8; border: 2px solid #1a73e8; font-weight: bold; cursor: pointer; outline: none; }
+        button:hover, select:hover { opacity: 0.9; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
         button:disabled { background: #ccc; cursor: not-allowed; }
         .hidden { display: none !important; }
         .copy-btn {
@@ -44,10 +45,11 @@
             font-weight: bold;
             color: #1a73e8;
             cursor: pointer;
-            padding: 10px;
+            padding: 0 10px;
             border: 1px solid #1a73e8;
             border-radius: 5px;
             background: #f8f9fa;
+            height: 40px;
         }
         .checkbox-container input {
             width: 18px;
@@ -59,18 +61,22 @@
 <body>
 
 <div class="container">
+    <h2>Xử Lý Diễn Biến Kỹ Thuật PHCN</h2>
     
     <div id="uploadWrapper" class="upload-section" onclick="document.getElementById('fileInput').click()">
-        <strong>Click để chọn file</strong>
+        <strong>Click để chọn file HTML</strong>
         <input type="file" id="fileInput" accept=".html" style="display:none">
         <p id="fileNameDisplay" style="margin-top:10px; color: #555;"></p>
     </div>
 
     <div class="btn-group">
         <button id="processBtn" disabled>XỬ LÝ DỮ LIỆU</button>
+        <select id="diseaseSelect" class="hidden">
+            <!-- Tùy chọn lọc bệnh sẽ được tự động thêm vào đây -->
+        </select>
         <button id="toggleOldBtn" class="hidden">ẨN/HIỆN NỘI DUNG CŨ</button>
         <label class="checkbox-container hidden" id="rawModeWrapper">
-            <input type="checkbox" id="rawModeCheckbox"> Hiển thị nguyên văn diễn biến
+            <input type="checkbox" id="rawModeCheckbox"> Hiển thị nguyên văn
         </label>
     </div>
 
@@ -90,9 +96,19 @@
     const toggleBtn = document.getElementById('toggleOldBtn');
     const rawModeCheckbox = document.getElementById('rawModeCheckbox');
     const rawModeWrapper = document.getElementById('rawModeWrapper');
+    const diseaseSelect = document.getElementById('diseaseSelect');
     const resultArea = document.getElementById('resultArea');
     const uploadWrapper = document.getElementById('uploadWrapper');
+    
     let originalHtml = "";
+
+    // Định nghĩa danh mục bệnh và từ khóa nhận diện tương ứng
+    const DISEASE_RULES = [
+        { id: "co", name: "Cổ", regex: /cổ/i },
+        { id: "vai", name: "Vai", regex: /vai/i },
+        { id: "thatlung", name: "Thắt lưng", regex: /thắt lưng/i },
+        { id: "lietmat", name: "Liệt mặt", regex: /không kín|mờ|miệng méo|cải thiện|mắt|nếp nhăn trán|nhân trung|rãnh mũi má|liệt mặt/i }
+    ];
 
     fileInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -101,23 +117,48 @@
         const reader = new FileReader();
         reader.onload = (e) => { 
             originalHtml = e.target.result; 
-            runProcessing();
             
             uploadWrapper.style.display = 'none';
             toggleBtn.classList.remove('hidden');
             rawModeWrapper.classList.remove('hidden');
+
+            // Phát hiện các bệnh xuất hiện trong File
+            detectAndSetupDiseases();
+            runProcessing();
         };
         reader.readAsText(file);
     });
 
-    rawModeCheckbox.addEventListener('change', function() {
-        if (originalHtml) {
-            runProcessing();
+    rawModeCheckbox.addEventListener('change', runProcessing);
+    diseaseSelect.addEventListener('change', runProcessing);
+
+    // Kiểm tra file có những bệnh nào để hiển thị Dropdown
+    function detectAndSetupDiseases() {
+        let foundDiseases = new Set();
+
+        DISEASE_RULES.forEach(rule => {
+            if (rule.regex.test(originalHtml)) {
+                foundDiseases.add(rule);
+            }
+        });
+
+        // Nếu phát hiện từ 2 bệnh trở lên -> Hiển thị Dropdown
+        if (foundDiseases.size >= 2) {
+            diseaseSelect.innerHTML = `<option value="ALL">-- Tất cả bệnh (${foundDiseases.size}) --</option>`;
+            foundDiseases.forEach(d => {
+                diseaseSelect.innerHTML += `<option value="${d.id}">Bệnh: ${d.name}</option>`;
+            });
+            diseaseSelect.classList.remove('hidden');
+        } else {
+            diseaseSelect.classList.add('hidden');
+            diseaseSelect.innerHTML = "";
         }
-    });
+    }
 
     function runProcessing() {
-        const daysData = parseAndProcess(originalHtml, rawModeCheckbox.checked);
+        if (!originalHtml) return;
+        const selectedDisease = diseaseSelect.value || "ALL";
+        const daysData = parseAndProcess(originalHtml, rawModeCheckbox.checked, selectedDisease);
         renderTable(daysData);
     }
 
@@ -136,23 +177,17 @@
     function cleanAndFormatText(textArr) {
         let joinedText = textArr.join(". ");
         
-        // 1. Xóa chữ "Khám:" hoặc "Khám :" (không phân biệt hoa thường) ở bất kỳ đâu
         joinedText = joinedText.replace(/Khám\s*:\s*/gi, "");
-
-        // 2. Loại bỏ cụm từ "Mạch trầm"
         joinedText = joinedText.replace(/mạch trầm\.?/gi, "");
-             joinedText = joinedText.replace(/Bụng không đau, không ợ chua ợ hơi, không nôn, không buồn nôn.\.?/gi, ""); 
-        // 3. Chuyển "Bệnh tỉnh, tiếp xúc tốt" thành "Tỉnh, tiếp xúc tốt"
+        joinedText = joinedText.replace(/Bụng không đau, không ợ chua ợ hơi, không nôn, không buồn nôn.\.?/gi, ""); 
         joinedText = joinedText.replace(/Bệnh tỉnh,\s*tiếp xúc tốt/g, "Tỉnh, tiếp xúc tốt");
         
-        // 4. Chuẩn hóa lại dấu câu và khoảng trắng
         joinedText = joinedText
             .replace(/\.\s*\./g, '.')
             .replace(/,\s*\./g, '.')
             .replace(/\s\s+/g, ' ')
             .trim();
             
-        // Đảm bảo chữ cái đầu tiên của chuỗi được viết hoa sau khi xóa chữ "Khám:"
         if (joinedText) {
             joinedText = joinedText.charAt(0).toUpperCase() + joinedText.slice(1);
             if (!joinedText.endsWith('.')) {
@@ -162,7 +197,7 @@
         return joinedText;
     }
 
-    function parseAndProcess(html, isRawMode) {
+    function parseAndProcess(html, isRawMode, filterDisease) {
         const dayRegex = /<td\b[^>]*>\s*<nobr>(\d{2}\/\d{2}\/\d{4})<\/nobr>[\s\S]*?<\/td>/gi;
         const matches = [...html.matchAll(dayRegex)];
         let results = [];
@@ -203,48 +238,48 @@
                         previousCorePain = ""; 
                     } else {
                         let baseStatus = (i % 2 === 0) ? "Tỉnh, tiếp xúc tốt" : "Tỉnh, tiếp xúc tốt. Sinh hiệu ổn";
-let matchedLines = []; // Dùng mảng để chứa tất cả các dòng thỏa mãn
-for (let line of rawLines) {
-    // 1. Kiểm tra điều kiện cần: Bắt đầu bằng Đau/Còn đau/Mắt/Nếp nhăn và chứa cổ/vai/thắt lưng/không kín/mờ
-    const isTargetSymptom = (line.startsWith("Đau") || line.startsWith("Còn đau") || line.startsWith("Mắt") || line.startsWith("nếp nhăn trán")|| line.startsWith("Nhân trung")|| line.startsWith("Rãnh mũi má")|| line.startsWith("Liệt mặt")) && /cổ|vai|thắt lưng|không kín|mờ|miệng méo|cải thiện/i.test(line);
+                        let matchedLines = [];
 
+                        for (let line of rawLines) {
+                            const isTargetSymptom = (line.startsWith("Đau") || line.startsWith("Còn đau") || line.startsWith("Mắt") || line.startsWith("nếp nhăn trán")|| line.startsWith("Nhân trung")|| line.startsWith("Rãnh mũi má")|| line.startsWith("Liệt mặt")) && /cổ|vai|thắt lưng|không kín|mờ|miệng méo|cải thiện/i.test(line);
+                            const hasNoGoi = !/gối/i.test(line);
 
-    // 2. Kiểm tra điều kiện đủ: Dòng đó KHÔNG được chứa chữ "gối" (không phân biệt hoa thường)
-    const hasNoGoi = !/gối/i.test(line);
+                            if (isTargetSymptom && hasNoGoi) {
+                                // Lọc theo bệnh được chọn trên Dropdown
+                                if (filterDisease !== "ALL") {
+                                    const rule = DISEASE_RULES.find(r => r.id === filterDisease);
+                                    if (rule && rule.regex.test(line)) {
+                                        matchedLines.push(line);
+                                    }
+                                } else {
+                                    matchedLines.push(line);
+                                }
+                            }
+                        }
 
-    // Nếu thỏa mãn cả 2 thì mới đưa vào xử lý
-    if (isTargetSymptom && hasNoGoi) {
-        matchedLines.push(line);
-    }
-}
+                        if (matchedLines.length > 0) {
+                            let processedLines = matchedLines.map(currentPainLine => {
+                                let processedPain = currentPainLine;
+                                if (currentPainLine === previousCorePain || (processedPain.match(/đau tăng/g) || []).length > 1) {
+                                    const altVars = ["đau nhiều về đêm.", "vận động còn đau."];
+                                    let selectedAlt = altVars[i % altVars.length];
+                                    if (processedPain.includes("vận động hạn chế")) {
+                                        processedPain = processedPain.replace("vận động hạn chế", selectedAlt);
+                                    } else {
+                                        processedPain = processedPain.replace(/,?\s*gặp lạnh đau tăng/g, ", " + selectedAlt);
+                                        processedPain = processedPain.replace(/,?\s*vận động đau tăng/g, ", " + selectedAlt);
+                                    }
+                                }
+                                return processedPain;
+                            });
 
-if (matchedLines.length > 0) {
-    // Xử lý biến đổi logic đau tăng / hạn chế vận động cho từng dòng nếu cần
-    let processedLines = matchedLines.map(currentPainLine => {
-        let processedPain = currentPainLine;
-        if (currentPainLine === previousCorePain || (processedPain.match(/đau tăng/g) || []).length > 1) {
-            const altVars = ["đau nhiều về đêm.", "vận động còn đau."];
-            let selectedAlt = altVars[i % altVars.length];
-            if (processedPain.includes("vận động hạn chế")) {
-                processedPain = processedPain.replace("vận động hạn chế", selectedAlt);
-            } else {
-                processedPain = processedPain.replace(/,?\s*gặp lạnh đau tăng/g, ", " + selectedAlt);
-                processedPain = processedPain.replace(/,?\s*vận động đau tăng/g, ", " + selectedAlt);
-            }
-        }
-        return processedPain;
-    });
-
-    // Nối các dòng tìm được bằng dấu chấm
-    let combinedPain = processedLines.join(". ");
-    newText = baseStatus + ". " + combinedPain;
-    
-    // Lưu lại trạng thái dòng đầu tiên thỏa mãn để so sánh cho ngày tiếp theo
-    previousCorePain = matchedLines[0]; 
-} else {
-    newText = baseStatus + ".";
-    previousCorePain = ""; 
-}
+                            let combinedPain = processedLines.join(". ");
+                            newText = baseStatus + ". " + combinedPain;
+                            previousCorePain = matchedLines[0]; 
+                        } else {
+                            newText = baseStatus + ".";
+                            previousCorePain = ""; 
+                        }
                         
                         let formattedArr = newText.split(". ");
                         newText = cleanAndFormatText(formattedArr);
@@ -261,7 +296,6 @@ if (matchedLines.length > 0) {
         return results;
     }
 
-    // Các hàm renderTable và copyToClipboard giữ nguyên như cũ...
     function renderTable(data) {
         let html = `<table><thead><tr><th style="width:120px">Ngày</th><th>Diễn biến (Cũ & Mới)</th></tr></thead><tbody>`;
         data.forEach((item, index) => {
