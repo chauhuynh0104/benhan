@@ -1,169 +1,481 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zalo Sprite to GIF Converter</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f4f6f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: #ffffff;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-        h2 { margin-top: 0; color: #0068ff; text-align: center; }
-        .form-group { margin-bottom: 14px; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: #333; }
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-        .row { display: flex; gap: 10px; }
-        .row .form-group { flex: 1; }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #0068ff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 15px;
-            cursor: pointer;
-        }
-        button:hover { background: #0052cc; }
-        #status { margin-top: 15px; text-align: center; font-weight: 500; color: #555; }
-        #result { margin-top: 15px; text-align: center; }
-        #result img { border: 2px dashed #0068ff; border-radius: 8px; padding: 4px; background: #fff; }
-        .btn-download {
-            display: inline-block;
-            margin-top: 12px;
-            padding: 10px 20px;
-            background: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-        }
-        .btn-download:hover { background: #218838; }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/2.6.0/gifshot.min.js"></script>
+<meta charset="UTF-8">
+<title>Chuyển Sprite Sheet thành GIF</title>
+<style>
+  :root{
+    --bg:#faf7f5;
+    --card:#ffffff;
+    --pink:#ff8fb1;
+    --pink-dark:#e85d8a;
+    --text:#3a3a3a;
+    --muted:#8a8a8a;
+    --border:#f0e2e6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(180deg,#fff5f8 0%, #faf7f5 100%);
+    color:var(--text);
+    padding: 32px 16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  h1{
+    font-size: 22px;
+    margin: 0 0 4px 0;
+    color:var(--pink-dark);
+  }
+  p.sub{
+    color:var(--muted);
+    margin:0 0 24px 0;
+    font-size:14px;
+    text-align:center;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:24px;
+    width:100%;
+    max-width:560px;
+    box-shadow: 0 8px 24px rgba(232,93,138,0.08);
+    margin-bottom:20px;
+  }
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .tab-btn{
+    flex:1;
+    padding:10px;
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:13px;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .tab-btn.active{
+    background: linear-gradient(135deg,#ff9fbb,#ff7aa2);
+    color:#fff;
+    border-color:transparent;
+  }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+  .row{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  label{
+    font-size:13px;
+    color:var(--muted);
+    min-width:150px;
+  }
+  input[type=number], input[type=text]{
+    flex:1;
+    padding:8px 10px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:14px;
+  }
+  input[type=file]{
+    flex:1;
+    font-size:13px;
+  }
+  textarea{
+    width:100%;
+    min-height:90px;
+    padding:10px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:13px;
+    font-family: monospace;
+    resize:vertical;
+    margin-bottom:10px;
+  }
+  .dropzone{
+    border:2px dashed #f3c9d6;
+    border-radius:12px;
+    padding:20px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:16px;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .dropzone:hover, .dropzone.drag{
+    border-color:var(--pink);
+    background:#fff5f8;
+  }
+  button{
+    background: linear-gradient(135deg,#ff9fbb,#ff7aa2);
+    color:#fff;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    width:100%;
+    box-shadow: 0 4px 12px rgba(232,93,138,0.3);
+    transition: transform .1s ease;
+  }
+  button.secondary{
+    background:#fff;
+    color:var(--pink-dark);
+    border:1px solid var(--pink);
+    box-shadow:none;
+    margin-bottom:10px;
+  }
+  button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+  }
+  button:not(:disabled):hover{
+    transform: translateY(-1px);
+  }
+  .preview{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    margin-top:10px;
+  }
+  canvas, img#previewCanvas{
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:
+      linear-gradient(45deg,#eee 25%,transparent 25%),
+      linear-gradient(-45deg,#eee 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#eee 75%),
+      linear-gradient(-45deg,transparent 75%,#eee 75%);
+    background-size:16px 16px;
+    background-position:0 0,0 8px,8px -8px,-8px 0px;
+  }
+  #status{
+    font-size:13px;
+    color:var(--muted);
+    text-align:center;
+    min-height:18px;
+    white-space:pre-line;
+  }
+  #status.error{ color:#e74c3c; }
+  #progressWrap{
+    width:100%;
+    background:#f3e6ea;
+    border-radius:8px;
+    height:8px;
+    overflow:hidden;
+    margin-top:8px;
+    display:none;
+  }
+  #progressBar{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg,#ff9fbb,#ff7aa2);
+    transition: width .15s ease;
+  }
+  a.download-btn{
+    display:none;
+    text-align:center;
+    background:#2ecc71;
+    color:#fff;
+    padding:12px 20px;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:600;
+    width:100%;
+    box-shadow: 0 4px 12px rgba(46,204,113,0.3);
+  }
+  .hint{
+    font-size:12px;
+    color:var(--muted);
+    margin: -6px 0 12px 0;
+  }
+</style>
 </head>
 <body>
 
+<h1>🐱 Sprite Sheet → GIF động</h1>
+<p class="sub">Dán link ảnh / đoạn CSS, hoặc tải ảnh sprite lên, để chuyển thành GIF hoạt hình</p>
+
 <div class="card">
-    <h2>Chuyển Sprite Zalo Sang GIF</h2>
-    
-    <div class="form-group">
-        <label>URL Sprite Zalo:</label>
-        <input type="text" id="spriteUrl" value="https://zalo-api.zadn.vn/api/emoticon/sprite?eid=43523&size=130&checksum=85803b1a4d049e495049ec2a338b6605">
+  <div class="tabs">
+    <button type="button" class="tab-btn active" data-tab="link">🔗 Dán link / CSS</button>
+    <button type="button" class="tab-btn" data-tab="upload">📂 Tải ảnh lên</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-link">
+    <textarea id="cssInput" placeholder='Dán link ảnh hoặc cả đoạn CSS vào đây, ví dụ:
+width: 130px; height: 130px; background-image: url("https://zalo-api.zadn.vn/api/emoticon/sprite?eid=43526&size=130&checksum=..."); background-position: -2340px 0px; background-repeat: repeat-x; background-size: 2470px 130px;'></textarea>
+    <button type="button" class="secondary" id="parseBtn">Phân tích &amp; tải ảnh</button>
+    <div class="hint">Tự tách link ảnh từ <code>url(...)</code> và tự điền chiều rộng/cao khung hình, số khung hình, background-size nếu tìm thấy trong đoạn CSS.</div>
+  </div>
+
+  <div class="tab-panel" id="tab-upload">
+    <div class="dropzone" id="dropzone">
+      📂 Kéo thả ảnh sprite vào đây, hoặc bấm để chọn file<br>
+      <input type="file" id="fileInput" accept="image/*" style="margin-top:10px;">
     </div>
+  </div>
 
-    <div class="row">
-        <div class="form-group">
-            <label>Rộng (px):</label>
-            <input type="number" id="frameWidth" value="130">
-        </div>
-        <div class="form-group">
-            <label>Cao (px):</label>
-            <input type="number" id="frameHeight" value="130">
-        </div>
-        <div class="form-group">
-            <label>Độ trễ (ms):</label>
-            <input type="number" id="delay" value="80">
-        </div>
-    </div>
+  <div class="row">
+    <label>Chiều rộng 1 khung (px)</label>
+    <input type="number" id="frameW" value="130">
+  </div>
+  <div class="row">
+    <label>Chiều cao 1 khung (px)</label>
+    <input type="number" id="frameH" value="130">
+  </div>
+  <div class="row">
+    <label>Số khung hình</label>
+    <input type="number" id="frameCount" value="19">
+  </div>
+  <div class="row">
+    <label>Tốc độ (ms/khung)</label>
+    <input type="number" id="frameDelay" value="80">
+  </div>
 
-    <button onclick="makeGif()">Tải File GIF Động</button>
+  <button id="convertBtn" disabled>Chuyển thành GIF</button>
 
-    <div id="status"></div>
-    <div id="result"></div>
+  <div id="progressWrap"><div id="progressBar"></div></div>
+  <div id="status"></div>
 </div>
 
+<div class="card preview" id="previewCard" style="display:none;">
+  <canvas id="previewCanvas"></canvas>
+  <a id="downloadLink" class="download-btn" download="animation.gif">⬇️ Tải file GIF</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
 <script>
-async function makeGif() {
-    const status = document.getElementById('status');
-    const result = document.getElementById('result');
-    
-    let rawUrl = document.getElementById('spriteUrl').value;
-    let cleanUrl = rawUrl.replace(/&quot;/g, '').replace(/"/g, '').trim();
-    
-    const w = parseInt(document.getElementById('frameWidth').value) || 130;
-    const h = parseInt(document.getElementById('frameHeight').value) || 130;
-    const delayMs = parseInt(document.getElementById('delay').value) || 80;
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const convertBtn = document.getElementById('convertBtn');
+const statusEl = document.getElementById('status');
+const progressWrap = document.getElementById('progressWrap');
+const progressBar = document.getElementById('progressBar');
+const previewCard = document.getElementById('previewCard');
+const previewCanvas = document.getElementById('previewCanvas');
+const downloadLink = document.getElementById('downloadLink');
+const cssInput = document.getElementById('cssInput');
+const parseBtn = document.getElementById('parseBtn');
 
-    status.innerText = "Đang tải ảnh Sprite từ Zalo...";
-    result.innerHTML = "";
+let loadedImage = null;
+let imageIsTainted = false;
 
-    try {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.src = cleanUrl;
-        
-        await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = () => reject('Không thể tải ảnh. Hãy kiểm tra URL!');
-        });
+// --- Tabs ---
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
 
-        const totalFrames = Math.floor(img.width / w);
-        if (totalFrames <= 0) {
-            status.innerText = "Kích thước chiều rộng ảnh không hợp lệ.";
-            return;
-        }
-
-        status.innerText = `Đang cắt ${totalFrames} khung hình...`;
-
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-
-        const frames = [];
-        for (let i = 0; i < totalFrames; i++) {
-            ctx.clearRect(0, 0, w, h);
-            ctx.drawImage(img, i * w, 0, w, h, 0, 0, w, h);
-            frames.push(canvas.toDataURL('image/png'));
-        }
-
-        status.innerText = "Đang đóng gói thành file .GIF...";
-
-        gifshot.createGIF({
-            images: frames,
-            gifWidth: w,
-            gifHeight: h,
-            interval: delayMs / 1000,
-            numWorkers: 2
-        }, function (obj) {
-            if (!obj.error) {
-                status.innerText = "Tạo file GIF thành công!";
-                result.innerHTML = `
-                    <p><b>Xem trước GIF động:</b></p>
-                    <img src="${obj.image}" alt="GIF Animated"><br>
-                    <a class="btn-download" href="${obj.image}" download="zalo_sticker.gif">Tải File .GIF Về Máy</a>
-                `;
-            } else {
-                status.innerText = "Lỗi khi đóng gói GIF: " + obj.error;
-            }
-        });
-
-    } catch (err) {
-        status.innerText = "Lỗi: " + err;
-    }
+function setStatus(msg, isError){
+  statusEl.textContent = msg;
+  statusEl.classList.toggle('error', !!isError);
 }
+
+// --- Parse pasted CSS / link ---
+function extractUrl(text){
+  const m1 = text.match(/url\((?:["']?)([^"')]+)(?:["']?)\)/i);
+  if(m1) return m1[1];
+  const m2 = text.match(/https?:\/\/[^\s"'<>]+/i);
+  if(m2) return m2[0];
+  return null;
+}
+
+function extractFrameSize(text){
+  // matches "width: 130px; height: 130px;" (the element size, not background-size)
+  const m = text.match(/width:\s*([\d.]+)px;\s*height:\s*([\d.]+)px;/i);
+  if(m) return { w: parseFloat(m[1]), h: parseFloat(m[2]) };
+  return null;
+}
+
+function extractBgSize(text){
+  const m = text.match(/background-size:\s*([\d.]+)px\s+([\d.]+)px/i);
+  if(m) return { w: parseFloat(m[1]), h: parseFloat(m[2]) };
+  return null;
+}
+
+parseBtn.addEventListener('click', () => {
+  const text = cssInput.value.trim();
+  if(!text){
+    setStatus('Vui lòng dán link ảnh hoặc đoạn CSS trước.', true);
+    return;
+  }
+  const url = extractUrl(text);
+  if(!url){
+    setStatus('Không tìm thấy link ảnh trong nội dung đã dán.', true);
+    return;
+  }
+
+  const frameSize = extractFrameSize(text);
+  const bgSize = extractBgSize(text);
+
+  if(frameSize){
+    document.getElementById('frameW').value = frameSize.w;
+    document.getElementById('frameH').value = frameSize.h;
+  }
+  if(bgSize && frameSize && frameSize.w){
+    const count = Math.round(bgSize.w / frameSize.w);
+    if(count > 0) document.getElementById('frameCount').value = count;
+  }
+
+  loadImageFromUrl(url);
+});
+
+function loadImageFromUrl(url){
+  setStatus('Đang tải ảnh từ link...');
+  convertBtn.disabled = true;
+  imageIsTainted = false;
+
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+
+  img.onload = () => {
+    loadedImage = img;
+    convertBtn.disabled = false;
+    const fw = parseInt(document.getElementById('frameW').value) || 130;
+    if(img.width % fw === 0 && document.getElementById('frameCount').value == 19){
+      document.getElementById('frameCount').value = img.width / fw;
+    }
+    setStatus(`Đã tải ảnh: ${img.width} x ${img.height}px. Sẵn sàng chuyển đổi.`);
+  };
+
+  img.onerror = () => {
+    setStatus('Không tải được ảnh trực tiếp (có thể do máy chủ chặn CORS).\nHãy mở link ảnh ở tab mới, lưu ảnh về máy (chuột phải → Lưu ảnh), rồi dùng tab "Tải ảnh lên" bên trên.', true);
+    convertBtn.disabled = true;
+  };
+
+  img.src = url;
+}
+
+// --- Upload tab ---
+function handleFile(file){
+  if(!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      loadedImage = img;
+      imageIsTainted = false;
+      convertBtn.disabled = false;
+      setStatus(`Đã tải ảnh: ${img.width} x ${img.height}px`);
+      const fw = parseInt(document.getElementById('frameW').value) || 130;
+      if(img.width % fw === 0){
+        document.getElementById('frameCount').value = img.width / fw;
+      }
+      if(img.height){
+        document.getElementById('frameH').value = img.height;
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+dropzone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+dropzone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropzone.classList.add('drag');
+});
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('drag');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+// --- Convert to GIF ---
+convertBtn.addEventListener('click', () => {
+  if(!loadedImage) return;
+
+  const frameW = parseInt(document.getElementById('frameW').value);
+  const frameH = parseInt(document.getElementById('frameH').value);
+  const frameCount = parseInt(document.getElementById('frameCount').value);
+  const delay = parseInt(document.getElementById('frameDelay').value);
+
+  if(!frameW || !frameH || !frameCount){
+    setStatus('Vui lòng nhập đầy đủ thông số khung hình.', true);
+    return;
+  }
+
+  convertBtn.disabled = true;
+  setStatus('Đang khởi tạo bộ mã hoá GIF...');
+  progressWrap.style.display = 'block';
+  progressBar.style.width = '0%';
+
+  const gif = new GIF({
+    workers: 2,
+    quality: 10,
+    width: frameW,
+    height: frameH,
+    workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js',
+    transparent: 'rgba(0,0,0,0)'
+  });
+
+  const sliceCanvas = document.createElement('canvas');
+  sliceCanvas.width = frameW;
+  sliceCanvas.height = frameH;
+  const sctx = sliceCanvas.getContext('2d');
+
+  try{
+    for(let i = 0; i < frameCount; i++){
+      sctx.clearRect(0, 0, frameW, frameH);
+      sctx.drawImage(
+        loadedImage,
+        i * frameW, 0, frameW, frameH,
+        0, 0, frameW, frameH
+      );
+      gif.addFrame(sctx, {copy: true, delay: delay});
+    }
+  } catch(err){
+    setStatus('Ảnh bị chặn CORS nên trình duyệt không đọc được dữ liệu điểm ảnh.\nHãy lưu ảnh về máy (chuột phải vào ảnh → Lưu ảnh) rồi dùng tab "Tải ảnh lên" để chuyển đổi.', true);
+    progressWrap.style.display = 'none';
+    convertBtn.disabled = false;
+    return;
+  }
+
+  gif.on('progress', (p) => {
+    progressBar.style.width = Math.round(p * 100) + '%';
+    setStatus(`Đang mã hoá GIF... ${Math.round(p * 100)}%`);
+  });
+
+  gif.on('finished', (blob) => {
+    const url = URL.createObjectURL(blob);
+    downloadLink.href = url;
+    downloadLink.style.display = 'block';
+    previewCard.style.display = 'flex';
+
+    const oldEl = document.getElementById('previewCanvas');
+    const imgEl = document.createElement('img');
+    imgEl.id = 'previewCanvas';
+    imgEl.src = url;
+    imgEl.style.maxWidth = '100%';
+    oldEl.replaceWith(imgEl);
+
+    setStatus('✅ Hoàn tất! GIF đã sẵn sàng để tải xuống.');
+    progressWrap.style.display = 'none';
+    convertBtn.disabled = false;
+  });
+
+  gif.render();
+});
 </script>
 
 </body>
