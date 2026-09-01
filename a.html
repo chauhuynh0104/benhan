@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zalo Sprite to GIF Converter</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 480px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #0068ff;
+            font-size: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #333;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+        .row .form-group {
+            flex: 1;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0068ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0052cc;
+        }
+        #status {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+        }
+        #result {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #result img {
+            border: 2px dashed #0068ff;
+            border-radius: 8px;
+            padding: 4px;
+            background: #fafafa;
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Zalo Sprite sang GIF Converter</h2>
+    
+    <div class="form-group">
+        <label for="spriteUrl">URL Sprite Zalo:</label>
+        <input type="text" id="spriteUrl" value="https://zalo-api.zadn.vn/api/emoticon/sprite?eid=43523&size=130&checksum=85803b1a4d049e495049ec2a338b6605">
+    </div>
+
+    <div class="row">
+        <div class="form-group">
+            <label for="frameWidth">Rộng (px):</label>
+            <input type="number" id="frameWidth" value="130">
+        </div>
+        <div class="form-group">
+            <label for="frameHeight">Cao (px):</label>
+            <input type="number" id="frameHeight" value="130">
+        </div>
+        <div class="form-group">
+            <label for="delay">Độ trễ (ms):</label>
+            <input type="number" id="delay" value="80">
+        </div>
+    </div>
+
+    <button onclick="processSprite()">Tạo File GIF</button>
+
+    <div id="status"></div>
+    <div id="result"></div>
+</div>
+
+<script>
+// Bộ mã hóa GIF LZW siêu nhẹ thuần JavaScript
+class SimpleGifWriter {
+    constructor(width, height) {
+        this.w = width;
+        this.h = height;
+        this.data = [];
+        
+        // Header GIF89a
+        this.writeBytes([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]);
+        // Logical Screen Descriptor
+        this.writeShort(width);
+        this.writeShort(height);
+        this.writeBytes([0xF7, 0x00, 0x00]); // Global Color Table Flag (256 màu)
+
+        // Palette mặc định 256 màu
+        for (let i = 0; i < 256; i++) {
+            this.writeBytes([i, i, i]);
+        }
+
+        // Netscape Application Extension for Looping
+        this.writeBytes([0x21, 0xFF, 0x0B, 0x4E, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2E, 0x30, 0x03, 0x01, 0x00, 0x00, 0x00]);
+    }
+
+    writeBytes(arr) {
+        for (let b of arr) this.data.push(b & 0xFF);
+    }
+
+    writeShort(val) {
+        this.data.push(val & 0xFF, (val >> 8) & 0xFF);
+    }
+
+    addFrame(pixels, delayMs) {
+        let delay100th = Math.round(delayMs / 10);
+        // Graphic Control Extension
+        this.writeBytes([0x21, 0xF9, 0x04, 0x08, delay100th & 0xFF, (delay100th >> 8) & 0xFF, 0x00, 0x00]);
+        // Image Descriptor
+        this.writeBytes([0x2C]);
+        this.writeShort(0); this.writeShort(0);
+        this.writeShort(this.w); this.writeShort(this.h);
+        this.writeBytes([0x00]);
+
+        // LZW Encoder
+        let initCodeSize = 8;
+        this.writeBytes([initCodeSize]);
+
+        let clearCode = 1 << initCodeSize;
+        let eofCode = clearCode + 1;
+        let curCodeSize = initCodeSize + 1;
+        let maxCode = (1 << curCodeSize);
+
+        let dictionary = new Map();
+        let nextCode = eofCode + 1;
+
+        let bitBuffer = 0;
+        let bitCount = 0;
+        let outputBytes = [];
+
+        const writeCode = (code) => {
+            bitBuffer |= (code << bitCount);
+            bitCount += curCodeSize;
+            while (bitCount >= 8) {
+                outputBytes.push(bitBuffer & 0xFF);
+                bitBuffer >>= 8;
+                bitCount -= 8;
+            }
+        };
+
+        const resetDict = () => {
+            dictionary.clear();
+            curCodeSize = initCodeSize + 1;
+            maxCode = 1 << curCodeSize;
+            nextCode = eofCode + 1;
+        };
+
+        writeCode(clearCode);
+        let prefix = "";
+
+        for (let i = 0; i < pixels.length; i++) {
+            let k = String.fromCharCode(pixels[i]);
+            let pk = prefix + k;
+
+            if (dictionary.has(pk)) {
+                prefix = pk;
+            } else {
+                writeCode(prefix.length === 1 ? prefix.charCodeAt(0) : dictionary.get(prefix));
+                if (nextCode < 4096) {
+                    dictionary.set(pk, nextCode++);
+                    if (nextCode >= maxCode && curCodeSize < 12) {
+                        curCodeSize++;
+                        maxCode = 1 << curCodeSize;
+                    }
+                } else {
+                    writeCode(clearCode);
+                    resetDict();
+                }
+                prefix = k;
+            }
+        }
+
+        if (prefix !== "") {
+            writeCode(prefix.length === 1 ? prefix.charCodeAt(0) : dictionary.get(prefix));
+        }
+        writeCode(eofCode);
+
+        if (bitCount > 0) {
+            outputBytes.push(bitBuffer & 0xFF);
+        }
+
+        // Write Sub-blocks
+        for (let i = 0; i < outputBytes.length; i += 255) {
+            let chunk = outputBytes.slice(i, i + 255);
+            this.writeBytes([chunk.length, ...chunk]);
+        }
+        this.writeBytes([0x00]);
+    }
+
+    getBlob() {
+        this.writeBytes([0x3B]); // GIF Trailer
+        return new Blob([new Uint8Array(this.data)], { type: 'image/gif' });
+    }
+}
+
+async function processSprite() {
+    const status = document.getElementById('status');
+    const result = document.getElementById('result');
+    
+    let rawUrl = document.getElementById('spriteUrl').value;
+    let cleanUrl = rawUrl.replace(/&quot;/g, '').replace(/"/g, '').trim();
+    
+    const w = parseInt(document.getElementById('frameWidth').value) || 130;
+    const h = parseInt(document.getElementById('frameHeight').value) || 130;
+    const delay = parseInt(document.getElementById('delay').value) || 80;
+
+    status.innerText = "Đang tải ảnh Sprite...";
+    result.innerHTML = "";
+
+    try {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = cleanUrl;
+        
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = () => reject('Không thể tải ảnh. Hãy kiểm tra URL!');
+        });
+
+        const totalFrames = Math.floor(img.width / w);
+        if (totalFrames <= 0) {
+            status.innerText = "Kích thước ảnh không hợp lệ.";
+            return;
+        }
+
+        status.innerText = `Đang xử lý ${totalFrames} khung hình...`;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        const gif = new SimpleGifWriter(w, h);
+
+        for (let i = 0; i < totalFrames; i++) {
+            ctx.clearRect(0, 0, w, h);
+            ctx.drawImage(img, i * w, 0, w, h, 0, 0, w, h);
+            
+            const imgData = ctx.getImageData(0, 0, w, h).data;
+            const pixels = new Uint8Array(w * h);
+
+            // Chuyển RGBA về Grayscale 256 màu tiêu chuẩn
+            for (let p = 0; p < imgData.length; p += 4) {
+                let r = imgData[p], g = imgData[p+1], b = imgData[p+2], a = imgData[p+3];
+                pixels[p / 4] = a < 128 ? 255 : Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+            }
+
+            gif.addFrame(pixels, delay);
+        }
+
+        const blob = gif.getBlob();
+        const gifUrl = URL.createObjectURL(blob);
+
+        status.innerText = "Tạo GIF thành công!";
+        result.innerHTML = `
+            <p><b>Xem trước:</b></p>
+            <img src="${gifUrl}" alt="GIF Result"><br>
+            <a class="download-btn" href="${gifUrl}" download="zalo_sticker.gif">Tải File GIF Về Máy</a>
+        `;
+
+    } catch (err) {
+        status.innerText = "Lỗi: " + err;
+    }
+}
+</script>
+
+</body>
+</html>
