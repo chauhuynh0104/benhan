@@ -1,482 +1,242 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Chuyển Sprite Sheet thành GIF</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprite → GIF</title>
 <style>
-  :root{
-    --bg:#faf7f5;
-    --card:#ffffff;
-    --pink:#ff8fb1;
-    --pink-dark:#e85d8a;
-    --text:#3a3a3a;
-    --muted:#8a8a8a;
-    --border:#f0e2e6;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: linear-gradient(180deg,#fff5f8 0%, #faf7f5 100%);
-    color:var(--text);
-    padding: 32px 16px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-  }
-  h1{
-    font-size: 22px;
-    margin: 0 0 4px 0;
-    color:var(--pink-dark);
-  }
-  p.sub{
-    color:var(--muted);
-    margin:0 0 24px 0;
-    font-size:14px;
-    text-align:center;
-  }
-  .card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:24px;
-    width:100%;
-    max-width:560px;
-    box-shadow: 0 8px 24px rgba(232,93,138,0.08);
-    margin-bottom:20px;
-  }
-  .tabs{
-    display:flex;
-    gap:8px;
-    margin-bottom:16px;
-  }
-  .tab-btn{
-    flex:1;
-    padding:10px;
-    border:1px solid var(--border);
-    background:#fff;
-    border-radius:10px;
-    cursor:pointer;
-    font-size:13px;
-    font-weight:600;
-    color:var(--muted);
-  }
-  .tab-btn.active{
-    background: linear-gradient(135deg,#ff9fbb,#ff7aa2);
-    color:#fff;
-    border-color:transparent;
-  }
-  .tab-panel{ display:none; }
-  .tab-panel.active{ display:block; }
-  .row{
-    display:flex;
-    gap:12px;
-    align-items:center;
-    margin-bottom:14px;
-  }
-  label{
-    font-size:13px;
-    color:var(--muted);
-    min-width:150px;
-  }
-  input[type=number], input[type=text]{
-    flex:1;
-    padding:8px 10px;
-    border:1px solid var(--border);
-    border-radius:8px;
-    font-size:14px;
-  }
-  input[type=file]{
-    flex:1;
-    font-size:13px;
-  }
-  textarea{
-    width:100%;
-    min-height:90px;
-    padding:10px;
-    border:1px solid var(--border);
-    border-radius:8px;
-    font-size:13px;
-    font-family: monospace;
-    resize:vertical;
-    margin-bottom:10px;
-  }
-  .dropzone{
-    border:2px dashed #f3c9d6;
-    border-radius:12px;
-    padding:20px;
-    text-align:center;
-    color:var(--muted);
-    font-size:13px;
-    margin-bottom:16px;
-    cursor:pointer;
-    transition: all .15s ease;
-  }
-  .dropzone:hover, .dropzone.drag{
-    border-color:var(--pink);
-    background:#fff5f8;
-  }
-  button{
-    background: linear-gradient(135deg,#ff9fbb,#ff7aa2);
-    color:#fff;
-    border:none;
-    padding:12px 20px;
-    border-radius:10px;
-    font-size:15px;
-    font-weight:600;
-    cursor:pointer;
-    width:100%;
-    box-shadow: 0 4px 12px rgba(232,93,138,0.3);
-    transition: transform .1s ease;
-  }
-  button.secondary{
-    background:#fff;
-    color:var(--pink-dark);
-    border:1px solid var(--pink);
-    box-shadow:none;
-    margin-bottom:10px;
-  }
-  button:disabled{
-    opacity:.5;
-    cursor:not-allowed;
-  }
-  button:not(:disabled):hover{
-    transform: translateY(-1px);
-  }
-  .preview{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-    margin-top:10px;
-  }
-  canvas, img#previewCanvas{
-    border-radius:12px;
-    border:1px solid var(--border);
-    background:
-      linear-gradient(45deg,#eee 25%,transparent 25%),
-      linear-gradient(-45deg,#eee 25%,transparent 25%),
-      linear-gradient(45deg,transparent 75%,#eee 75%),
-      linear-gradient(-45deg,transparent 75%,#eee 75%);
-    background-size:16px 16px;
-    background-position:0 0,0 8px,8px -8px,-8px 0px;
-  }
-  #status{
-    font-size:13px;
-    color:var(--muted);
-    text-align:center;
-    min-height:18px;
-    white-space:pre-line;
-  }
-  #status.error{ color:#e74c3c; }
-  #progressWrap{
-    width:100%;
-    background:#f3e6ea;
-    border-radius:8px;
-    height:8px;
-    overflow:hidden;
-    margin-top:8px;
-    display:none;
-  }
-  #progressBar{
-    height:100%;
-    width:0%;
-    background: linear-gradient(90deg,#ff9fbb,#ff7aa2);
-    transition: width .15s ease;
-  }
-  a.download-btn{
-    display:none;
-    text-align:center;
-    background:#2ecc71;
-    color:#fff;
-    padding:12px 20px;
-    border-radius:10px;
-    text-decoration:none;
-    font-weight:600;
-    width:100%;
-    box-shadow: 0 4px 12px rgba(46,204,113,0.3);
-  }
-  .hint{
-    font-size:12px;
-    color:var(--muted);
-    margin: -6px 0 12px 0;
-  }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; padding: 24px;
+        font-family: Arial, sans-serif;
+        background: #f5f5f5; color: #222;
+    }
+    .box {
+        max-width: 850px; margin: auto; background: white;
+        padding: 24px; border-radius: 16px;
+        box-shadow: 0 4px 20px #0001;
+    }
+    h2 { margin-top: 0; }
+    label { display:block; margin: 14px 0 6px; font-weight: 600; }
+    input[type=text], input[type=number] {
+        width: 100%; padding: 10px 12px;
+        border: 1px solid #ccc; border-radius: 8px;
+    }
+    input[type=file] { width:100%; padding:8px 0; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; }
+    .row > div { flex:1; min-width:140px; }
+    button {
+        border:0; border-radius:9px; padding:11px 18px;
+        cursor:pointer; font-weight:600; margin-top:18px;
+    }
+    #convert { background:#1976d2; color:white; }
+    #convert:disabled { opacity:.5; cursor:not-allowed; }
+    #download {
+        background:#2e7d32; color:white; display:none;
+        text-decoration:none; padding:11px 18px; border-radius:9px;
+        margin-left:8px;
+    }
+    #preview {
+        margin-top:20px; min-height:150px;
+        display:flex; align-items:center; justify-content:center;
+        background:#eee; border-radius:10px; padding:12px;
+    }
+    #preview img { max-width:100%; image-rendering:auto; }
+    #status { margin-top:14px; white-space:pre-wrap; color:#555; }
+    .hint { color:#666; font-size:13px; line-height:1.5; }
+    .check { display:flex; gap:8px; align-items:center; margin-top:12px; }
+    code { background:#eee; padding:2px 5px; border-radius:4px; }
 </style>
 </head>
 <body>
+<div class="box">
+    <h2>🖼️ Sprite → GIF</h2>
+    <p class="hint">
+        Dán link sprite hoặc tải ảnh sprite lên. Công cụ sẽ tự cắt thành từng ô
+        <code>130 × 130</code> và ghép thành GIF.
+    </p>
 
-<h1>🐱 Sprite Sheet → GIF động</h1>
-<p class="sub">Dán link ảnh / đoạn CSS, hoặc tải ảnh sprite lên, để chuyển thành GIF hoạt hình</p>
+    <label>1. Link ảnh sprite</label>
+    <input id="url" type="text"
+        value="https://zalo-api.zadn.vn/api/emoticon/sprite?eid=43526&size=130&checksum=35d62da05d8afa250a6f3c8bb33ad513"
+        placeholder="https://...">
 
-<div class="card">
-  <div class="tabs">
-    <button type="button" class="tab-btn active" data-tab="link">🔗 Dán link / CSS</button>
-    <button type="button" class="tab-btn" data-tab="upload">📂 Tải ảnh lên</button>
-  </div>
+    <label>Hoặc 2. Tải ảnh sprite</label>
+    <input id="file" type="file" accept="image/*">
 
-  <div class="tab-panel active" id="tab-link">
-    <textarea id="cssInput" placeholder='Dán link ảnh hoặc cả đoạn CSS vào đây, ví dụ:
-width: 130px; height: 130px; background-image: url("https://zalo-api.zadn.vn/api/emoticon/sprite?eid=43526&size=130&checksum=..."); background-position: -2340px 0px; background-repeat: repeat-x; background-size: 2470px 130px;'></textarea>
-    <button type="button" class="secondary" id="parseBtn">Phân tích &amp; tải ảnh</button>
-    <div class="hint">Tự tách link ảnh từ <code>url(...)</code> và tự điền chiều rộng/cao khung hình, số khung hình, background-size nếu tìm thấy trong đoạn CSS.</div>
-  </div>
-
-  <div class="tab-panel" id="tab-upload">
-    <div class="dropzone" id="dropzone">
-      📂 Kéo thả ảnh sprite vào đây, hoặc bấm để chọn file<br>
-      <input type="file" id="fileInput" accept="image/*" style="margin-top:10px;">
+    <div class="row">
+        <div>
+            <label>Chiều rộng mỗi frame</label>
+            <input id="fw" type="number" value="130" min="1">
+        </div>
+        <div>
+            <label>Chiều cao mỗi frame</label>
+            <input id="fh" type="number" value="130" min="1">
+        </div>
+        <div>
+            <label>Thời gian/frame (ms)</label>
+            <input id="delay" type="number" value="180" min="20">
+        </div>
     </div>
-  </div>
 
-  <div class="row">
-    <label>Chiều rộng 1 khung (px)</label>
-    <input type="number" id="frameW" value="130">
-  </div>
-  <div class="row">
-    <label>Chiều cao 1 khung (px)</label>
-    <input type="number" id="frameH" value="130">
-  </div>
-  <div class="row">
-    <label>Số khung hình</label>
-    <input type="number" id="frameCount" value="19">
-  </div>
-  <div class="row">
-    <label>Tốc độ (ms/khung)</label>
-    <input type="number" id="frameDelay" value="80">
-  </div>
+    <label class="check">
+        <input id="transparent" type="checkbox" checked>
+        Giữ nền trong suốt
+    </label>
 
-  <button id="convertBtn" disabled>Chuyển thành GIF</button>
+    <button id="convert">Chuyển thành GIF</button>
+    <a id="download" download="sprite.gif">⬇ Tải GIF</a>
 
-  <div id="progressWrap"><div id="progressBar"></div></div>
-  <div id="status"></div>
+    <div id="preview">
+        <span>Preview sẽ hiện ở đây</span>
+    </div>
+    <div id="status"></div>
 </div>
 
-<div class="card preview" id="previewCard" style="display:none;">
-  <canvas id="previewCanvas"></canvas>
-  <a id="downloadLink" class="download-btn" download="animation.gif">⬇️ Tải file GIF</a>
-</div>
-
+<!-- gif.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+
 <script>
-const dropzone = document.getElementById('dropzone');
-const fileInput = document.getElementById('fileInput');
-const convertBtn = document.getElementById('convertBtn');
-const statusEl = document.getElementById('status');
-const progressWrap = document.getElementById('progressWrap');
-const progressBar = document.getElementById('progressBar');
-const previewCard = document.getElementById('previewCard');
-const previewCanvas = document.getElementById('previewCanvas');
-const downloadLink = document.getElementById('downloadLink');
-const cssInput = document.getElementById('cssInput');
-const parseBtn = document.getElementById('parseBtn');
+const $ = id => document.getElementById(id);
 
-let loadedImage = null;
-let imageIsTainted = false;
+let previewURL = null;
 
-// --- Tabs ---
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-  });
-});
-
-function setStatus(msg, isError){
-  statusEl.textContent = msg;
-  statusEl.classList.toggle('error', !!isError);
+function setStatus(text) {
+    $("status").textContent = text;
 }
 
-// --- Parse pasted CSS / link ---
-function extractUrl(text){
-  const m1 = text.match(/url\((?:["']?)([^"')]+)(?:["']?)\)/i);
-  if(m1) return m1[1];
-  const m2 = text.match(/https?:\/\/[^\s"'<>]+/i);
-  if(m2) return m2[0];
-  return null;
+function loadImageFromFile(file) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            resolve(img);
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error("Không đọc được ảnh."));
+        };
+        img.src = url;
+    });
 }
 
-function extractFrameSize(text){
-  // matches "width: 130px; height: 130px;" (the element size, not background-size)
-  const m = text.match(/width:\s*([\d.]+)px;\s*height:\s*([\d.]+)px;/i);
-  if(m) return { w: parseFloat(m[1]), h: parseFloat(m[2]) };
-  return null;
+function loadImageFromURL(url) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        // Zalo phải cho phép CORS thì trình duyệt mới cho phép
+        // vẽ ảnh URL trực tiếp vào canvas để tạo GIF.
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(
+            "Không tải được ảnh từ URL. Nếu link không hỗ trợ CORS, hãy tải ảnh về rồi chọn 'Tải ảnh sprite'."
+        ));
+        img.src = url;
+    });
 }
 
-function extractBgSize(text){
-  const m = text.match(/background-size:\s*([\d.]+)px\s+([\d.]+)px/i);
-  if(m) return { w: parseFloat(m[1]), h: parseFloat(m[2]) };
-  return null;
-}
+$("convert").addEventListener("click", async () => {
+    const button = $("convert");
+    const file = $("file").files[0];
+    const url = $("url").value.trim();
+    const fw = Math.max(1, parseInt($("fw").value) || 130);
+    const fh = Math.max(1, parseInt($("fh").value) || 130);
+    const delay = Math.max(20, parseInt($("delay").value) || 180);
 
-parseBtn.addEventListener('click', () => {
-  const text = cssInput.value.trim();
-  if(!text){
-    setStatus('Vui lòng dán link ảnh hoặc đoạn CSS trước.', true);
-    return;
-  }
-  const url = extractUrl(text);
-  if(!url){
-    setStatus('Không tìm thấy link ảnh trong nội dung đã dán.', true);
-    return;
-  }
-
-  const frameSize = extractFrameSize(text);
-  const bgSize = extractBgSize(text);
-
-  if(frameSize){
-    document.getElementById('frameW').value = frameSize.w;
-    document.getElementById('frameH').value = frameSize.h;
-  }
-  if(bgSize && frameSize && frameSize.w){
-    const count = Math.round(bgSize.w / frameSize.w);
-    if(count > 0) document.getElementById('frameCount').value = count;
-  }
-
-  loadImageFromUrl(url);
-});
-
-function loadImageFromUrl(url){
-  setStatus('Đang tải ảnh từ link...');
-  convertBtn.disabled = true;
-  imageIsTainted = false;
-
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-
-  img.onload = () => {
-    loadedImage = img;
-    convertBtn.disabled = false;
-    const fw = parseInt(document.getElementById('frameW').value) || 130;
-    if(img.width % fw === 0 && document.getElementById('frameCount').value == 19){
-      document.getElementById('frameCount').value = img.width / fw;
+    if (!file && !url) {
+        setStatus("❌ Hãy dán link hoặc chọn ảnh.");
+        return;
     }
-    setStatus(`Đã tải ảnh: ${img.width} x ${img.height}px. Sẵn sàng chuyển đổi.`);
-  };
 
-  img.onerror = () => {
-    setStatus('Không tải được ảnh trực tiếp (có thể do máy chủ chặn CORS).\nHãy mở link ảnh ở tab mới, lưu ảnh về máy (chuột phải → Lưu ảnh), rồi dùng tab "Tải ảnh lên" bên trên.', true);
-    convertBtn.disabled = true;
-  };
+    button.disabled = true;
+    $("download").style.display = "none";
+    setStatus("⏳ Đang tải ảnh...");
 
-  img.src = url;
-}
+    try {
+        const img = file ? await loadImageFromFile(file) : await loadImageFromURL(url);
 
-// --- Upload tab ---
-function handleFile(file){
-  if(!file || !file.type.startsWith('image/')) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = new Image();
-    img.onload = () => {
-      loadedImage = img;
-      imageIsTainted = false;
-      convertBtn.disabled = false;
-      setStatus(`Đã tải ảnh: ${img.width} x ${img.height}px`);
-      const fw = parseInt(document.getElementById('frameW').value) || 130;
-      if(img.width % fw === 0){
-        document.getElementById('frameCount').value = img.width / fw;
-      }
-      if(img.height){
-        document.getElementById('frameH').value = img.height;
-      }
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
+        const frames = Math.floor(img.width / fw);
+        if (frames < 1) throw new Error("Ảnh quá nhỏ so với kích thước frame.");
 
-dropzone.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        // Preview sprite gốc
+        if (previewURL) URL.revokeObjectURL(previewURL);
+        if (file) {
+            previewURL = URL.createObjectURL(file);
+            $("preview").innerHTML = `<img src="${previewURL}" alt="Sprite">`;
+        } else {
+            $("preview").innerHTML = "";
+            const p = document.createElement("img");
+            p.src = url;
+            $("preview").appendChild(p);
+        }
 
-dropzone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  dropzone.classList.add('drag');
-});
-dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
-dropzone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropzone.classList.remove('drag');
-  handleFile(e.dataTransfer.files[0]);
-});
+        setStatus(`✅ Ảnh: ${img.width} × ${img.height}px\n` +
+                  `🎞️ Số frame: ${frames}\n` +
+                  `⏱️ ${delay} ms/frame\n\nĐang tạo GIF...`);
 
-// --- Convert to GIF ---
-convertBtn.addEventListener('click', () => {
-  if(!loadedImage) return;
+        const gif = new GIF({
+            workers: 2,
+            quality: 10,
+            width: fw,
+            height: fh,
+            transparent: $("transparent").checked ? 0x000000 : null,
+            workerScript: "https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js"
+        });
 
-  const frameW = parseInt(document.getElementById('frameW').value);
-  const frameH = parseInt(document.getElementById('frameH').value);
-  const frameCount = parseInt(document.getElementById('frameCount').value);
-  const delay = parseInt(document.getElementById('frameDelay').value);
+        // Tạo canvas riêng để tránh làm bẩn canvas preview.
+        const canvas = document.createElement("canvas");
+        canvas.width = fw;
+        canvas.height = fh;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-  if(!frameW || !frameH || !frameCount){
-    setStatus('Vui lòng nhập đầy đủ thông số khung hình.', true);
-    return;
-  }
+        for (let i = 0; i < frames; i++) {
+            ctx.clearRect(0, 0, fw, fh);
+            if (!$("transparent").checked) {
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(0, 0, fw, fh);
+            }
 
-  convertBtn.disabled = true;
-  setStatus('Đang khởi tạo bộ mã hoá GIF...');
-  progressWrap.style.display = 'block';
-  progressBar.style.width = '0%';
+            ctx.drawImage(
+                img,
+                i * fw, 0, fw, fh,
+                0, 0, fw, fh
+            );
 
-  const gif = new GIF({
-    workers: 2,
-    quality: 10,
-    width: frameW,
-    height: frameH,
-    workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js',
-    transparent: 'rgba(0,0,0,0)'
-  });
+            gif.addFrame(canvas, {copy: true, delay: delay});
+            setStatus(`🎞️ Đang thêm frame ${i + 1}/${frames}...`);
+        }
 
-  const sliceCanvas = document.createElement('canvas');
-  sliceCanvas.width = frameW;
-  sliceCanvas.height = frameH;
-  const sctx = sliceCanvas.getContext('2d');
+        gif.on("progress", p => {
+            setStatus(`⚙️ Đang mã hóa GIF: ${Math.round(p * 100)}%`);
+        });
 
-  try{
-    for(let i = 0; i < frameCount; i++){
-      sctx.clearRect(0, 0, frameW, frameH);
-      sctx.drawImage(
-        loadedImage,
-        i * frameW, 0, frameW, frameH,
-        0, 0, frameW, frameH
-      );
-      gif.addFrame(sctx, {copy: true, delay: delay});
+        gif.on("finished", blob => {
+            const gifURL = URL.createObjectURL(blob);
+            const download = $("download");
+
+            download.href = gifURL;
+            download.style.display = "inline-block";
+
+            $("preview").innerHTML = `<img src="${gifURL}" alt="GIF preview">`;
+            setStatus(
+                `✅ Hoàn tất!\n` +
+                `🎞️ ${frames} frame\n` +
+                `📐 ${fw} × ${fh}px\n` +
+                `⏱️ ${delay} ms/frame\n` +
+                `📦 ${(blob.size / 1024).toFixed(1)} KB`
+            );
+            button.disabled = false;
+        });
+
+        gif.render();
+
+    } catch (err) {
+        console.error(err);
+        setStatus("❌ " + err.message);
+        button.disabled = false;
     }
-  } catch(err){
-    setStatus('Ảnh bị chặn CORS nên trình duyệt không đọc được dữ liệu điểm ảnh.\nHãy lưu ảnh về máy (chuột phải vào ảnh → Lưu ảnh) rồi dùng tab "Tải ảnh lên" để chuyển đổi.', true);
-    progressWrap.style.display = 'none';
-    convertBtn.disabled = false;
-    return;
-  }
-
-  gif.on('progress', (p) => {
-    progressBar.style.width = Math.round(p * 100) + '%';
-    setStatus(`Đang mã hoá GIF... ${Math.round(p * 100)}%`);
-  });
-
-  gif.on('finished', (blob) => {
-    const url = URL.createObjectURL(blob);
-    downloadLink.href = url;
-    downloadLink.style.display = 'block';
-    previewCard.style.display = 'flex';
-
-    const oldEl = document.getElementById('previewCanvas');
-    const imgEl = document.createElement('img');
-    imgEl.id = 'previewCanvas';
-    imgEl.src = url;
-    imgEl.style.maxWidth = '100%';
-    oldEl.replaceWith(imgEl);
-
-    setStatus('✅ Hoàn tất! GIF đã sẵn sàng để tải xuống.');
-    progressWrap.style.display = 'none';
-    convertBtn.disabled = false;
-  });
-
-  gif.render();
 });
 </script>
-
 </body>
 </html>
