@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -20,6 +19,8 @@
         .btn-download { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; border: none; cursor: pointer; font-size: 14px; }
         .btn-download:hover { background: #218838; }
         #gifPreview { margin-top: 15px; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #0068ff; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -53,12 +54,93 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
-
 <script>
+// GIF Encoder đơn giản không cần Worker
+class SimpleGIFEncoder {
+    constructor(width, height, delay) {
+        this.width = width;
+        this.height = height;
+        this.delay = delay;
+        this.frames = [];
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.ctx = this.canvas.getContext('2d');
+    }
+
+    addFrame(ctx) {
+        // Lưu frame dưới dạng ImageData
+        const imageData = ctx.getImageData(0, 0, this.width, this.height);
+        this.frames.push(imageData);
+    }
+
+    async render() {
+        if (this.frames.length === 0) return null;
+
+        // Tạo canvas để vẽ từng frame
+        const canvas = document.createElement('canvas');
+        canvas.width = this.width;
+        canvas.height = this.height;
+        const ctx = canvas.getContext('2d');
+
+        // Chuyển đổi frames thành base64 images
+        const frameImages = [];
+        for (const frame of this.frames) {
+            ctx.putImageData(frame, 0, 0);
+            frameImages.push(canvas.toDataURL('image/png'));
+        }
+
+        // Tạo GIF bằng cách sử dụng MediaRecorder với canvas
+        const gifCanvas = document.createElement('canvas');
+        gifCanvas.width = this.width;
+        gifCanvas.height = this.height;
+        const gifCtx = gifCanvas.getContext('2d');
+
+        const stream = gifCanvas.captureStream(1000 / this.delay);
+        const recorder = new MediaRecorder(stream, {
+            mimeType: 'video/webm',
+            videoBitsPerSecond: 5000000
+        });
+
+        const chunks = [];
+        recorder.ondataavailable = (e) => {
+            if (e.data.size > 0) {
+                chunks.push(e.data);
+            }
+        };
+
+        return new Promise((resolve, reject) => {
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                resolve(blob);
+            };
+
+            recorder.start(100);
+            
+            let frameIndex = 0;
+            const interval = setInterval(() => {
+                const img = new Image();
+                img.onload = () => {
+                    gifCtx.clearRect(0, 0, this.width, this.height);
+                    gifCtx.drawImage(img, 0, 0);
+                };
+                img.src = frameImages[frameIndex];
+                
+                frameIndex = (frameIndex + 1) % frameImages.length;
+            }, this.delay);
+
+            // Dừng sau khi đã render đủ số lần
+            setTimeout(() => {
+                clearInterval(interval);
+                recorder.stop();
+            }, this.delay * this.frames.length + 100);
+        });
+    }
+}
+
+// Hàm chuyển đổi
 async function convert() {
     const status = document.getElementById('status');
-    const result = document.getElementById('result');
     const gifPreview = document.getElementById('gifPreview');
     
     let rawUrl = document.getElementById('spriteUrl').value;
@@ -68,82 +150,79 @@ async function convert() {
     const h = parseInt(document.getElementById('h').value) || 130;
     const delay = parseInt(document.getElementById('delay').value) || 80;
 
-    status.innerText = "Đang tải ảnh Sprite...";
-    gifPreview.innerHTML = "";
-    result.innerHTML = '<div id="gifPreview"></div>';
+    status.innerHTML = "Đang tải ảnh Sprite...";
+    gifPreview.innerHTML = '';
 
     try {
+        // Tải ảnh sprite
         const img = new Image();
         img.crossOrigin = 'Anonymous';
         img.src = cleanUrl;
         await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
 
         const totalFrames = Math.floor(img.width / w);
-        status.innerText = `Đang cắt ${totalFrames} khung hình...`;
+        if (totalFrames === 0) {
+            throw new Error('Không tìm thấy khung hình nào!');
+        }
+        
+        status.innerHTML = `Đang cắt ${totalFrames} khung hình...`;
 
+        // Cắt các khung hình
         const canvas = document.createElement('canvas');
         canvas.width = w;
         canvas.height = h;
         const ctx = canvas.getContext('2d');
 
-        // Tạo GIF encoder
-        const gif = new GIF({
-            workers: 2,
-            quality: 10,
-            width: w,
-            height: h,
-            workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
-        });
+        const encoder = new SimpleGIFEncoder(w, h, delay);
 
-        // Cắt từng khung hình và thêm vào GIF
         for (let i = 0; i < totalFrames; i++) {
             ctx.clearRect(0, 0, w, h);
             ctx.drawImage(img, i * w, 0, w, h, 0, 0, w, h);
-            gif.addFrame(ctx, { copy: true, delay: delay });
+            encoder.addFrame(ctx);
             
-            // Cập nhật tiến trình
-            status.innerText = `Đang xử lý khung ${i + 1}/${totalFrames}...`;
+            if (i % 5 === 0 || i === totalFrames - 1) {
+                status.innerHTML = `Đang xử lý khung ${i + 1}/${totalFrames}...`;
+                await new Promise(r => setTimeout(r, 10));
+            }
         }
 
-        status.innerText = "Đang tạo file GIF...";
+        status.innerHTML = 'Đang tạo GIF... <span class="loading"></span>';
 
-        // Tạo GIF
-        gif.on('progress', function(p) {
-            status.innerText = `Đang tạo GIF: ${Math.round(p * 100)}%`;
-        });
+        // Render GIF
+        const gifBlob = await encoder.render();
+        
+        if (!gifBlob) {
+            throw new Error('Không thể tạo GIF!');
+        }
 
-        gif.on('finished', function(blob) {
-            // Tạo URL cho GIF
-            const url = URL.createObjectURL(blob);
-            
-            // Hiển thị preview
-            const previewImg = document.createElement('img');
-            previewImg.src = url;
-            previewImg.style.maxWidth = '100%';
-            previewImg.style.border = '2px dashed #0068ff';
-            previewImg.style.borderRadius = '6px';
-            previewImg.style.padding = '5px';
-            
-            // Nút tải về
-            const downloadBtn = document.createElement('a');
-            downloadBtn.className = 'btn-download';
-            downloadBtn.download = 'zalo_sticker.gif';
-            downloadBtn.href = url;
-            downloadBtn.textContent = '📥 Tải xuống GIF';
-            
-            const gifContainer = document.getElementById('gifPreview');
-            gifContainer.innerHTML = '';
-            gifContainer.appendChild(previewImg);
-            gifContainer.appendChild(document.createElement('br'));
-            gifContainer.appendChild(downloadBtn);
-            
-            status.innerText = "✅ Tạo GIF thành công!";
-        });
-
-        gif.render();
+        // Tạo URL
+        const url = URL.createObjectURL(gifBlob);
+        
+        // Hiển thị preview
+        const previewImg = document.createElement('img');
+        previewImg.src = url;
+        previewImg.style.maxWidth = '100%';
+        previewImg.style.border = '2px dashed #0068ff';
+        previewImg.style.borderRadius = '6px';
+        previewImg.style.padding = '5px';
+        previewImg.alt = 'GIF Preview';
+        
+        // Nút tải về
+        const downloadBtn = document.createElement('a');
+        downloadBtn.className = 'btn-download';
+        downloadBtn.download = 'zalo_sticker.gif';
+        downloadBtn.href = url;
+        downloadBtn.textContent = '📥 Tải xuống GIF';
+        
+        gifPreview.innerHTML = '';
+        gifPreview.appendChild(previewImg);
+        gifPreview.appendChild(document.createElement('br'));
+        gifPreview.appendChild(downloadBtn);
+        
+        status.innerHTML = '✅ Tạo GIF thành công! (Click nút bên dưới để tải về)';
 
     } catch (err) {
-        status.innerText = "❌ Lỗi: " + err.message;
+        status.innerHTML = '❌ Lỗi: ' + err.message;
         console.error(err);
     }
 }
