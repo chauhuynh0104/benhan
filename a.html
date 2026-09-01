@@ -16,8 +16,10 @@
         button:hover { background: #0052cc; }
         #status { margin-top: 15px; text-align: center; font-weight: bold; color: #555; }
         #result { margin-top: 15px; text-align: center; }
-        #result img { border: 2px dashed #0068ff; border-radius: 6px; padding: 5px; background: #fff; }
-        .btn-download { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        #result img { border: 2px dashed #0068ff; border-radius: 6px; padding: 5px; background: #fff; max-width: 100%; }
+        .btn-download { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; border: none; cursor: pointer; font-size: 14px; }
+        .btn-download:hover { background: #218838; }
+        #gifPreview { margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -46,68 +48,18 @@
     <button onclick="convert()">Tạo File GIF Đầy Đủ</button>
 
     <div id="status"></div>
-    <div id="result"></div>
+    <div id="result">
+        <div id="gifPreview"></div>
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+
 <script>
-// Tự động nạp gifshot qua Blob URL độc lập (không lo bị lỗi CSP hay mất kết nối)
-(function loadInlineEngine() {
-    const code = `
-    !function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define([],t):"object"==typeof exports?exports.gifshot=t():e.gifshot=t()}(window,(function(){return function(e){var t={};function n(r){if(t[r])return t[r].exports;var o=t[r]={i:r,l:!1,exports:{}};return e[r].call(o.exports,o,o.exports,n),o.l=!0,o.exports}return n.m=e,n.c=t,n.d=function(e,t,r){n.o(e,t)||Object.defineProperty(e,t,{enumerable:!1,configurable:!0,writable:!0,value:r})},n.r=function(e){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},n.t=function(e,t){if(1&t&&(e=n(e)),8&t)return e;if(4&t&&"object"==typeof e&&e&&e.__esModule)return e;var r=Object.create(null);if(n.r(r),Object.defineProperty(r,"default",{enumerable:!1,value:e}),2&t&&"string"!=typeof e)for(var o in e)n.d(r,o,function(t){return e[t]}.bind(null,o));return r},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,"a",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p="",n(n.s=0)}([function(e,t,n){
-    /* Full Gifshot Module Fallback Engine */
-    e.exports = {
-        createGIF: function(opts, cb) {
-            try {
-                var images = opts.images || [];
-                var w = opts.gifWidth || 130;
-                var h = opts.gifHeight || 130;
-                var interval = opts.interval || 0.08;
-                var canvas = document.createElement('canvas');
-                canvas.width = w; canvas.height = h;
-                var ctx = canvas.getContext('2d');
-                
-                // Mã hóa dữ liệu khung hình chuẩn
-                var encoder = new WebGIFEncoder(w, h, interval);
-                var loaded = 0;
-                
-                images.forEach(function(src, idx) {
-                    var img = new Image();
-                    img.onload = function() {
-                        ctx.clearRect(0,0,w,h);
-                        ctx.drawImage(img, 0, 0);
-                        encoder.addFrame(ctx);
-                        loaded++;
-                        if(loaded === images.length) {
-                            var binary = encoder.finish();
-                            cb({ error: false, image: binary });
-                        }
-                    };
-                    img.src = src;
-                });
-            } catch(e) { cb({ error: e.message }); }
-        }
-    };
-
-    function WebGIFEncoder(w, h, delay) {
-        this.w = w; this.h = h; this.delay = delay;
-        this.frames = [];
-        this.addFrame = function(ctx) {
-            this.frames.push(ctx.getImageData(0,0,this.w,this.h));
-        };
-        this.finish = function() {
-            var canvas = document.createElement('canvas');
-            canvas.width = this.w; canvas.height = this.h;
-            var ctx = canvas.getContext('2d');
-            ctx.putImageData(this.frames[0], 0, 0);
-            return canvas.toDataURL('image/gif');
-        };
-    }
-    }])}));`;
-})();
-
 async function convert() {
     const status = document.getElementById('status');
     const result = document.getElementById('result');
+    const gifPreview = document.getElementById('gifPreview');
     
     let rawUrl = document.getElementById('spriteUrl').value;
     let cleanUrl = rawUrl.replace(/&quot;/g, '').replace(/"/g, '').trim();
@@ -117,7 +69,8 @@ async function convert() {
     const delay = parseInt(document.getElementById('delay').value) || 80;
 
     status.innerText = "Đang tải ảnh Sprite...";
-    result.innerHTML = "";
+    gifPreview.innerHTML = "";
+    result.innerHTML = '<div id="gifPreview"></div>';
 
     try {
         const img = new Image();
@@ -126,78 +79,72 @@ async function convert() {
         await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
 
         const totalFrames = Math.floor(img.width / w);
-        status.innerText = `Đang cắt ${totalFrames} khung hình chuẩn...`;
+        status.innerText = `Đang cắt ${totalFrames} khung hình...`;
 
         const canvas = document.createElement('canvas');
         canvas.width = w;
         canvas.height = h;
         const ctx = canvas.getContext('2d');
 
-        const frames = [];
+        // Tạo GIF encoder
+        const gif = new GIF({
+            workers: 2,
+            quality: 10,
+            width: w,
+            height: h,
+            workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+        });
+
+        // Cắt từng khung hình và thêm vào GIF
         for (let i = 0; i < totalFrames; i++) {
             ctx.clearRect(0, 0, w, h);
             ctx.drawImage(img, i * w, 0, w, h, 0, 0, w, h);
-            frames.push(canvas.toDataURL('image/png'));
-        }
-
-        status.innerText = "Đang ghép thành GIF...";
-
-        // Ghép khung hình giữ nguyên màu sắc
-        let currentFrame = 0;
-        const previewCanvas = document.createElement('canvas');
-        previewCanvas.width = w;
-        previewCanvas.height = h;
-        const pCtx = previewCanvas.getContext('2d');
-
-        const renderImg = new Image();
-        renderImg.src = frames[0];
-        await new Promise(r => renderImg.onload = r);
-
-        // Xuất trực tiếp file khung ảnh động mượt
-        const a = document.createElement('a');
-        a.className = 'btn-download';
-        a.download = 'zalo_sticker.gif';
-
-        // Tạo ảnh APNG/WebP/GIF chuẩn qua CanvasStream
-        const stream = previewCanvas.captureStream(1000 / delay);
-        const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-        const chunks = [];
-
-        recorder.ondataavailable = e => chunks.push(e.data);
-        recorder.onstop = () => {
-            const blob = new Blob(chunks, { type: 'image/gif' });
-            const url = URL.createObjectURL(blob);
-            result.innerHTML = `
-                <p><b>Kết quả hoàn chỉnh:</b></p>
-                <img src="${frames[0]}" id="animImg"><br>
-                <a class="btn-download" href="${frames[frames.length - 1]}" download="zalo_sticker.png">Tải Khung Ảnh Đầy Đủ</a>
-            `;
+            gif.addFrame(ctx, { copy: true, delay: delay });
             
-            // Tạo hiệu ứng xem trước chuyển động mượt mà
-            let f = 0;
-            setInterval(() => {
-                const el = document.getElementById('animImg');
-                if (el) {
-                    f = (f + 1) % frames.length;
-                    el.src = frames[f];
-                }
-            }, delay);
-            status.innerText = "Tạo thành công!";
-        };
-
-        recorder.start();
-        for (let i = 0; i < totalFrames; i++) {
-            pCtx.clearRect(0, 0, w, h);
-            const frameImg = new Image();
-            frameImg.src = frames[i];
-            await new Promise(r => frameImg.onload = r);
-            pCtx.drawImage(frameImg, 0, 0);
-            await new Promise(r => setTimeout(r, delay));
+            // Cập nhật tiến trình
+            status.innerText = `Đang xử lý khung ${i + 1}/${totalFrames}...`;
         }
-        recorder.stop();
+
+        status.innerText = "Đang tạo file GIF...";
+
+        // Tạo GIF
+        gif.on('progress', function(p) {
+            status.innerText = `Đang tạo GIF: ${Math.round(p * 100)}%`;
+        });
+
+        gif.on('finished', function(blob) {
+            // Tạo URL cho GIF
+            const url = URL.createObjectURL(blob);
+            
+            // Hiển thị preview
+            const previewImg = document.createElement('img');
+            previewImg.src = url;
+            previewImg.style.maxWidth = '100%';
+            previewImg.style.border = '2px dashed #0068ff';
+            previewImg.style.borderRadius = '6px';
+            previewImg.style.padding = '5px';
+            
+            // Nút tải về
+            const downloadBtn = document.createElement('a');
+            downloadBtn.className = 'btn-download';
+            downloadBtn.download = 'zalo_sticker.gif';
+            downloadBtn.href = url;
+            downloadBtn.textContent = '📥 Tải xuống GIF';
+            
+            const gifContainer = document.getElementById('gifPreview');
+            gifContainer.innerHTML = '';
+            gifContainer.appendChild(previewImg);
+            gifContainer.appendChild(document.createElement('br'));
+            gifContainer.appendChild(downloadBtn);
+            
+            status.innerText = "✅ Tạo GIF thành công!";
+        });
+
+        gif.render();
 
     } catch (err) {
-        status.innerText = "Lỗi tải ảnh: Hãy kiểm tra đường dẫn Sprite!";
+        status.innerText = "❌ Lỗi: " + err.message;
+        console.error(err);
     }
 }
 </script>
