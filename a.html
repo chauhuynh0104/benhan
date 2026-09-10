@@ -2,248 +2,1400 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Đổi màu ảnh - Warm Tone</title>
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>AI Warm Color</title>
 
 <style>
+
 * {
     box-sizing: border-box;
 }
 
 body {
     margin: 0;
-    padding: 25px 15px;
-    background: #f3eee5;
-    font-family: Arial, sans-serif;
-    color: #333;
+    background: #f4efe6;
+    color: #332b23;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 }
 
 .container {
-    max-width: 900px;
+    width: 100%;
+    max-width: 950px;
     margin: auto;
+    padding: 22px 14px 40px;
+}
+
+h1 {
     text-align: center;
+    margin: 5px 0 8px;
+    font-size: 27px;
 }
 
-h2 {
-    margin-bottom: 18px;
+.subtitle {
+    text-align: center;
+    color: #776d62;
+    margin-bottom: 22px;
 }
 
-.upload {
+
+/* =========================
+   UPLOAD
+========================= */
+
+.upload-box {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.upload-btn {
     display: inline-block;
-    padding: 12px 22px;
-    background: #8b6b43;
+    background: #76552f;
     color: white;
-    border-radius: 10px;
-    cursor: pointer;
+    padding: 14px 27px;
+    border-radius: 12px;
+    font-size: 17px;
     font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 5px 14px #0002;
+    transition: .2s;
 }
 
-.upload:hover {
-    background: #6f522f;
+.upload-btn:active {
+    transform: scale(.97);
 }
 
-input {
+#fileInput {
     display: none;
 }
 
-.preview {
-    margin-top: 20px;
+
+/* =========================
+   PREVIEW
+========================= */
+
+.preview-box {
     background: white;
     padding: 12px;
-    border-radius: 14px;
-    box-shadow: 0 5px 25px #0002;
+    border-radius: 18px;
+    box-shadow:
+        0 8px 30px rgba(60,40,20,.12);
+
+    width: 100%;
 }
 
 canvas {
     width: 100%;
     height: auto;
     display: block;
-    border-radius: 8px;
+    border-radius: 10px;
 }
 
-.buttons {
-    margin-top: 15px;
+
+/* =========================
+   CONTROLS
+========================= */
+
+.controls {
+    background: white;
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 16px;
+
+    box-shadow:
+        0 5px 20px rgba(60,40,20,.08);
 }
 
-button {
-    border: 0;
-    padding: 11px 18px;
-    margin: 5px;
-    border-radius: 9px;
-    cursor: pointer;
+.control {
+    margin-bottom: 18px;
+}
+
+.control:last-child {
+    margin-bottom: 0;
+}
+
+.control-title {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
     font-weight: bold;
 }
 
-#download {
-    background: #6f5130;
+.value {
+    color: #79552d;
+}
+
+
+/* RANGE */
+
+input[type="range"] {
+
+    width: 100%;
+    height: 7px;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    background: #ddd2c4;
+    border-radius: 10px;
+
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 23px;
+    height: 23px;
+
+    border-radius: 50%;
+
+    background: #76552f;
+
+    cursor: pointer;
+
+    box-shadow: 0 2px 6px #0003;
+}
+
+input[type="range"]::-moz-range-thumb {
+
+    width: 23px;
+    height: 23px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: #76552f;
+
+    cursor: pointer;
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+.buttons {
+
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+
+    margin-top: 18px;
+
+    flex-wrap: wrap;
+}
+
+button {
+
+    border: none;
+
+    padding: 12px 20px;
+
+    border-radius: 10px;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.download {
+    background: #76552f;
     color: white;
 }
 
-#reset {
-    background: #ddd;
+.original {
+    background: #dedede;
+    color: #333;
 }
+
+.ai100 {
+    background: #b8894b;
+    color: white;
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+.status {
+
+    text-align: center;
+
+    margin-top: 14px;
+
+    color: #81776c;
+
+    font-size: 14px;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:600px) {
+
+    .container {
+        padding: 18px 10px 30px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .controls {
+        padding: 15px;
+    }
+
+    button {
+        flex: 1;
+        min-width: 120px;
+    }
+}
+
 </style>
 </head>
+
 
 <body>
 
 <div class="container">
 
-<h2>🌤️ Chuyển ảnh sang tông vàng ấm</h2>
+    <h1>☀️ Chuyển ảnh sang tông vàng ấm</h1>
 
-<label class="upload">
-    📷 Chọn ảnh
-    <input type="file" id="file" accept="image/*">
-</label>
+    <div class="subtitle">
+        Màu vàng kem • ấm • sáng • tự nhiên
+    </div>
 
-<div class="preview">
-    <canvas id="canvas"></canvas>
+
+    <!-- UPLOAD -->
+
+    <div class="upload-box">
+
+        <label class="upload-btn">
+
+            📷 Chọn ảnh
+
+            <input
+                type="file"
+                id="fileInput"
+                accept="image/*">
+
+        </label>
+
+    </div>
+
+
+    <!-- PREVIEW -->
+
+    <div class="preview-box">
+
+        <canvas id="canvas"></canvas>
+
+    </div>
+
+
+    <!-- CONTROLS -->
+
+    <div class="controls">
+
+        <!-- AI -->
+
+        <div class="control">
+
+            <div class="control-title">
+
+                <span>🎨 Độ giống màu AI</span>
+
+                <span
+                    class="value"
+                    id="aiValue">
+                    100%
+                </span>
+
+            </div>
+
+            <input
+                type="range"
+                id="aiRange"
+                min="0"
+                max="100"
+                value="100">
+
+        </div>
+
+
+        <!-- BRIGHTNESS -->
+
+        <div class="control">
+
+            <div class="control-title">
+
+                <span>☀️ Độ sáng</span>
+
+                <span
+                    class="value"
+                    id="brightnessValue">
+                    0
+                </span>
+
+            </div>
+
+            <input
+                type="range"
+                id="brightnessRange"
+                min="-30"
+                max="30"
+                value="0">
+
+        </div>
+
+
+        <!-- WARM -->
+
+        <div class="control">
+
+            <div class="control-title">
+
+                <span>🌡️ Độ ấm</span>
+
+                <span
+                    class="value"
+                    id="warmValue">
+                    100%
+                </span>
+
+            </div>
+
+            <input
+                type="range"
+                id="warmRange"
+                min="0"
+                max="150"
+                value="100">
+
+        </div>
+
+
+        <!-- SATURATION -->
+
+        <div class="control">
+
+            <div class="control-title">
+
+                <span>🎨 Độ màu</span>
+
+                <span
+                    class="value"
+                    id="satValue">
+                    100%
+                </span>
+
+            </div>
+
+            <input
+                type="range"
+                id="satRange"
+                min="50"
+                max="130"
+                value="100">
+
+        </div>
+
+    </div>
+
+
+    <!-- BUTTONS -->
+
+    <div class="buttons">
+
+        <button
+            class="ai100"
+            id="ai100">
+            ✨ Màu AI 100%
+        </button>
+
+        <button
+            class="download"
+            id="download">
+            ⬇️ Tải ảnh
+        </button>
+
+        <button
+            class="original"
+            id="original">
+            ↩️ Ảnh gốc
+        </button>
+
+    </div>
+
+
+    <div
+        class="status"
+        id="status">
+        Hãy chọn một ảnh để bắt đầu
+    </div>
+
 </div>
 
-<div class="buttons">
-    <button id="download">⬇️ Tải ảnh</button>
-    <button id="reset">↩️ Ảnh gốc</button>
-</div>
 
-</div>
 
 <script>
-const fileInput = document.getElementById("file");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+
+/* =====================================================
+   VARIABLES
+===================================================== */
+
+const fileInput =
+    document.getElementById("fileInput");
+
+const canvas =
+    document.getElementById("canvas");
+
+const ctx =
+    canvas.getContext(
+        "2d",
+        { willReadFrequently: true }
+    );
+
 
 let originalImage = null;
 
-fileInput.addEventListener("change", function(e) {
 
-    const file = e.target.files[0];
-    if (!file) return;
+/* =====================================================
+   RANGE ELEMENTS
+===================================================== */
 
-    const img = new Image();
+const aiRange =
+    document.getElementById("aiRange");
 
-    img.onload = function() {
+const brightnessRange =
+    document.getElementById("brightnessRange");
 
-        originalImage = img;
+const warmRange =
+    document.getElementById("warmRange");
 
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-
-        applyWarmTone();
-    };
-
-    img.src = URL.createObjectURL(file);
-});
+const satRange =
+    document.getElementById("satRange");
 
 
-function applyWarmTone() {
+/* =====================================================
+   VALUE LABELS
+===================================================== */
 
-    if (!originalImage) return;
+const aiValue =
+    document.getElementById("aiValue");
 
-    ctx.drawImage(
-        originalImage,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+const brightnessValue =
+    document.getElementById("brightnessValue");
 
-    let imageData = ctx.getImageData(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+const warmValue =
+    document.getElementById("warmValue");
 
-    let data = imageData.data;
+const satValue =
+    document.getElementById("satValue");
 
-    for (let i = 0; i < data.length; i += 4) {
 
-        let r = data[i];
-        let g = data[i + 1];
-        let b = data[i + 2];
+/* =====================================================
+   UPLOAD IMAGE
+===================================================== */
 
-        /*
-         * Cân bằng trắng:
-         * - tăng đỏ
-         * - giữ xanh lá vừa phải
-         * - giảm xanh dương
-         */
+fileInput.addEventListener(
+    "change",
+    function(event) {
 
-        r = r * 1.10 + g * 0.18;
-        g = g * 0.98;
-        b = b * 0.68 + g * 0.05;
+        const file =
+            event.target.files[0];
 
-        /*
-         * Tạo ánh vàng ấm
-         */
+        if (!file)
+            return;
 
-        r += 8;
-        g += 3;
 
-        /*
-         * Tăng sáng nhẹ
-         */
+        const img =
+            new Image();
 
-        r *= 1.04;
-        g *= 1.035;
-        b *= 1.02;
 
-        /*
-         * Contrast nhẹ
-         */
+        img.onload = function() {
 
-        r = (r - 128) * 1.03 + 128;
-        g = (g - 128) * 1.03 + 128;
-        b = (b - 128) * 1.03 + 128;
+            originalImage = img;
 
-        data[i]     = clamp(r);
-        data[i + 1] = clamp(g);
-        data[i + 2] = clamp(b);
+
+            canvas.width =
+                img.naturalWidth;
+
+            canvas.height =
+                img.naturalHeight;
+
+
+            document.getElementById(
+                "status"
+            ).textContent =
+                "Đang xử lý màu...";
+
+
+            applyColor();
+
+
+            document.getElementById(
+                "status"
+            ).textContent =
+                "Đã áp dụng tông vàng ấm";
+        };
+
+
+        img.src =
+            URL.createObjectURL(file);
     }
-
-    ctx.putImageData(imageData, 0, 0);
-}
+);
 
 
-function clamp(value) {
-    return Math.max(0, Math.min(255, value));
-}
+/* =====================================================
+   RANGE EVENTS
+===================================================== */
+
+aiRange.addEventListener(
+    "input",
+    function() {
+
+        aiValue.textContent =
+            this.value + "%";
+
+        applyColor();
+    }
+);
 
 
-// Ảnh gốc
-document.getElementById("reset").onclick = function() {
+brightnessRange.addEventListener(
+    "input",
+    function() {
 
-    if (!originalImage) return;
+        brightnessValue.textContent =
+            this.value;
 
-    ctx.drawImage(
-        originalImage,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-};
+        applyColor();
+    }
+);
 
 
-// Tải ảnh
-document.getElementById("download").onclick = function() {
+warmRange.addEventListener(
+    "input",
+    function() {
 
-    if (!originalImage) {
-        alert("Hãy chọn ảnh trước!");
+        warmValue.textContent =
+            this.value + "%";
+
+        applyColor();
+    }
+);
+
+
+satRange.addEventListener(
+    "input",
+    function() {
+
+        satValue.textContent =
+            this.value + "%";
+
+        applyColor();
+    }
+);
+
+
+/* =====================================================
+   MAIN COLOR PROCESSING
+===================================================== */
+
+function applyColor() {
+
+    if (!originalImage)
         return;
-    }
 
-    const link = document.createElement("a");
 
-    link.download = "anh_tong_vang_am.jpg";
+    /* Draw original */
 
-    link.href = canvas.toDataURL(
-        "image/jpeg",
-        0.95
+    ctx.drawImage(
+        originalImage,
+        0,
+        0,
+        canvas.width,
+        canvas.height
     );
 
-    link.click();
-};
+
+    const image =
+        ctx.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+    const data =
+        image.data;
+
+
+    /* User settings */
+
+    const ai =
+        Number(aiRange.value) / 100;
+
+
+    const brightness =
+        Number(brightnessRange.value);
+
+
+    const warm =
+        Number(warmRange.value) / 100;
+
+
+    const saturation =
+        Number(satRange.value) / 100;
+
+
+    /* =================================================
+       PIXEL PROCESS
+    ================================================= */
+
+    for (
+        let i = 0;
+        i < data.length;
+        i += 4
+    ) {
+
+
+        let r =
+            data[i] / 255;
+
+        let g =
+            data[i + 1] / 255;
+
+        let b =
+            data[i + 2] / 255;
+
+
+        /* =============================================
+           ORIGINAL HSL
+        ============================================= */
+
+        let hsl =
+            rgbToHsl(
+                r,
+                g,
+                b
+            );
+
+
+        let h =
+            hsl[0];
+
+        let s =
+            hsl[1];
+
+        let l =
+            hsl[2];
+
+
+        /* =============================================
+           AI COLOR TRANSFORMATION
+        ============================================= */
+
+        let targetH = h;
+        let targetS = s;
+        let targetL = l;
+
+
+        /*
+        CYAN / BLUE-GREEN
+
+        Ảnh gốc của bạn có rất nhiều cyan.
+        Kéo cyan về vàng kem.
+        */
+
+        if (
+            h >= 0.40 &&
+            h <= 0.60
+        ) {
+
+            const amount =
+                (h - 0.40) / 0.20;
+
+
+            targetH =
+                0.115 +
+                amount * 0.025;
+
+
+            targetS =
+                s * 0.55;
+        }
+
+
+        /*
+        GREEN
+
+        Chuyển xanh lá sang
+        olive / vàng nhẹ.
+        */
+
+        else if (
+            h >= 0.22 &&
+            h < 0.40
+        ) {
+
+            const amount =
+                (h - 0.22) / 0.18;
+
+
+            targetH =
+                0.105 +
+                amount * 0.025;
+
+
+            targetS =
+                s * 0.70;
+        }
+
+
+        /*
+        BLUE
+
+        Xanh dương cũng được
+        làm ấm nhẹ.
+        */
+
+        else if (
+            h > 0.58 &&
+            h < 0.72
+        ) {
+
+            targetH =
+                0.10;
+
+
+            targetS =
+                s * 0.60;
+        }
+
+
+        /*
+        VÙNG SÁNG
+
+        Giống ảnh AI:
+        vàng kem, không quá gắt.
+        */
+
+        if (l > 0.48) {
+
+            targetS *= 0.78;
+
+            targetL +=
+                0.025 * ai;
+        }
+
+
+        /*
+        SHADOW
+
+        Bóng tối hơi nâu.
+        */
+
+        if (l < 0.35) {
+
+            targetS *= 0.88;
+
+            targetL +=
+                0.012 * ai;
+        }
+
+
+        /*
+        HIGHLIGHT
+
+        Ánh sáng vàng kem.
+        */
+
+        if (l > 0.68) {
+
+            targetH =
+                0.105;
+
+
+            targetS *=
+                0.35;
+        }
+
+
+        /* =============================================
+           MIX AI EFFECT
+        ============================================= */
+
+        h =
+            mixHue(
+                h,
+                targetH,
+                ai
+            );
+
+
+        s =
+            mix(
+                s,
+                targetS,
+                ai
+            );
+
+
+        l =
+            mix(
+                l,
+                targetL,
+                ai
+            );
+
+
+        /* =============================================
+           SATURATION CONTROL
+        ============================================= */
+
+        s *= saturation;
+
+
+        /* =============================================
+           WARM WHITE BALANCE
+        ============================================= */
+
+        const warmth =
+            warm * ai;
+
+
+        /*
+        Đỏ tăng
+        */
+
+        r *=
+            1 +
+            0.055 * warmth;
+
+
+        /*
+        Xanh lá tăng rất nhẹ
+        */
+
+        g *=
+            1 +
+            0.018 * warmth;
+
+
+        /*
+        Xanh dương giảm
+        */
+
+        b *=
+            1 -
+            0.115 * warmth;
+
+
+        /* =============================================
+           HSL → RGB
+        ============================================= */
+
+        let rgb =
+            hslToRgb(
+                h,
+                clamp01(s),
+                clamp01(l)
+            );
+
+
+        /*
+        Mix HSL result với white balance
+        */
+
+        r =
+            rgb[0] *
+            0.88 +
+            r * 0.12;
+
+        g =
+            rgb[1] *
+            0.92 +
+            g * 0.08;
+
+        b =
+            rgb[2] *
+            0.95 +
+            b * 0.05;
+
+
+        /* =============================================
+           BRIGHTNESS
+        ============================================= */
+
+        const bright =
+            brightness / 255;
+
+
+        r += bright;
+        g += bright;
+        b += bright;
+
+
+        /* =============================================
+           CONTRAST
+        ============================================= */
+
+        const contrast =
+            1.035;
+
+
+        r =
+            (r - 0.5) *
+            contrast +
+            0.5;
+
+
+        g =
+            (g - 0.5) *
+            contrast +
+            0.5;
+
+
+        b =
+            (b - 0.5) *
+            contrast +
+            0.5;
+
+
+        /* =============================================
+           OUTPUT
+        ============================================= */
+
+        data[i] =
+            clamp(
+                r * 255
+            );
+
+        data[i + 1] =
+            clamp(
+                g * 255
+            );
+
+        data[i + 2] =
+            clamp(
+                b * 255
+            );
+
+    }
+
+
+    ctx.putImageData(
+        image,
+        0,
+        0
+    );
+}
+
+
+/* =====================================================
+   MIX
+===================================================== */
+
+function mix(a, b, amount) {
+
+    return a +
+        (b - a) *
+        amount;
+}
+
+
+/* =====================================================
+   HUE MIX
+===================================================== */
+
+function mixHue(a, b, amount) {
+
+    let difference =
+        b - a;
+
+
+    if (difference > 0.5)
+        difference -= 1;
+
+
+    if (difference < -0.5)
+        difference += 1;
+
+
+    let result =
+        a +
+        difference *
+        amount;
+
+
+    if (result < 0)
+        result += 1;
+
+
+    if (result > 1)
+        result -= 1;
+
+
+    return result;
+}
+
+
+/* =====================================================
+   RGB → HSL
+===================================================== */
+
+function rgbToHsl(r, g, b) {
+
+    const max =
+        Math.max(
+            r,
+            g,
+            b
+        );
+
+    const min =
+        Math.min(
+            r,
+            g,
+            b
+        );
+
+
+    let h = 0;
+    let s = 0;
+
+
+    const l =
+        (max + min) / 2;
+
+
+    if (max !== min) {
+
+        const d =
+            max - min;
+
+
+        s =
+            l > 0.5
+                ? d /
+                  (2 - max - min)
+                : d /
+                  (max + min);
+
+
+        switch (max) {
+
+            case r:
+
+                h =
+                    (g - b) /
+                    d +
+                    (g < b ? 6 : 0);
+
+                break;
+
+
+            case g:
+
+                h =
+                    (b - r) /
+                    d +
+                    2;
+
+                break;
+
+
+            case b:
+
+                h =
+                    (r - g) /
+                    d +
+                    4;
+
+                break;
+        }
+
+
+        h /= 6;
+    }
+
+
+    return [
+        h,
+        s,
+        l
+    ];
+}
+
+
+/* =====================================================
+   HSL → RGB
+===================================================== */
+
+function hslToRgb(h, s, l) {
+
+    let r, g, b;
+
+
+    if (s === 0) {
+
+        r =
+        g =
+        b =
+            l;
+
+    }
+
+    else {
+
+        const q =
+            l < 0.5
+                ? l *
+                  (1 + s)
+                : l +
+                  s -
+                  l * s;
+
+
+        const p =
+            2 * l -
+            q;
+
+
+        r =
+            hueToRgb(
+                p,
+                q,
+                h + 1 / 3
+            );
+
+
+        g =
+            hueToRgb(
+                p,
+                q,
+                h
+            );
+
+
+        b =
+            hueToRgb(
+                p,
+                q,
+                h - 1 / 3
+            );
+    }
+
+
+    return [
+        r,
+        g,
+        b
+    ];
+}
+
+
+/* =====================================================
+   HUE TO RGB
+===================================================== */
+
+function hueToRgb(
+    p,
+    q,
+    t
+) {
+
+    if (t < 0)
+        t += 1;
+
+
+    if (t > 1)
+        t -= 1;
+
+
+    if (t < 1 / 6)
+
+        return p +
+            (q - p) *
+            6 *
+            t;
+
+
+    if (t < 1 / 2)
+
+        return q;
+
+
+    if (t < 2 / 3)
+
+        return p +
+            (q - p) *
+            (2 / 3 - t) *
+            6;
+
+
+    return p;
+}
+
+
+/* =====================================================
+   CLAMP
+===================================================== */
+
+function clamp01(x) {
+
+    return Math.max(
+        0,
+        Math.min(
+            1,
+            x
+        )
+    );
+}
+
+
+function clamp(x) {
+
+    return Math.max(
+        0,
+        Math.min(
+            255,
+            Math.round(x)
+        )
+    );
+}
+
+
+/* =====================================================
+   AI 100%
+===================================================== */
+
+document
+    .getElementById("ai100")
+    .addEventListener(
+        "click",
+        function() {
+
+            aiRange.value =
+                100;
+
+            warmRange.value =
+                100;
+
+            brightnessRange.value =
+                3;
+
+            satRange.value =
+                92;
+
+
+            aiValue.textContent =
+                "100%";
+
+            warmValue.textContent =
+                "100%";
+
+            brightnessValue.textContent =
+                "3";
+
+            satValue.textContent =
+                "92%";
+
+
+            applyColor();
+        }
+    );
+
+
+/* =====================================================
+   ORIGINAL
+===================================================== */
+
+document
+    .getElementById("original")
+    .addEventListener(
+        "click",
+        function() {
+
+            if (!originalImage)
+                return;
+
+
+            ctx.drawImage(
+                originalImage,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+
+            document.getElementById(
+                "status"
+            ).textContent =
+                "Đang hiển thị ảnh gốc";
+        }
+    );
+
+
+/* =====================================================
+   DOWNLOAD
+===================================================== */
+
+document
+    .getElementById("download")
+    .addEventListener(
+        "click",
+        function() {
+
+            if (!originalImage) {
+
+                alert(
+                    "Hãy chọn ảnh trước!"
+                );
+
+                return;
+            }
+
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+
+            link.download =
+                "anh-mau-vang-am.jpg";
+
+
+            link.href =
+                canvas.toDataURL(
+                    "image/jpeg",
+                    0.96
+                );
+
+
+            link.click();
+        }
+    );
+
 </script>
 
 </body>
