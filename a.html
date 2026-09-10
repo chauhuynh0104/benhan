@@ -1,143 +1,249 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Zalo Sprite to GIF Converter</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 30px; display: flex; justify-content: center; }
-        .card { background: white; padding: 25px; border-radius: 10px; width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #0068ff; margin-top: 0; text-align: center; }
-        label { font-weight: bold; font-size: 13px; color: #444; }
-        input { width: 100%; padding: 10px; margin: 6px 0 16px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .row { display: flex; gap: 10px; }
-        .row div { flex: 1; }
-        button { width: 100%; padding: 12px; background: #0068ff; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 15px; }
-        button:hover { background: #0052cc; }
-        #status { margin-top: 15px; text-align: center; font-weight: bold; color: #555; }
-        #result { margin-top: 15px; text-align: center; }
-        #result img { border: 2px dashed #0068ff; border-radius: 6px; padding: 5px; background: #fff; max-width: 100%; }
-        .btn-download { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Đổi màu ảnh - Warm Tone</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 25px 15px;
+    background: #f3eee5;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 18px;
+}
+
+.upload {
+    display: inline-block;
+    padding: 12px 22px;
+    background: #8b6b43;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.upload:hover {
+    background: #6f522f;
+}
+
+input {
+    display: none;
+}
+
+.preview {
+    margin-top: 20px;
+    background: white;
+    padding: 12px;
+    border-radius: 14px;
+    box-shadow: 0 5px 25px #0002;
+}
+
+canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+.buttons {
+    margin-top: 15px;
+}
+
+button {
+    border: 0;
+    padding: 11px 18px;
+    margin: 5px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#download {
+    background: #6f5130;
+    color: white;
+}
+
+#reset {
+    background: #ddd;
+}
+</style>
 </head>
+
 <body>
 
-<div class="card">
-    <h2>Zalo Sprite sang GIF</h2>
-    
-    <label>URL Sprite Zalo:</label>
-    <input type="text" id="spriteUrl" value="https://zalo-api.zadn.vn/api/emoticon/sprite?eid=43523&size=130&checksum=85803b1a4d049e495049ec2a338b6605">
+<div class="container">
 
-    <div class="row">
-        <div>
-            <label>Rộng (px):</label>
-            <input type="number" id="w" value="130">
-        </div>
-        <div>
-            <label>Cao (px):</label>
-            <input type="number" id="h" value="130">
-        </div>
-        <div>
-            <label>Độ trễ (ms):</label>
-            <input type="number" id="delay" value="80">
-        </div>
-    </div>
+<h2>🌤️ Chuyển ảnh sang tông vàng ấm</h2>
 
-    <button onclick="convert()">Tạo File GIF Đầy Đủ</button>
+<label class="upload">
+    📷 Chọn ảnh
+    <input type="file" id="file" accept="image/*">
+</label>
 
-    <div id="status"></div>
-    <div id="result"></div>
+<div class="preview">
+    <canvas id="canvas"></canvas>
+</div>
+
+<div class="buttons">
+    <button id="download">⬇️ Tải ảnh</button>
+    <button id="reset">↩️ Ảnh gốc</button>
+</div>
+
 </div>
 
 <script>
-// Biến lưu trữ URL Worker Blob dùng chung
-let workerBlobUrl = null;
+const fileInput = document.getElementById("file");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-// Hàm tải file worker từ CDN và biến đổi thành Blob URL nội bộ
-async function getWorkerBlobUrl() {
-    if (workerBlobUrl) return workerBlobUrl;
-    
-    const workerScriptUrl = 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js';
-    const response = await fetch(workerScriptUrl);
-    const scriptContent = await response.text();
-    
-    const blob = new Blob([scriptContent], { type: 'text/javascript' });
-    workerBlobUrl = URL.createObjectURL(blob);
-    return workerBlobUrl;
-}
+let originalImage = null;
 
-async function convert() {
-    const status = document.getElementById('status');
-    const result = document.getElementById('result');
-    
-    let rawUrl = document.getElementById('spriteUrl').value;
-    let cleanUrl = rawUrl.replace(/&quot;/g, '').replace(/"/g, '').trim();
-    
-    const w = parseInt(document.getElementById('w').value) || 130;
-    const h = parseInt(document.getElementById('h').value) || 130;
-    const delay = parseInt(document.getElementById('delay').value) || 80;
+fileInput.addEventListener("change", function(e) {
 
-    status.innerText = "Đang khởi tạo công cụ GIF...";
-    result.innerHTML = "";
+    const file = e.target.files[0];
+    if (!file) return;
 
-    try {
-        // Lấy Worker Blob URL để vượt rào cản Cross-Origin
-        const localWorkerUrl = await getWorkerBlobUrl();
+    const img = new Image();
 
-        status.innerText = "Đang tải ảnh Sprite...";
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.src = cleanUrl;
-        await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+    img.onload = function() {
 
-        const totalFrames = Math.floor(img.width / w);
-        status.innerText = `Đang xử lý ${totalFrames} khung hình...`;
+        originalImage = img;
 
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
 
-        // Khởi tạo GIF Encoder với workerUrl từ Blob
-        const gif = new GIF({
-            workers: 2,
-            quality: 10,
-            width: w,
-            height: h,
-            workerScript: localWorkerUrl,
-            transparent: 0x00000000
-        });
+        applyWarmTone();
+    };
 
-        for (let i = 0; i < totalFrames; i++) {
-            ctx.clearRect(0, 0, w, h);
-            ctx.drawImage(img, i * w, 0, w, h, 0, 0, w, h);
-            
-            // Thêm trực tiếp canvas context vào GIF
-            gif.addFrame(ctx, { copy: true, delay: delay });
-        }
+    img.src = URL.createObjectURL(file);
+});
 
-        gif.on('progress', function(p) {
-            status.innerText = `Đang xuất GIF: ${Math.round(p * 100)}%`;
-        });
 
-        gif.on('finished', function(blob) {
-            const gifUrl = URL.createObjectURL(blob);
-            status.innerText = "Tạo thành công!";
-            result.innerHTML = `
-                <p><b>Kết quả GIF hoàn chỉnh:</b></p>
-                <img src="${gifUrl}"><br>
-                <a class="btn-download" href="${gifUrl}" download="zalo_sticker.gif">Tải File GIF Động</a>
-            `;
-        });
+function applyWarmTone() {
 
-        gif.render();
+    if (!originalImage) return;
 
-    } catch (err) {
-        console.error(err);
-        status.innerText = "Lỗi xử lý: Kiểm tra lại URL Sprite hoặc CORS!";
+    ctx.drawImage(
+        originalImage,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    let imageData = ctx.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    let data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+
+        let r = data[i];
+        let g = data[i + 1];
+        let b = data[i + 2];
+
+        /*
+         * Cân bằng trắng:
+         * - tăng đỏ
+         * - giữ xanh lá vừa phải
+         * - giảm xanh dương
+         */
+
+        r = r * 1.10 + g * 0.18;
+        g = g * 0.98;
+        b = b * 0.68 + g * 0.05;
+
+        /*
+         * Tạo ánh vàng ấm
+         */
+
+        r += 8;
+        g += 3;
+
+        /*
+         * Tăng sáng nhẹ
+         */
+
+        r *= 1.04;
+        g *= 1.035;
+        b *= 1.02;
+
+        /*
+         * Contrast nhẹ
+         */
+
+        r = (r - 128) * 1.03 + 128;
+        g = (g - 128) * 1.03 + 128;
+        b = (b - 128) * 1.03 + 128;
+
+        data[i]     = clamp(r);
+        data[i + 1] = clamp(g);
+        data[i + 2] = clamp(b);
     }
+
+    ctx.putImageData(imageData, 0, 0);
 }
+
+
+function clamp(value) {
+    return Math.max(0, Math.min(255, value));
+}
+
+
+// Ảnh gốc
+document.getElementById("reset").onclick = function() {
+
+    if (!originalImage) return;
+
+    ctx.drawImage(
+        originalImage,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+};
+
+
+// Tải ảnh
+document.getElementById("download").onclick = function() {
+
+    if (!originalImage) {
+        alert("Hãy chọn ảnh trước!");
+        return;
+    }
+
+    const link = document.createElement("a");
+
+    link.download = "anh_tong_vang_am.jpg";
+
+    link.href = canvas.toDataURL(
+        "image/jpeg",
+        0.95
+    );
+
+    link.click();
+};
 </script>
 
 </body>
