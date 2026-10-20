@@ -1153,7 +1153,7 @@ function updateNotifications() {
         const days = Math.floor((today - start) / 86400000) + 1;
 
         return (p.patientType === 'Nội trú' && days > 21)
-            || (p.patientType === 'Ban ngày' && days > 14);
+            || (p.patientType === 'Ban ngày' && days > 21);
     });
 
     if (overdue.length === 0) {
@@ -2490,7 +2490,7 @@ function getProposedDate(admissionDate, patientType) {
     let date = new Date(admissionDate + 'T12:00:00');
     
     // Nội trú 21 ngày (cộng 20), Ban ngày 14 ngày (cộng 13) để tính cả ngày đầu
-    let daysToAdd = (patientType === 'Nội trú') ? 19 : 13;
+    let daysToAdd = (patientType === 'Nội trú') ? 25 : 25;
     date.setDate(date.getDate() + daysToAdd);
     
     let exactDate = new Date(date); 
@@ -2993,7 +2993,7 @@ function getDischargeWeekOffset(targetDateStr) {
 function getPureProposedDateStr(p) {
     if (!p.admissionDate) return "";
     let date = new Date(p.admissionDate + 'T12:00:00');
-    let daysToAdd = (p.patientType === 'Nội trú') ? 19 : 13;
+    let daysToAdd = (p.patientType === 'Nội trú') ? 25 : 25;
     date.setDate(date.getDate() + daysToAdd);
     
     // Logic lùi về thứ 6 nếu rơi vào thứ 7, chủ nhật, thứ 2
