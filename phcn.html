@@ -197,26 +197,40 @@
         return joinedText;
     }
 
-    function parseAndProcess(html, isRawMode, filterDisease) {
+function parseAndProcess(html, isRawMode, filterDisease) {
         const dayRegex = /<td\b[^>]*>\s*<nobr>(\d{2}\/\d{2}\/\d{4})<\/nobr>[\s\S]*?<\/td>/gi;
         const matches = [...html.matchAll(dayRegex)];
         let results = [];
         let previousCorePain = ""; 
 
-        matches.forEach((match, i) => {
-            const dateStr = match[1];
-            const start = match.index;
-            const end = (matches[i+1]) ? matches[i+1].index : html.length;
-            const block = html.substring(start, end);
-            const contentAreaRegex = /<div style="overflow:hidden;width:295px;[\s\S]*?">([\s\S]*?)<\/div>/i;
-            const contentMatch = block.match(contentAreaRegex);
-            
-            let oldText = "";
-            let newText = "";
+        // Hàm hỗ trợ trích xuất triệu chứng đau từ danh sách dòng text gốc
+        function extractMatchedLines(lines, diseaseFilter) {
+            let matched = [];
+            for (let line of lines) {
+                const isTargetSymptom = (line.startsWith("Đau") || line.startsWith("Còn đau") || line.startsWith("Mắt") || line.startsWith("nếp nhăn trán")|| line.startsWith("Nhân trung")|| line.startsWith("Rãnh mũi má")|| line.startsWith("Liệt mặt")) && /cổ|vai|thắt lưng|không kín|mờ|miệng méo|cải thiện/i.test(line);
+                const hasNoGoi = !/gối/i.test(line);
 
+                if (isTargetSymptom && hasNoGoi) {
+                    if (diseaseFilter !== "ALL") {
+                        const rule = DISEASE_RULES.find(r => r.id === diseaseFilter);
+                        if (rule && rule.regex.test(line)) {
+                            matched.push(line);
+                        }
+                    } else {
+                        matched.push(line);
+                    }
+                }
+            }
+            return matched;
+        }
+
+        // Hàm trích xuất rawLines từ khối HTML block của 1 ngày
+        function getRawLinesFromBlock(blockStr) {
+            const contentAreaRegex = /<div style="overflow:hidden;width:295px;[\s\S]*?">([\s\S]*?)<\/div>/i;
+            const contentMatch = blockStr.match(contentAreaRegex);
+            let rawLines = [];
             if (contentMatch) {
                 const spanRegex = /<span[^>]*>([\s\S]*?)<\/span>/gi;
-                let rawLines = [];
                 let m;
                 while ((m = spanRegex.exec(contentMatch[1])) !== null) {
                     let decodedText = decodeHTMLEntities(m[1]);
@@ -225,8 +239,21 @@
                         rawLines.push(text);
                     }
                 }
-                oldText = rawLines.join(". ");
+            }
+            return rawLines;
+        }
 
+        matches.forEach((match, i) => {
+            const dateStr = match[1];
+            const start = match.index;
+            const end = (matches[i+1]) ? matches[i+1].index : html.length;
+            const block = html.substring(start, end);
+            
+            let rawLines = getRawLinesFromBlock(block);
+            let oldText = rawLines.join(". ");
+            let newText = "";
+
+            if (rawLines.length > 0 || block) {
                 if (isRawMode) {
                     newText = cleanAndFormatText(rawLines);
                 } 
@@ -237,24 +264,24 @@
                         newText = (dateObj.getDay() === 6) ? "Thứ bảy." : "Chủ nhật.";
                         previousCorePain = ""; 
                     } else {
-                        let baseStatus = (i % 2 === 0) ? "Tỉnh, tiếp xúc tốt" : "Tỉnh, tiếp xúc tốt. Sinh hiệu ổn";
+                        let baseStatus = "";
                         let matchedLines = [];
 
-                        for (let line of rawLines) {
-                            const isTargetSymptom = (line.startsWith("Đau") || line.startsWith("Còn đau") || line.startsWith("Mắt") || line.startsWith("nếp nhăn trán")|| line.startsWith("Nhân trung")|| line.startsWith("Rãnh mũi má")|| line.startsWith("Liệt mặt")) && /cổ|vai|thắt lưng|không kín|mờ|miệng méo|cải thiện/i.test(line);
-                            const hasNoGoi = !/gối/i.test(line);
-
-                            if (isTargetSymptom && hasNoGoi) {
-                                // Lọc theo bệnh được chọn trên Dropdown
-                                if (filterDisease !== "ALL") {
-                                    const rule = DISEASE_RULES.find(r => r.id === filterDisease);
-                                    if (rule && rule.regex.test(line)) {
-                                        matchedLines.push(line);
-                                    }
-                                } else {
-                                    matchedLines.push(line);
-                                }
+                        if (i === 0) {
+                            // Ngày đầu tiên: Tiền tố "Tỉnh, tiếp xúc tốt." (không có Sinh hiệu ổn)
+                            baseStatus = "Tỉnh, tiếp xúc tốt";
+                            
+                            // Lấy nội dung triệu chứng đau từ NGÀY THỨ 2 (matches[1])
+                            if (matches.length > 1) {
+                                const nextStart = matches[1].index;
+                                const nextEnd = matches[2] ? matches[2].index : html.length;
+                                const nextBlock = html.substring(nextStart, nextEnd);
+                                const nextRawLines = getRawLinesFromBlock(nextBlock);
+                                matchedLines = extractMatchedLines(nextRawLines, filterDisease);
                             }
+                        } else {
+                            baseStatus = (i % 2 === 0) ? "Tỉnh, tiếp xúc tốt" : "Tỉnh, tiếp xúc tốt. Sinh hiệu ổn";
+                            matchedLines = extractMatchedLines(rawLines, filterDisease);
                         }
 
                         if (matchedLines.length > 0) {
