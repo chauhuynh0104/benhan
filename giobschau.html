@@ -406,6 +406,8 @@
                     <th>Đèn</th>
                     <th>Xoa bóp</th>
                     <th>Thuỷ châm</th>
+<th>Giác hơi</th>
+<th>Xoa bóp vùng</th>
                     <th>Ghi chú</th>
                 </tr>
             </thead>
@@ -453,14 +455,36 @@
         </div>
     </div>
 </div>
-
+<div id="extraModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div id="extraTitle">📅 Chọn khung giờ</div>
+            <span id="extraCloseBtn">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>🧑‍⚕️ Bệnh nhân:</label>
+                <div id="extraPatientName" style="background:#eef2f7; padding: 8px 14px; border-radius: 40px; font-weight: bold;">---</div>
+            </div>
+            <div class="form-group">
+                <label>⏰ Khung giờ:</label>
+                <div id="extraSlotContainer"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="extraDeleteBtn" style="background: #e53e3e; color: white; margin-right: auto; display: none; border-radius: 50px; border: none; font-weight: bold; padding: 10px 20px; cursor: pointer;">🗑️ Xóa lịch</button>
+            <button class="btn-modal btn-cancel" id="extraCancelBtn">Huỷ</button>
+            <button class="btn-modal btn-confirm" id="extraConfirmBtn">Xác nhận</button>
+        </div>
+    </div>
+</div>
 <div id="patientListModal" class="modal-overlay">
     <div class="modal-container" style="width: 1300px; max-width: 95%;">
         <div class="modal-header">
             🏥 Danh sách bệnh nhân chưa nhập thủ thuật
             <span onclick="document.getElementById('patientListModal').classList.remove('active')">&times;</span>
         </div>
-        <div class="modal-body" style="overflow-x: auto;">
+        <div class="modal-body" style="overflow: auto; max-height: 80vh;">
             <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                 <thead>
                     <tr style="background: #f1f5f9;">
@@ -484,7 +508,7 @@
     const DROPBOX_REFRESH_TOKEN = "yvVdSnOoxgsAAAAAAAAAAYwqRQmU9NPgvKrMmzAL2JY9QqutemeEsykD9LmlQcRr";
     const APP_KEY = "qzy5kclrf827aey";
     const APP_SECRET = "6jlsunzjqr3s3nh";
-    const DROPBOX_PATH = "/thuydien_schedule.json";
+    const DROPBOX_PATH = "/lichbschau_v2.json";
 
     function showToast(message, type = "success") {
         const toastEl = document.getElementById('globalToast');
@@ -550,39 +574,39 @@
     document.getElementById('cancelPassBtn').onclick = () => passModal.classList.remove('active');
 
     const rawRowsData = [
-        { dienCham: "08:00 - 08:25", may: "ĐA28", chieuDen: "08:06 - 08:21", den: "8", xoaBop: "08:32-9:02 (Minh)" },
-        { dienCham: "08:07 - 08:32", may: "ĐA29", chieuDen: "08:13 - 08:28", den: "5", xoaBop: "07:30-8:00 (Minh)" },
-        { dienCham: "08:14 - 08:39", may: "ĐA30", chieuDen: "08:20 - 08:35", den: "3", xoaBop: "09:34-10:04 (Khiêm)" },
-        { dienCham: "08:27 - 08:52", may: "MED10", chieuDen: "08:33 - 08:48", den: "8", xoaBop: "09:34-10:04 (Minh)" },
-        { dienCham: "08:34 - 08:59", may: "TQ36", chieuDen: "08:40 - 08:55", den: "5", xoaBop: "09:03-9:33 (Khiêm)" },
-        { dienCham: "08:41 - 09:06", may: "ĐA19", chieuDen: "08:47 - 09:02", den: "3", xoaBop: "10:05-10:35 (Minh)" },
-        { dienCham: "08:54 - 09:19", may: "ĐA20", chieuDen: "09:00 - 09:15", den: "8", xoaBop: "10:05-10:35 (Khiêm)" },
-        { dienCham: "09:01 - 09:26", may: "ĐA21", chieuDen: "09:07 - 09:22", den: "5", xoaBop: "08:01-8:31 (Khiêm)" },
-        { dienCham: "09:08 - 09:33", may: "MED5", chieuDen: "09:14 - 09:29", den: "3", xoaBop: "08:32-9:02 (Khiêm)" },
-        { dienCham: "09:21 - 09:46", may: "MED6", chieuDen: "09:27 - 09:42", den: "8", xoaBop: "07:30-8:00 (Khiêm)" },
-        { dienCham: "09:28 - 09:53", may: "ĐA28", chieuDen: "09:34 - 09:49", den: "5", xoaBop: "08:01-8:31 (Minh)" },
-        { dienCham: "09:35 - 10:00", may: "ĐA29", chieuDen: "09:41 - 09:56", den: "3", xoaBop: "09:03-9:33 (Minh)" },
-        { dienCham: "09:48 - 10:13", may: "ĐA30", chieuDen: "09:54 - 10:09", den: "8", xoaBop: "10:36-11:06 (Minh)" },
-        { dienCham: "09:55 - 10:20", may: "MED10", chieuDen: "10:01 - 10:16", den: "5", xoaBop: "10:36-11:06 (Khiêm)" },
-        { dienCham: "10:02 - 10:27", may: "TQ36", chieuDen: "10:08 - 10:23", den: "3", xoaBop: "13:30-14:00 (Khiêm)" },
-        { dienCham: "10:15 - 10:40", may: "ĐA19", chieuDen: "10:21 - 10:36", den: "8", xoaBop: "13:30-14:00(Minh)" },
-        { dienCham: "10:22 - 10:47", may: "ĐA20", chieuDen: "10:28 - 10:43", den: "5", xoaBop: "14:01-14:31 (Minh)" },
-        { dienCham: "10:29 - 10:54", may: "ĐA21", chieuDen: "10:35 - 10:50", den: "3", xoaBop: "14:01-14:31 (Khiêm)" },
-        { dienCham: "10:42 - 11:07", may: "MED5", chieuDen: "10:48 - 11:03", den: "8", xoaBop: "14:32-15:02 (Khiêm)" },
-        { dienCham: "10:49 - 11:14", may: "MED6", chieuDen: "10:55 - 11:10", den: "5", xoaBop: "14:32-15:02 (Minh)" },
-        { dienCham: "10:56 - 11:21", may: "ĐA28", chieuDen: "11:02 - 11:17", den: "3", xoaBop: "15:03-15:33 (Minh)" },
-        { dienCham: "15:00 - 15:25", may: "ĐA28", chieuDen: "15:06 - 15:21", den: "8", xoaBop: "16:05-16:35 (Minh)" },
-        { dienCham: "15:07 - 15:32", may: "ĐA29", chieuDen: "15:13 - 15:28", den: "5", xoaBop: "15:34-16:04 (Minh)" },
-        { dienCham: "15:14 - 15:39", may: "ĐA30", chieuDen: "15:20 - 15:35", den: "3", xoaBop: "16:29-16:59 (Khiêm)" },
-        { dienCham: "15:27 - 15:52", may: "MED10", chieuDen: "15:33 - 15:48", den: "8", xoaBop: "15:58-16:28 (Khiêm)" },
-        { dienCham: "15:34 - 15:59", may: "TQ36", chieuDen: "15:40 - 15:55", den: "5", xoaBop: "15:03-15:33 (Khiêm)" },
-        { dienCham: "15:41 - 16:06", may: "ĐA19", chieuDen: "15:47 - 16:02", den: "3", xoaBop: "11:07-11:22 (Minh)" },
-        { dienCham: "15:54 - 16:19", may: "ĐA20", chieuDen: "16:00 - 16:15", den: "8", xoaBop: "11:07-11:22 (Khiêm)" },
-        { dienCham: "16:01 - 16:26", may: "ĐA21", chieuDen: "16:07 - 16:22", den: "5", xoaBop: "" },
-        { dienCham: "16:08 - 16:33", may: "MED5", chieuDen: "16:14 - 16:29", den: "3", xoaBop: "" },
-        { dienCham: "16:21 - 16:46", may: "MED6", chieuDen: "16:27 - 16:42", den: "8", xoaBop: "" },
-        { dienCham: "16:28 - 16:53", may: "ĐA28", chieuDen: "16:34 - 16:49", den: "5", xoaBop: "" },
-        { dienCham: "16:35 - 17:00", may: "ĐA29", chieuDen: "16:41 - 16:56", den: "3", xoaBop: "" }
+		{ dienCham: "08:00 - 08:25", may: "ĐA13", chieuDen: "08:06 - 08:21", den: "13", xoaBop: "08:32-09:02 (Minh)" },
+        { dienCham: "08:07 - 08:32", may: "ĐA14", chieuDen: "08:13 - 08:28", den: "14", xoaBop: "09:03-09:33 (Ngân)" },
+        { dienCham: "08:14 - 08:39", may: "ĐA15", chieuDen: "08:20 - 08:35", den: "3", xoaBop: "09:34-10:04 (Ngân)" },
+        { dienCham: "08:27 - 08:52", may: "ĐA16", chieuDen: "08:33 - 08:48", den: "13", xoaBop: "09:34-10:04 (Minh)" },
+        { dienCham: "08:34 - 08:59", may: "ĐA17", chieuDen: "08:40 - 08:55", den: "14", xoaBop: "10:05-10:35 (Ngân)" },
+        { dienCham: "08:41 - 09:06", may: "ĐA18", chieuDen: "08:47 - 09:02", den: "3", xoaBop: "10:05-10:35 (Minh)" },
+        { dienCham: "08:54 - 09:19", may: "ĐA13", chieuDen: "09:00 - 09:15", den: "13", xoaBop: "10:02-10:32 (Khiêm)" },
+        { dienCham: "09:01 - 09:26", may: "ĐA14", chieuDen: "09:07 - 09:22", den: "14", xoaBop: "09:31-10:01 (Khiêm)" },
+        { dienCham: "09:08 - 09:33", may: "ĐA15", chieuDen: "09:14 - 09:29", den: "3", xoaBop: "10:33-11:03 (Khiêm)" },
+        { dienCham: "09:21 - 09:46", may: "ĐA16", chieuDen: "09:27 - 09:42", den: "13", xoaBop: "10:36-11:06 (Minh)" },
+        { dienCham: "09:28 - 09:53", may: "ĐA17", chieuDen: "09:34 - 09:49", den: "14", xoaBop: "10:36-11:06 (Ngân)" },
+        { dienCham: "09:35 - 10:00", may: "ĐA18", chieuDen: "09:41 - 09:56", den: "3", xoaBop: "09:03-09:33 (Minh)" },
+        { dienCham: "09:48 - 10:13", may: "ĐA13", chieuDen: "09:54 - 10:09", den: "13", xoaBop: "07:30-08:00 (Minh)" },
+        { dienCham: "09:55 - 10:20", may: "ĐA14", chieuDen: "10:01 - 10:16", den: "14", xoaBop: "08:01-08:31 (Ngân)" },
+        { dienCham: "10:02 - 10:27", may: "ĐA15", chieuDen: "10:08 - 10:23", den: "3", xoaBop: "08:32-09:02 (Ngân)" },
+        { dienCham: "10:15 - 10:40", may: "ĐA16", chieuDen: "10:21 - 10:36", den: "13", xoaBop: "07:30-08:00 (Ngân)" },
+        { dienCham: "10:22 - 10:47", may: "ĐA17", chieuDen: "10:28 - 10:43", den: "14", xoaBop: "08:01-08:31 (Minh)" },
+        { dienCham: "10:29 - 10:54", may: "ĐA18", chieuDen: "10:35 - 10:50", den: "3", xoaBop: "13:30-14:00 (Ngân)" },
+        { dienCham: "10:42 - 11:07", may: "ĐA13", chieuDen: "10:48 - 11:03", den: "13", xoaBop: "13:30-14:00 (Minh)" },
+        { dienCham: "10:49 - 11:14", may: "ĐA14", chieuDen: "10:55 - 11:10", den: "14", xoaBop: "14:01-14:31 (Minh)" },
+        { dienCham: "10:56 - 11:21", may: "ĐA15", chieuDen: "11:02 - 11:17", den: "3", xoaBop: "14:01-14:31 (Ngân)" },
+        { dienCham: "15:00 - 15:25", may: "ĐA16", chieuDen: "15:06 - 15:21", den: "13", xoaBop: "15:34-16:04 (Minh)" },
+        { dienCham: "15:07 - 15:32", may: "ĐA17", chieuDen: "15:13 - 15:28", den: "14", xoaBop: "16:05-16:35 (Minh)" },
+        { dienCham: "15:14 - 15:39", may: "ĐA18", chieuDen: "15:20 - 15:35", den: "3", xoaBop: "16:29-16:59 (Ngân)" },
+        { dienCham: "15:27 - 15:52", may: "ĐA13", chieuDen: "15:33 - 15:48", den: "13", xoaBop: "15:58-16:28 (Khiêm)" },
+        { dienCham: "15:34 - 15:59", may: "ĐA14", chieuDen: "15:40 - 15:55", den: "14", xoaBop: "16:29-16:59 (Khiêm)" },
+        { dienCham: "15:41 - 16:06", may: "ĐA15", chieuDen: "15:47 - 16:02", den: "3", xoaBop: "14:32-15:02 (Ngân)" },
+        { dienCham: "15:54 - 16:19", may: "ĐA16", chieuDen: "16:00 - 16:15", den: "13", xoaBop: "14:32-15:02 (Minh)" },
+        { dienCham: "16:01 - 16:26", may: "ĐA17", chieuDen: "16:07 - 16:22", den: "14", xoaBop: "15:03-15:33 (Minh)" },
+        { dienCham: "16:08 - 16:33", may: "ĐA18", chieuDen: "16:14 - 16:29", den: "3", xoaBop: "15:03-15:33 (Ngân)" },
+        { dienCham: "16:21 - 16:46", may: "ĐA13", chieuDen: "16:27 - 16:42", den: "13", xoaBop: "15:34-16:04 (Ngân)" },
+        { dienCham: "16:28 - 16:53", may: "ĐA14", chieuDen: "16:34 - 16:49", den: "14", xoaBop: "" },
+        { dienCham: "16:35 - 17:00", may: "ĐA15", chieuDen: "16:41 - 16:56", den: "3", xoaBop: "" }
     ];
 
     let scheduleData = [];
@@ -685,6 +709,8 @@
             den: row.den,
             xoaBop: row.xoaBop,
             thuyCham: null,
+            giacHoi: null,
+            xoaBopVung: null,
             note: ""
         }));
     }
@@ -840,6 +866,8 @@
             tr.appendChild(tdDen);
             tr.appendChild(tdXoaBop);
             tr.appendChild(tdThuyCham);
+            tr.appendChild(createExtraCell(idx, 'giacHoi'));
+            tr.appendChild(createExtraCell(idx, 'xoaBopVung'));
             tr.appendChild(tdNote);
             tbody.appendChild(tr);
         });
@@ -959,6 +987,147 @@
     closeModalBtn.addEventListener('click', closeModal);
     cancelModalBtn.addEventListener('click', closeModal);
     window.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    // ================= GIÁC HƠI & XOA BÓP VÙNG =================
+    const GIAC_HOI_SLOTS = [
+        "11:04-11:19 (Khiêm)", "11:07-11:22 (Minh)", "11:07-11:22 (Ngân)", "11:10-11:25 (Khiêm)",
+        "15:01-15:16 (Khiêm)", "15:07-15:22 (Khiêm)", "15:13-15:28 (Khiêm)", "15:19-15:34 (Khiêm)",
+        "15:25-15:40 (Khiêm)", "15:31-15:46 (Khiêm)", "15:37-15:52 (Khiêm)",
+        "16:36-16:51 (Ngân)", "16:36-16:51 (Minh)", "16:42-16:57 (Châu)"
+    ];
+    const XOA_BOP_VUNG_SLOTS = [
+        "11:04-11:19 (Khiêm)","11:07-11:22 (Minh)", "11:07-11:22 (Ngân)",
+        "16:36-16:51 (Ngân)", "16:36-16:51 (Minh)"
+    ];
+    const EXTRA_CONFIG = {
+        giacHoi:    { label: "giác hơi",     slots: GIAC_HOI_SLOTS },
+        xoaBopVung: { label: "xoa bóp vùng", slots: XOA_BOP_VUNG_SLOTS }
+    };
+
+    let extraRowIndex = null, extraField = null, extraSelectedSlot = null;
+    const extraModal = document.getElementById('extraModal');
+    const extraContainer = document.getElementById('extraSlotContainer');
+    const extraDeleteBtn = document.getElementById('extraDeleteBtn');
+
+    function createExtraCell(idx, field) {
+        const td = document.createElement('td');
+        td.classList.add('thuy-cham-cell');
+        td.innerText = scheduleData[idx][field] || "";
+        td.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openExtraModal(idx, field);
+        });
+        return td;
+    }
+
+    // Các khung giờ (giác hơi + xoa bóp vùng) đã có người khác chọn
+    function getTakenExtraSlots() {
+        const taken = new Set();
+        scheduleData.forEach((item, idx) => {
+            if (item.giacHoi && !(idx === extraRowIndex && extraField === 'giacHoi')) taken.add(item.giacHoi);
+            if (item.xoaBopVung && !(idx === extraRowIndex && extraField === 'xoaBopVung')) taken.add(item.xoaBopVung);
+        });
+        return taken;
+    }
+
+    // Các giờ thủ thuật khác của chính bệnh nhân này
+    function getOwnBusyRanges(rowIdx, excludeField) {
+        const row = scheduleData[rowIdx];
+        const list = [];
+        const name = normalizePatientName(row.patientName);
+        const patient = name ? patientLatestMap.get(name) : null;
+        const procedure = patient?.procedure || {};
+
+        if (!patient || Number(procedure.dienCham || 0) > 0) list.push({ label: "điện châm", range: row.dienCham });
+        if (hasXoaBopProcedure(rowIdx)) list.push({ label: "xoa bóp", range: row.xoaBop });
+        if (row.thuyCham) list.push({ label: "thuỷ châm", range: row.thuyCham.timeSlot });
+        if (excludeField !== 'giacHoi' && row.giacHoi) list.push({ label: "giác hơi", range: row.giacHoi });
+        if (excludeField !== 'xoaBopVung' && row.xoaBopVung) list.push({ label: "xoa bóp vùng", range: row.xoaBopVung });
+        return list;
+    }
+
+    function openExtraModal(rowIdx, field) {
+        extraRowIndex = rowIdx;
+        extraField = field;
+        extraSelectedSlot = scheduleData[rowIdx][field] || null;
+        document.getElementById('extraTitle').innerText = "📅 Chọn khung giờ " + EXTRA_CONFIG[field].label;
+        document.getElementById('extraPatientName').innerText = scheduleData[rowIdx].patientName || "(chưa có tên)";
+        extraDeleteBtn.style.display = extraSelectedSlot ? 'block' : 'none';
+        renderExtraSlots();
+        extraModal.classList.add('active');
+    }
+
+    function closeExtraModal() {
+        extraModal.classList.remove('active');
+        extraRowIndex = null; extraField = null; extraSelectedSlot = null;
+    }
+
+    function renderExtraSlots() {
+        const taken = getTakenExtraSlots();
+        const busy = getOwnBusyRanges(extraRowIndex, extraField);
+
+        const grid = document.createElement('div');
+        grid.className = 'time-grid';
+        EXTRA_CONFIG[extraField].slots.forEach(slot => {
+            const slotDiv = document.createElement('div');
+            slotDiv.className = 'time-option';
+            const conflict = busy.find(b => isOverlapping(slot, b.range));
+
+            if (taken.has(slot)) {
+                slotDiv.classList.add('disabled');
+                slotDiv.innerText = slot + " (đã đặt)";
+            } else if (conflict) {
+                slotDiv.classList.add('disabled');
+                slotDiv.innerText = slot + " (trùng " + conflict.label + ")";
+            } else {
+                slotDiv.innerText = slot;
+                if (extraSelectedSlot === slot) slotDiv.classList.add('selected');
+                slotDiv.addEventListener('click', () => {
+                    document.querySelectorAll('#extraSlotContainer .time-option').forEach(el => el.classList.remove('selected'));
+                    slotDiv.classList.add('selected');
+                    extraSelectedSlot = slot;
+                });
+            }
+            grid.appendChild(slotDiv);
+        });
+        extraContainer.innerHTML = '';
+        extraContainer.appendChild(grid);
+    }
+
+    document.getElementById('extraConfirmBtn').addEventListener('click', () => {
+        if (extraRowIndex === null) return;
+        const cfg = EXTRA_CONFIG[extraField];
+        if (!extraSelectedSlot) { showToast("Vui lòng chọn khung giờ " + cfg.label, "warning"); return; }
+
+        if (getTakenExtraSlots().has(extraSelectedSlot)) {
+            showToast("Khung giờ này đã được đặt, không thể chọn.", "error");
+            return;
+        }
+        const conflict = getOwnBusyRanges(extraRowIndex, extraField).find(b => isOverlapping(extraSelectedSlot, b.range));
+        if (conflict) {
+            showToast("Bệnh nhân trùng giờ " + conflict.label + " (" + conflict.range + "), vui lòng chọn giờ khác!", "error");
+            return;
+        }
+
+        const name = scheduleData[extraRowIndex].patientName || "bệnh nhân";
+        scheduleData[extraRowIndex][extraField] = extraSelectedSlot;
+        renderTable();
+        showToast(`Đã đặt lịch ${cfg.label} cho ${name} thành công!`, "success");
+        closeExtraModal();
+    });
+
+    extraDeleteBtn.addEventListener('click', () => {
+        if (extraRowIndex === null) return;
+        const label = EXTRA_CONFIG[extraField].label;
+        scheduleData[extraRowIndex][extraField] = null;
+        renderTable();
+        showToast("Đã xóa lịch " + label + " thành công.", "success");
+        closeExtraModal();
+    });
+
+    document.getElementById('extraCloseBtn').addEventListener('click', closeExtraModal);
+    document.getElementById('extraCancelBtn').addEventListener('click', closeExtraModal);
+    window.addEventListener('click', (e) => { if (e.target === extraModal) closeExtraModal(); });
 
     async function saveToDropbox() {
         try {
