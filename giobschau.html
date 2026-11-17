@@ -1046,6 +1046,32 @@
         return list;
     }
 
+    // Lấy tên người làm trong ngoặc, vd "11:04-11:19 (Khiêm)" -> "Khiêm"
+    function getStaffName(slot) {
+        const m = /\(([^)]+)\)\s*$/.exec(slot || "");
+        return m ? m[1].trim() : "";
+    }
+
+    // Slot này có giao giờ với cột còn lại (giác hơi <-> xoa bóp vùng) của cùng 1 người làm không?
+    function getStaffConflict(slot) {
+        const staff = getStaffName(slot);
+        if (!staff) return null;
+        const otherField = extraField === 'giacHoi' ? 'xoaBopVung' : 'giacHoi';
+        for (let i = 0; i < scheduleData.length; i++) {
+            const other = scheduleData[i][otherField];
+            if (!other) continue;
+            if (getStaffName(other) === staff && isOverlapping(slot, other)) {
+                return {
+                    label: EXTRA_CONFIG[otherField].label,
+                    range: other,
+                    patient: scheduleData[i].patientName || ("dòng " + (i + 1))
+                };
+            }
+        }
+        return null;
+    }
+
+
     function openExtraModal(rowIdx, field) {
         extraRowIndex = rowIdx;
         extraField = field;
@@ -1071,14 +1097,18 @@
         EXTRA_CONFIG[extraField].slots.forEach(slot => {
             const slotDiv = document.createElement('div');
             slotDiv.className = 'time-option';
-            const conflict = busy.find(b => isOverlapping(slot, b.range));
+                       const conflict = busy.find(b => isOverlapping(slot, b.range));
+            const staffConflict = getStaffConflict(slot);
 
             if (taken.has(slot)) {
                 slotDiv.classList.add('disabled');
                 slotDiv.innerText = slot + " (đã đặt)";
-            } else if (conflict) {
+                      } else if (conflict) {
                 slotDiv.classList.add('disabled');
                 slotDiv.innerText = slot + " (trùng " + conflict.label + ")";
+            } else if (staffConflict) {
+                slotDiv.classList.add('disabled');
+                slotDiv.innerText = slot + " (trùng " + staffConflict.label + " " + staffConflict.range + ")";
             } else {
                 slotDiv.innerText = slot;
                 if (extraSelectedSlot === slot) slotDiv.classList.add('selected');
@@ -1108,7 +1138,11 @@
             showToast("Bệnh nhân trùng giờ " + conflict.label + " (" + conflict.range + "), vui lòng chọn giờ khác!", "error");
             return;
         }
-
+        const staffConflict = getStaffConflict(extraSelectedSlot);
+        if (staffConflict) {
+            showToast("Người làm bị trùng giờ " + staffConflict.label + " (" + staffConflict.range + ") của " + staffConflict.patient + ", vui lòng chọn giờ khác!", "error");
+            return;
+        }
         const name = scheduleData[extraRowIndex].patientName || "bệnh nhân";
         scheduleData[extraRowIndex][extraField] = extraSelectedSlot;
         renderTable();
