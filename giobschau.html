@@ -383,7 +383,9 @@
 </div>
 <div class="container">
     <div class="toolbar">
+	
         <button class="btn" id="listPatientBtn" style="background: #e67e22; color: white;">📋 DS Bệnh chờ</button>
+		<button class="btn" id="freeTimeBtn" style="background:#8e44ad;color:white;">🕐 Xuất giờ trống</button>
         <button class="btn btn-primary" id="refreshBtn">🔄 Tải lại dữ liệu</button>
         <button class="btn btn-save" id="saveToDropboxBtn">💾 Lưu toàn bộ dữ liệu</button>
     </div>
@@ -489,7 +491,37 @@
         </div>
     </div>
 </div>
-
+<div id="freeTimeModal" class="modal-overlay">
+<div class="modal-container" style="width: 1250px; max-width: 96%;">
+        <div class="modal-header">
+            🕐 Xuất giờ trống
+            <span onclick="document.getElementById('freeTimeModal').classList.remove('active')">&times;</span>
+        </div>
+        <div class="modal-body" style="overflow:auto; max-height:70vh; padding:16px 20px;">
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
+                <b>Loại ngày:</b>
+                <button class="btn-modal ft-day" data-day="2-4-6">Thứ 2-4-6</button>
+                <button class="btn-modal ft-day" data-day="3-5">Thứ 3-5</button>
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:14px;">
+                <thead>
+                    <tr style="background:#f1f5f9;">
+                        <th style="width:60px;"><input type="checkbox" id="ftCheckAll" checked title="Chọn/bỏ tất cả"></th>
+                        <th style="width:50px;">STT</th>
+                        <th style="text-align:left;">Tên</th>
+                        <th style="text-align:left;">Giờ trống (xem trước)</th>
+                        <th style="width:70px;">A5</th>
+                    </tr>
+                </thead>
+                <tbody id="freeTimeBody"></tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal btn-cancel" onclick="document.getElementById('freeTimeModal').classList.remove('active')">Đóng</button>
+            <button class="btn-modal btn-confirm" id="ftExportA4Btn">🖨️ Xuất A4 (PDF / In)</button>
+        </div>
+    </div>
+</div>
 <!-- Toast thông báo -->
 <div id="globalToast" class="toast-notify">
     <span>📢</span> <span id="toastMessage">Thông báo</span>
@@ -1307,7 +1339,165 @@
             viewport.setAttribute('content', 'width=1200'); 
         }
     });
+// ================== XUẤT GIỜ TRỐNG ==================
+let ftDayType = '2-4-6';
+const FT_WINDOWS = [[450, 690], [810, 1020]]; // 07:30-11:30, 13:30-17:00
+const FT_MIN = 60;  // chỉ lấy khoảng trống >= 60 phút
+const FT_GAP = 5;   // chừa tối thiểu 5 phút sau/trước thủ thuật
 
+function ftEsc(s) {
+    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+function ftTitleCase(s) {
+    return s.trim().toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
+}
+function ftMinToText(m) {
+    return Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0') + '’';
+}
+
+// Các khoảng bận của 1 dòng
+function ftGetBusy(row, dayType) {
+    const p = patientLatestMap.get(normalizePatientName(row.patientName));
+    const proc = p?.procedure || {};
+    const list = [];
+    const add = s => { const r = parseRange(s); if (r) list.push(r); };
+
+    if (!p || Number(proc.dienCham || 0) > 0) add(row.dienCham);
+    if (!p || Number(proc.chieuDen || 0) > 0) add(row.chieuDen);
+    if (!p || Number(proc.xoaBop || 0) > 0)   add(row.xoaBop);
+    add(row.giacHoi);
+    add(row.xoaBopVung);
+    // Thuỷ châm: chỉ trừ khi đúng loại ngày đang chọn
+    if (row.thuyCham && row.thuyCham.dayType === dayType) add(row.thuyCham.timeSlot);
+    return list.sort((a, b) => a.start - b.start);
+}
+
+// Trả về { sang: "9h10’-11h30’", chieu: "13h30’-17h00’" }
+function ftGetFree(row, dayType) {
+    const busy = ftGetBusy(row, dayType);
+    const result = [];
+    FT_WINDOWS.forEach(([ws, we]) => {
+        const res = [];
+        const push = (s, e) => {
+            s = Math.ceil(s / 5) * 5;   // làm tròn lên bội 5
+            e = Math.floor(e / 5) * 5;  // làm tròn xuống bội 5
+            if (e - s >= FT_MIN) res.push(ftMinToText(s) + '-' + ftMinToText(e));
+        };
+        let cur = ws;
+        busy.filter(b => b.end > ws && b.start < we).forEach(b => {
+            if (b.start - FT_GAP > cur) push(cur, b.start - FT_GAP);
+            cur = Math.max(cur, b.end + FT_GAP);
+        });
+        if (we > cur) push(cur, we);
+        result.push(res.length ? res.join(', ') : 'không có');
+    });
+    return { sang: result[0], chieu: result[1] };
+}
+
+function ftCardHTML(row, withDash) {
+    const f = ftGetFree(row, ftDayType);
+    const d = withDash ? '- ' : '';
+    return `<div class="card">
+        <div class="t">PHIẾU CẬN LÂM SÀNG</div>
+        <div>Tên: ${ftEsc(ftTitleCase(row.patientName))}</div>
+        <div>Thời gian làm xét nghiệm:</div>
+        <div>${d}Sáng: ${f.sang}</div>
+        <div>${d}Chiều: ${f.chieu}</div>
+    </div>`;
+}
+
+function ftPrint(html) {
+    const old = document.getElementById('ftPrintFrame');
+    if (old) old.remove();
+    const fr = document.createElement('iframe');
+    fr.id = 'ftPrintFrame';
+    fr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    document.body.appendChild(fr);
+    const d = fr.contentWindow.document;
+    d.open(); d.write(html); d.close();
+    setTimeout(() => { fr.contentWindow.focus(); fr.contentWindow.print(); }, 300);
+}
+
+function ftPrintA4(rows) {
+    const css = `
+        @page { size: A4; margin: 8mm; }
+        body { margin: 0; font-family: 'Times New Roman', serif; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+        .card { border: 1px solid #000; padding: 2mm 2.5mm; height: 42mm; box-sizing: border-box;
+                font-size: 10pt; line-height: 1.35; overflow: hidden; break-inside: avoid; }
+        .t { text-align: center; font-weight: bold; font-size: 11pt; margin-bottom: 1mm; }`;
+    ftPrint(`<html><head><meta charset="utf-8"><style>${css}</style></head><body>
+        <div class="grid">${rows.map(r => ftCardHTML(r, false)).join('')}</div></body></html>`);
+}
+
+function ftPrintA5(row) {
+    const css = `
+        @page { size: A5 portrait; margin: 15mm; }
+        body { margin: 0; font-family: 'Times New Roman', serif; }
+        .card { font-size: 15pt; line-height: 1.7; }
+        .t { text-align: center; font-weight: bold; font-size: 17pt; margin-bottom: 8mm; }`;
+    ftPrint(`<html><head><meta charset="utf-8"><style>${css}</style></head><body>
+        ${ftCardHTML(row, true)}</body></html>`);
+}
+
+function ftRenderList() {
+    const unchecked = new Set([...document.querySelectorAll('.ft-check:not(:checked)')].map(c => c.dataset.idx));
+    const tb = document.getElementById('freeTimeBody');
+    tb.innerHTML = '';
+    scheduleData.forEach((row, idx) => {
+        if (!row.patientName || !row.patientName.trim()) return;
+        const f = ftGetFree(row, ftDayType);
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid #e2e8f0';
+        tr.innerHTML = `
+            <td style="text-align:center"><input type="checkbox" class="ft-check" data-idx="${idx}" ${unchecked.has(String(idx)) ? '' : 'checked'}></td>
+            <td style="text-align:center">${idx + 1}</td>
+            <td style="padding:6px; font-weight:bold;">${ftEsc(row.patientName.trim())}</td>
+            <td style="padding:6px; font-size:13px;">Sáng: ${f.sang} &nbsp;|&nbsp; Chiều: ${f.chieu}</td>
+            <td style="text-align:center"><button class="btn-modal ft-a5" data-idx="${idx}" style="padding:4px 10px; background:#e2e8f0;" title="Xuất phiếu A5">🖨️</button></td>`;
+        tb.appendChild(tr);
+    });
+    ftSyncCheckAll();
+}
+
+function ftSyncCheckAll() {
+    const all = document.querySelectorAll('.ft-check');
+    document.getElementById('ftCheckAll').checked = all.length > 0 && [...all].every(c => c.checked);
+}
+
+function ftSetDay(day) {
+    ftDayType = day;
+    document.querySelectorAll('.ft-day').forEach(b => {
+        const on = b.dataset.day === day;
+        b.style.background = on ? '#2c6e9e' : '#e2e8f0';
+        b.style.color = on ? '#fff' : '#333';
+    });
+    ftRenderList();
+}
+
+document.getElementById('freeTimeBtn').addEventListener('click', () => {
+    document.getElementById('freeTimeBody').innerHTML = '';
+    ftSetDay(ftDayType);
+    document.getElementById('freeTimeModal').classList.add('active');
+});
+
+document.querySelectorAll('.ft-day').forEach(b => b.addEventListener('click', () => ftSetDay(b.dataset.day)));
+
+document.getElementById('ftCheckAll').addEventListener('change', e => {
+    document.querySelectorAll('.ft-check').forEach(c => c.checked = e.target.checked);
+});
+
+document.getElementById('freeTimeBody').addEventListener('click', e => {
+    if (e.target.classList.contains('ft-check')) ftSyncCheckAll();
+    const a5 = e.target.closest('.ft-a5');
+    if (a5) ftPrintA5(scheduleData[Number(a5.dataset.idx)]);
+});
+
+document.getElementById('ftExportA4Btn').addEventListener('click', () => {
+    const rows = [...document.querySelectorAll('.ft-check:checked')].map(c => scheduleData[Number(c.dataset.idx)]);
+    if (!rows.length) { showToast("Chưa chọn bệnh nhân nào!", "warning"); return; }
+    ftPrintA4(rows);
+});
 </script>
 
 <div id="loadingModal" class="loader-overlay">
