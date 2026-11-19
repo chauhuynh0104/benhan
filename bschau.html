@@ -341,9 +341,9 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
                     <tr>
                         <th>STT</th>
                         <th>Tên</th>
-                        <th>Phòng</th>
+                        <th style="display: none;">Phòng</th>
                         <th>Giờ</th>
-                        <th style="display: none;">Ngày</th>
+                        <th>Ngày</th>
                         <th>Loại</th>
                         <th>Trạng thái</th>
                     </tr>
@@ -1123,9 +1123,9 @@ function renderPatientList() {
 <tr style="cursor:pointer" onclick="requirePassword(() => showPatientDetail('${p.id}'))">
     <td>${stt++}</td>
     <td ${nameTooltip}>${displayName}</td>
-    <td>${p.room}</td>
+    <td style="display: none;">${p.room}</td>
     <td>${formatHourHM(p.examinationTime)}</td>
-    <td style="display: none;">${isNarrow ? days : days + ' ngày'}</td>
+    <td >${isNarrow ? days : days + ' ngày'}</td>
     <td ${patientTypeTooltip}>${patientTypeText}</td>
     <td><span class="${statusClass}" ${statusTooltip}>${statusText}</span></td>
 </tr>`;
