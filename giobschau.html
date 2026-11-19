@@ -1352,7 +1352,7 @@ function ftTitleCase(s) {
     return s.trim().toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
 }
 function ftMinToText(m) {
-    return Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0') + '’';
+    return Math.floor(m / 60) + ' giờ ' + String(m % 60).padStart(2, '0') + ' phút';
 }
 
 // Các khoảng bận của 1 dòng
@@ -1381,7 +1381,7 @@ function ftGetFree(row, dayType) {
         const push = (s, e) => {
             s = Math.ceil(s / 5) * 5;   // làm tròn lên bội 5
             e = Math.floor(e / 5) * 5;  // làm tròn xuống bội 5
-            if (e - s >= FT_MIN) res.push(ftMinToText(s) + '-' + ftMinToText(e));
+            if (e - s >= FT_MIN) res.push(ftMinToText(s) + ' đến ' + ftMinToText(e));
         };
         let cur = ws;
         busy.filter(b => b.end > ws && b.start < we).forEach(b => {
@@ -1389,7 +1389,7 @@ function ftGetFree(row, dayType) {
             cur = Math.max(cur, b.end + FT_GAP);
         });
         if (we > cur) push(cur, we);
-        result.push(res.length ? res.join(', ') : 'không có');
+        result.push(res.length ? res.join('hoặc ') : 'không có');
     });
     return { sang: result[0], chieu: result[1] };
 }
@@ -1398,11 +1398,12 @@ function ftCardHTML(row, withDash) {
     const f = ftGetFree(row, ftDayType);
     const d = withDash ? '- ' : '';
     return `<div class="card">
-        <div class="t">PHIẾU CẬN LÂM SÀNG</div>
-        <div>Tên: ${ftEsc(ftTitleCase(row.patientName))}</div>
-        <div>Thời gian làm xét nghiệm:</div>
-        <div>${d}Sáng: ${f.sang}</div>
-        <div>${d}Chiều: ${f.chieu}</div>
+        <div class="t">THỜI GIAN ĐI LÀM <br>XÉT NGHIỆM, XQUANG</div>
+        <div>Tên: ${ftEsc(ftTitleCase(row.patientName))}</div><br>
+   
+        <div>${d}Buổi sáng: <br>Đi làm trong khoảng <br>${f.sang}</div>    <hr style="border: 0; height: 2px; background-color: #000000; margin: 10px 0; opacity: 1;">
+        <div>${d}Buổi chiều: <br>Đi làm trong khoảng <br>${f.chieu}</div>
+		
     </div>`;
 }
 
@@ -1434,8 +1435,8 @@ function ftPrintA5(row) {
     const css = `
         @page { size: A5 portrait; margin: 15mm; }
         body { margin: 0; font-family: 'Times New Roman', serif; }
-        .card { font-size: 15pt; line-height: 1.7; }
-        .t { text-align: center; font-weight: bold; font-size: 17pt; margin-bottom: 8mm; }`;
+        .card { font-size: 23pt; line-height: 1.7; }
+        .t { text-align: center; font-weight: bold; font-size: 20pt; margin-bottom: 8mm; }`;
     ftPrint(`<html><head><meta charset="utf-8"><style>${css}</style></head><body>
         ${ftCardHTML(row, true)}</body></html>`);
 }
