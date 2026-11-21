@@ -1389,7 +1389,7 @@ function ftGetFree(row, dayType) {
             cur = Math.max(cur, b.end + FT_GAP);
         });
         if (we > cur) push(cur, we);
-        result.push(res.length ? res.join('hoặc ') : 'không có');
+        result.push(res.length ? res.join(' hoặc ') : 'không có');
     });
     return { sang: result[0], chieu: result[1] };
 }
