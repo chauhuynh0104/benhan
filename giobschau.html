@@ -1376,14 +1376,12 @@ function ftGetBusy(row, dayType) {
 function ftGetFree(row, dayType) {
     const busy = ftGetBusy(row, dayType);
     const result = [];
-    const boldTime = (min) => `<b>${ftMinToText(min)}</b>`;
-
     FT_WINDOWS.forEach(([ws, we]) => {
         const res = [];
         const push = (s, e) => {
             s = Math.ceil(s / 5) * 5;   // làm tròn lên bội 5
             e = Math.floor(e / 5) * 5;  // làm tròn xuống bội 5
-            if (e - s >= FT_MIN) res.push(`${boldTime(s)} đến ${boldTime(e)}`);
+            if (e - s >= FT_MIN) res.push(ftMinToText(s) + ' đến ' + ftMinToText(e));
         };
         let cur = ws;
         busy.filter(b => b.end > ws && b.start < we).forEach(b => {
@@ -1413,55 +1411,17 @@ function ftCardHTML(row, withDash) {
 }
 
 function ftPrint(html) {
-    const old = document.getElementById('ftPreviewOverlay');
+    const old = document.getElementById('ftPrintFrame');
     if (old) old.remove();
-
-    const MM = 3.7795;                       // 1mm = 3.7795px
-    const isA5 = html.includes('size: A5');
-    const W = (isA5 ? 148 : 210) + 30;       // bề ngang preview (mm)
-    const M = isA5 ? 15 : 8;                 // lề (mm)
-    const wPx = W * MM;
-
-    html = html.replace('</style>',
-        `@media screen{body{padding:${M}mm;box-sizing:border-box;background:#fff}}</style>`);
-
-    const ov = document.createElement('div');
-    ov.id = 'ftPreviewOverlay';
-    ov.style.cssText = 'position:fixed;inset:0;background:#dadce0;z-index:99999;display:flex;flex-direction:column;align-items:center;overflow:auto;padding:20px 0;';
-    ov.innerHTML = `
-        <div style="position:fixed;top:14px;right:28px;display:flex;gap:10px;z-index:100000;">
-            <button id="ftPvPrint" style="padding:9px 28px;font-size:15px;font-weight:bold;color:#fff;background:#0b57d0;border:0;border-radius:20px;cursor:pointer;">🖨 In</button>
-            <button id="ftPvClose" style="padding:9px 28px;font-size:15px;color:#0b57d0;background:#e8f0fe;border:0;border-radius:20px;cursor:pointer;">Hủy</button>
-        </div>
-        <div id="ftPvWrap" style="position:relative;flex-shrink:0;box-shadow:0 1px 6px rgba(0,0,0,.45);background:#fff;overflow:hidden;">
-            <iframe id="ftPrintFrame" scrolling="no" style="position:absolute;left:0;top:0;width:${wPx}px;height:10px;border:0;background:#fff;transform-origin:0 0;"></iframe>
-        </div>`;
-    document.body.appendChild(ov);
-
-    const fr = document.getElementById('ftPrintFrame');
-    const wrap = document.getElementById('ftPvWrap');
+    const fr = document.createElement('iframe');
+    fr.id = 'ftPrintFrame';
+    fr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    document.body.appendChild(fr);
     const d = fr.contentWindow.document;
     d.open(); d.write(html); d.close();
-
-    // đo chiều cao nội dung, rồi thu nhỏ bằng transform cho lọt màn hình
-    const fit = () => {
-        fr.style.transform = 'none';
-        fr.style.height = '3000px';
-        const last = d.body.lastElementChild;
-        const h = Math.ceil(last.getBoundingClientRect().bottom + M * MM) + 4;
-        const s = Math.min(1, (window.innerHeight - 40) / h);
-        fr.style.height = h + 'px';
-        fr.style.transform = 'scale(' + s + ')';
-        wrap.style.width = (wPx * s) + 'px';
-        wrap.style.height = (h * s) + 'px';
-    };
-    fit();
-    setTimeout(fit, 150);
-    setTimeout(fit, 500);
-
-    document.getElementById('ftPvPrint').onclick = () => { fr.contentWindow.focus(); fr.contentWindow.print(); };
-    document.getElementById('ftPvClose').onclick = () => ov.remove();
+    setTimeout(() => { fr.contentWindow.focus(); fr.contentWindow.print(); }, 300);
 }
+
 function ftPrintA4(rows) {
     const css = `
         @page { size: A4; margin: 8mm; }
