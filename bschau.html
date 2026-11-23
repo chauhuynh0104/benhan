@@ -86,6 +86,7 @@ body { background-color: #f9f9f9; color: var(--text-color); line-height: 1.6; pa
 
 .patient-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
 .form-group { display: flex; flex-direction: column; }
+.form-group.full-row { grid-column: 1 / -1; }
 .form-group label { margin-bottom: 5px; font-weight: 600; color: var(--light-text); }
 .form-group input, .form-group select { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
 .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2); }
@@ -402,7 +403,8 @@ footer { text-align: center; padding: 20px; color: var(--light-text); font-size:
             <div class="modal-content">
                 <form id="patientForm">
                     <div class="patient-form">
-                        <div class="form-group"><label for="fullName">Họ tên *</label><input type="text" id="fullName" required></div>
+                        <div class="form-group full-row"><label for="patientCode">Mã bệnh nhân</label><input type="text" id="patientCode"></div>
+<div class="form-group"><label for="fullName">Họ tên *</label><input type="text" id="fullName" required></div>
                         <div class="form-group"><label for="age">Tuổi *</label><input type="number" id="age" min="1" max="120" required></div>
                         <div class="form-group"><label for="gender">Giới tính *</label><select id="gender" required><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select></div>
                         <div class="form-group"><label for="diagnosis">Chẩn đoán *</label><input type="text" id="diagnosis" required></div>
@@ -1305,6 +1307,25 @@ setTimeout(() => {
     renderPatientList();
 }
 
+
+
+function getFreeExamTime() {
+    // Giờ khám đã có của BN chưa ra viện
+    const used = new Set(
+        patients
+            .filter(p => !isDischarged(p) && p.examinationTime)
+            .map(p => p.examinationTime.slice(0, 5))
+    );
+    // Dò từng phút từ 07:00 đến 07:30, lấy phút trống đầu tiên
+    for (let m = 0; m <= 30; m++) {
+        const t = '07:' + String(m).padStart(2, '0');
+        if (!used.has(t)) return t;
+    }
+    return '07:00'; // kín hết 31 phút thì quay về 07:00
+}
+
+
+
         function showAddPatientModal() {
     document.getElementById('modalTitle').textContent = 'Thêm bệnh nhân mới';
     document.getElementById('patientForm').reset();
@@ -1312,7 +1333,7 @@ setTimeout(() => {
     const now = new Date();
     document.getElementById('admissionDate').value = now.toISOString().split('T')[0];
     document.getElementById('admissionTime').value = now.toTimeString().slice(0,5);
-    document.getElementById('examinationTime').value = "07:00";
+    document.getElementById('examinationTime').value = getFreeExamTime();
 
     document.getElementById('patientModal').classList.remove('hidden');
 
@@ -1334,6 +1355,7 @@ async function savePatient() {
 
     const newP = {
         id,
+        patientCode: document.getElementById('patientCode').value.trim(),
         fullName: document.getElementById('fullName').value,
         age: +document.getElementById('age').value,
         gender: document.getElementById('gender').value,
