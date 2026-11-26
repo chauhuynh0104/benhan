@@ -971,6 +971,141 @@ async function loadFromDropbox() {
             });
         }
 
+
+// ===== CẢNH BÁO GIỜ THỦ THUẬT SAU GIỜ RA VIỆN =====
+const SCHEDULE_PATH = '/lichbschau_v2.json';  // đổi nếu file lịch nằm chỗ khác trên Dropbox
+
+
+async function loadScheduleFromDropbox() {
+    try {
+        await getAccessToken();
+        const res = await fetch('https://content.dropboxapi.com/2/files/download', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Dropbox-API-Arg': JSON.stringify({ path: SCHEDULE_PATH })
+            }
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.schedule || [];
+    } catch (e) {
+        console.log('Không tải được lịch thủ thuật', e);
+        return [];
+    }
+}
+
+function normName(s) {
+    return (s || '').normalize('NFC').replace(/\s+/g, ' ').trim().toUpperCase();
+}
+
+function timeToMin(str) {
+    // Lấy giờ cuối cùng trong chuỗi = giờ kết thúc (vd "08:00 - 08:25" -> 08:25)
+    const all = [...(str || '').matchAll(/(\d{1,2}):(\d{2})/g)];
+    if (!all.length) return null;
+    const m = all[all.length - 1];
+    return (+m[1]) * 60 + (+m[2]);
+}
+
+// dayType "2-4-6" = thứ 2,4,6 ; "3-5" = thứ 3,5. Trả về true nếu ngày ra viện có thủy châm
+function thuyChamApplies(tc, dischargeDate) {
+    if (!tc || typeof tc !== 'object' || !tc.dayType || !dischargeDate) return true; // thiếu dữ liệu -> vẫn cảnh báo
+    const [y, m, d] = dischargeDate.split('-').map(Number);
+    const jsDay = new Date(y, m - 1, d).getDay();   // 0=CN, 1=T2 ... 6=T7
+    const thu = jsDay === 0 ? 8 : jsDay + 1;        // T2=2 ... T7=7, CN=8
+    return String(tc.dayType).split('-').map(Number).includes(thu);
+}
+
+function getScheduleProcedures(s, dischargeDate) {
+    // Tách giờ và ghi chú: "07:30-08:00 (Minh)" -> giờ "07:30-08:00", ghi chú "Minh"
+    const parse = v => {
+        if (!v) return { time: '', note: '' };
+        if (typeof v === 'object') return { time: v.timeSlot || '', note: v.dayType ? `Thứ ${v.dayType}` : '' };
+        const m = /^(.*?)\s*(?:\((.*)\))?\s*$/.exec(v);
+        return { time: m[1], note: m[2] || '' };
+    };
+    const build = (label, v, extra, active) => {
+        const p = parse(v);
+        return { label, time: p.time, note: extra || p.note, min: timeToMin(p.time), active };
+    };
+    return [
+        build('Điện châm',    s.dienCham,   s.may ? `Máy ${s.may}` : '', true),
+        build('Chiếu đèn',    s.chieuDen,   s.den ? `Đèn ${s.den}` : '', true),
+        build('Xoa bóp',      s.xoaBop,     '', true),
+        build('Thủy châm',    s.thuyCham,   '', thuyChamApplies(s.thuyCham, dischargeDate)),
+        build('Giác hơi',     s.giacHoi,    '', true),
+        build('Xoa bóp vùng', s.xoaBopVung, '', true)
+    ].filter(r => r.min !== null);
+}
+
+async function confirmDischargeProcedures(fullName, dischargeDate, dischargeTime) {
+    if (!dischargeTime) return true;
+
+
+
+    const schedule = await loadScheduleFromDropbox();
+    const name = normName(fullName);
+    const s = schedule.find(x => normName(x.patientName) && normName(x.patientName) === name);
+    if (!s) return true;
+
+    const limit = timeToMin(dischargeTime);
+    const procs = getScheduleProcedures(s, dischargeDate);
+    if (!procs.some(p => p.active && p.min > limit)) return true;   // không có thủ thuật nào vượt giờ ra viện
+
+    // Giờ gợi ý: kết thúc muộn nhất + 15 phút, làm tròn lên bội số của 5
+    const lastEnd = Math.max(...procs.filter(p => p.active).map(p => p.min));
+    let sug = Math.ceil((lastEnd + 15) / 5) * 5;
+    if (sug < 11 * 60) sug = 11 * 60;                          // sáng: trước 11:00 thì cho 11:00
+    else if (sug >= 12 * 60 && sug < 15 * 60) sug = 15 * 60;   // chiều: trước 15:00 thì cho 15:00
+    const sugVal = String(Math.floor(sug / 60) % 24).padStart(2, '0') + ':' + String(sug % 60).padStart(2, '0');
+
+    return new Promise(resolve => {
+        const ov = document.createElement('div');
+        ov.className = 'overlay';
+        ov.style.zIndex = 3000;
+        ov.innerHTML = `
+            <div class="modal" style="max-width:820px;">
+                <div class="modal-header" style="color:#d32f2f;">⚠️ Còn thủ thuật sau giờ ra viện</div>
+                <div class="modal-content">
+                    <p><b>${s.patientName.trim()}</b> – Ra viện lúc <b>${dischargeTime}</b></p>
+                                       <table style="width:100%;border-collapse:collapse;border:1px solid #bbb;">
+                        <tr style="background:#f5f5f5;font-weight:700;">
+                            <td style="padding:6px 10px;border:1px solid #bbb;">Thủ thuật</td>
+                            <td style="padding:6px 10px;border:1px solid #bbb;">Giờ</td>
+                            <td style="padding:6px 10px;border:1px solid #bbb;">Chi tiết</td>
+                        </tr>
+                        ${procs.map(p => `
+                            <tr style="${!p.active ? 'color:#999;' : p.min > limit ? 'color:#d32f2f;font-weight:700;background:#ffebee;' : ''}">
+                                <td style="padding:6px 10px;border:1px solid #bbb;">${p.label}</td>
+                                <td style="padding:6px 10px;border:1px solid #bbb;white-space:nowrap;">${p.time}${p.active && p.min > limit ? ' ⚠️' : ''}</td>
+                                <td style="padding:6px 10px;border:1px solid #bbb;">${p.note}${!p.active ? ' (Ngày ra viện không có thủy châm)' : ''}</td>
+                            </tr>`).join('')}
+                    </table>
+                </div>
+                <div class="modal-footer">
+                                       <button type="button" class="btn btn-secondary" id="dcBack">Quay lại</button>
+                    <button type="button" class="btn btn-success" id="dcSuggest">💡 Gợi ý ${sugVal}</button>
+                    <button type="button" class="btn btn-primary" id="dcContinue">Tiếp tục</button>
+                </div>
+            </div>`;
+        document.body.appendChild(ov);
+        const done = ok => { ov.remove(); resolve(ok); };
+        ov.querySelector('#dcBack').onclick = () => done(false);
+        ov.querySelector('#dcSuggest').onclick = () => {
+            const inp = document.getElementById('detailDischargeTime');
+            if (inp) {
+                inp.value = sugVal;
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+                inp.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            done(false);   // đóng popup, chưa lưu
+        };
+        ov.querySelector('#dcContinue').onclick = () => done(true);
+    });
+}
+// ===== HẾT PHẦN CẢNH BÁO =====
+
+
         function isDischarged(p) {
             if (!p.dischargeDate || !p.dischargeTime) return false;
             return new Date(`${p.dischargeDate}T${p.dischargeTime}`) < new Date();
@@ -1406,6 +1541,13 @@ async function savePatient() {
         showToast('Không tìm thấy bệnh nhân', 'error');
         return;
     }
+
+       const okDischarge = await confirmDischargeProcedures(
+        document.getElementById('detailFullName').value,
+        document.getElementById('detailDischargeDate').value,
+        document.getElementById('detailDischargeTime').value
+    );
+    if (!okDischarge) return;
 
     patients[i] = {
         ...patients[i],
